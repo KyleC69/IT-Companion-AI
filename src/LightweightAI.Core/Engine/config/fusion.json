@@ -1,0 +1,17 @@
+﻿{
+  "weights": {
+    "alpha": 0.8,
+    "beta": 1.2,
+    "gamma": 2.5,
+    "bias": -1.0
+  },
+  "bands": {
+    "ok": 0.30,
+    "warn": 0.70
+  },
+  "hysteresis": {
+    "escalateConsecutive": 2,
+    "deescalateConsecutive": 3,
+    "suppressMinutes": 15
+  }
+}

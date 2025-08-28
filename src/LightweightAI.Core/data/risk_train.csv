@@ -1,0 +1,11 @@
+OpenPortsCount,SuspiciousProcessCount,RegistryAnomalyCount,EtwEventRate
+0,0,0,0.1
+5,2,1,0.5
+1,0,0,0.2
+20,10,5,1.5
+2,1,0,0.3
+15,4,2,1.0
+0,0,0,0.1
+8,3,1,0.6
+3,0,0,0.2
+12,7,4,1.2

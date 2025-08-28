@@ -1,0 +1,15 @@
+// host_registry.json
+{
+  "hosts": [
+    {
+      "fqdn": "ALTAMONT-WS01",
+      "id16": 52341
+    },
+    {
+      "fqdn": "ALTAMONT-SRV01",
+      "id16": 11207
+    }
+  ]
+}
+
+// source_registry.json{ "sources": [ { "name": "winlog.security", "id16": 1001 }, { "name": "wmi.services", "id16": 2002 } ] }

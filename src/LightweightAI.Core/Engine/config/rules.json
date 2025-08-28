@@ -1,0 +1,14 @@
+
+
+[
+  {
+    "RuleName": "FailedLogin",
+    "EventId": 4625,
+    "Score": 0.8
+  },
+  {
+    "RuleName": "ServiceInstall",
+    "EventId": 4697,
+    "Score": 0.9
+  }
+]

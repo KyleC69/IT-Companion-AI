@@ -1,0 +1,100 @@
+﻿Yep — I was talking about a **lineage‑style training map** that shows, at a glance, exactly how each input field in your pipeline is sourced, validated, and consumed downstream. Think of it like your anomaly‑detection context window diagram, but for **data provenance and processing flow**.
+
+Here’s what I had in mind:
+
+---
+
+## **Field → Training/Processing Map**
+
+| **Column / Field**   | **Origin** (Module / Host / Vendor) | **Validation Set / Registry**   | **Transforms Applied** | **Downstream Consumers**            | **Notes** |
+|----------------------|--------------------------------------|-----------------------------------|------------------------|--------------------------------------|-----------|
+| `Category`           | Fusion Pre‑Classifier                | `/config/taxonomy/category_map`   | Normalize lowercase    | Weight Table → Fusion Engine         | Used for scoring weight selection |
+| `ContextType`        | Module Emitter Header                 | Enum inline in header schema      | None                   | Lane Router                          | FAST vs SLOW lane routing |
+| `Severity`           | Risk Scoring Engine                   | `/config/severity_scale.json`     | Clamp 0–10              | Alert Dispatcher, Dashboard          | Used in SLA timers |
+| `MetaFlags`          | Module Emitters / Decorators          | `/config/meta_flags.json`         | Bitwise OR merge       | Fusion Engine, Suppression Filters   | Multi‑flag capable |
+| `RawEventID`         | Host/Module direct from emitter       | `/config/eventid_collision_map`   | Offset/pack w/ SourceID | Normalizer, Audit Logger              | Maintains fidelity |
+| `HostID`             | Ingest Agent                          | `/config/host_registry.json`      | Normalize FQDN/hash     | Partitioning, Query Filters           | Required for enterprise uniqueness |
+
+---
+
+**Why it’s useful:**
+- Anyone onboarding can see *in one table* what the data is, where it comes from, how it’s shaped, and who relies on it.
+- Makes future collision‑proofing and range assignment changes painless because you can trace the ripple effects instantly.
+- Doubles as a training asset for both human devs and any AI agents you bring into the loop later — they can use it to know exactly which canonical source to trust.
+
+---
+---
+
+## **Data Journey Diagram** 🗺️
+
+```
+ [Host/Emitter]  
+      │
+      ▼
++------------------+
+| Ingest Collector |
++------------------+
+      │ Adds HostID
+      │
+      ▼
++------------------+
+| SourceID Tagger  |
++------------------+
+      │ Appends SourceID (facility/module)
+      │
+      ▼
++----------------------+
+| Raw Event Capture    |
++----------------------+
+      │ Emits RawEventID
+      │
+      ▼
++----------------------+
+| Validator/Normalizer |
++----------------------+
+  │  • Category lookup
+  │  • ContextType enum check
+  │  • Severity clamp 0–10
+  │  • MetaFlags bitmerge
+  │  • Collision offset/pack
+      │
+      ▼
++-----------------------+
+| Transformation Stage  |
++-----------------------+
+  │  • Namespace pack: HostID + SourceID + RawEventID
+  │  • Audit log copy of raw triplet
+      │
+      ▼
++--------------------------+
+| Downstream Consumers     |
++--------------------------+
+  • Fusion Engine  
+  • Suppression Filters  
+  • Alert Dispatcher  
+  • Dashboards / API Feeds
+```
+
+---
+
+## **Field‑by‑Field Lineage Table**
+
+| **Field**         | **Populated By**        | **Validation Source**                | **Transform(s)**                                | **Consumed By**                      |
+|-------------------|-------------------------|---------------------------------------|-------------------------------------------------|---------------------------------------|
+| `HostID`          | Ingest Agent            | `/config/host_registry.json`          | Normalize to FQDN or 16‑bit hash                | Indexing, Partitioning, Query filters |
+| `SourceID`        | Source Tagger           | `/config/source_registry.json`        | None                                            | All composite key queries             |
+| `RawEventID`      | Module Emitter          | `/config/eventid_collision_map.json`  | Offset or pack with SourceID                    | Normalizer, Audit Logger              |
+| `Category`        | Pre‑Classifier          | `/config/taxonomy/category_map.json`  | Lowercase normalize                             | Fusion Engine weights                  |
+| `ContextType`     | Module Emitter Header   | Enum inline in header schema          | None                                            | Lane Router                            |
+| `Severity`        | Scoring Engine          | `/config/severity_scale.json`         | Clamp 0–10                                      | Alert Dispatcher, SLA timers           |
+| `MetaFlags`       | Module Decorators       | `/config/meta_flags.json`             | Bitwise OR merge from multiple decorators       | Suppression filters, Forced alerts     |
+| `UnifiedKey`      | Normalizer              | —                                     | `(HostID << 48) | (SourceID << 32) | RawEventID` | All downstream consumers               |
+
+---
+
+## **How to Keep It Living**
+- Store this diagram and table **in the repo**, not a static doc someone emails around.
+- Update it via PR whenever a new field or transformation appears — it’s your single source of truth.
+- Link it directly in your onboarding README so new contributors never have to reverse‑engineer the pipeline.
+
+---

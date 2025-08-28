@@ -1,0 +1,9 @@
+﻿Raw System Feeds
+     ↓
+Source Loaders + Refinery Modules
+     ↓
+Unified Dataset Merge
+     ↓
+Unified Aggregator Layer (health snapshots)
+     ↓
+Models (Conversational + Anomaly)

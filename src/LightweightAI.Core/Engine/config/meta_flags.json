@@ -1,0 +1,50 @@
+﻿{
+  "bits": [
+    {
+      "bit": 0,
+      "hex": "0x0001",
+      "name": "IS_REPLAY",
+      "meaning": "Replayed from archive"
+    },
+    {
+      "bit": 1,
+      "hex": "0x0002",
+      "name": "IS_SYNTHETIC",
+      "meaning": "Synthetic/test event"
+    },
+    {
+      "bit": 2,
+      "hex": "0x0004",
+      "name": "IS_QCANDIDATE",
+      "meaning": "Candidate for future Q&A training"
+    },
+    {
+      "bit": 3,
+      "hex": "0x0008",
+      "name": "NO_ALERT",
+      "meaning": "Suppress alert dispatch"
+    },
+    {
+      "bit": 4,
+      "hex": "0x0010",
+      "name": "FORCE_ALERT",
+      "meaning": "Force alert"
+    },
+    {
+      "bit": 5,
+      "hex": "0x0020",
+      "name": "EXTERNAL_FEED",
+      "meaning": "Third-party feed"
+    },
+    {
+      "bit": 6,
+      "hex": "0x0040",
+      "name": "DEPRIORITIZE",
+      "meaning": "Lower fusion priority"
+    }
+  ],
+  "reserved": {
+    "startBit": 7,
+    "endBit": 15
+  }
+}
