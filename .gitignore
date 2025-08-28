@@ -361,5 +361,13 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+<<<<<<< HEAD
 /src/OrphanSource/OrphanedSource.csproj
 /Directory.Build.props.bak
+=======
+
+# Minimal manifest artifacts (left versioned by default). Uncomment to ignore.
+# manifest/file-paths.txt
+# manifest/html-urls.txt
+# manifest/raw-urls.txt
+>>>>>>> 0816388 (Add minimal file manifest generation capability)
