@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Minimal manifest artifacts (left versioned by default). Uncomment to ignore.
+# manifest/file-paths.txt
+# manifest/html-urls.txt
+# manifest/raw-urls.txt
