@@ -6,9 +6,6 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Engine;
-
-
 namespace LightweightAI.Core;
 
 
@@ -16,7 +13,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        var pipeline = new Pipeline(new PipelineRunner());
+        var pipeline = new LightweightAI.Core.Engine.Pipeline(new LightweightAI.Core.Engine.PipelineRunner());
         pipeline.Execute();
     }
 }

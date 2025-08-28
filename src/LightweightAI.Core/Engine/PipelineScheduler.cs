@@ -1,4 +1,4 @@
-﻿// Project Name: LightweightAI.Core
+// Project Name: LightweightAI.Core
 // File Name: PipelineScheduler.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz

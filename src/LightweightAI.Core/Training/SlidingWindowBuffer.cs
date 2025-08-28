@@ -5,6 +5,7 @@
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
+using System.Linq;
 
 public class SlidingWindowBuffer
 {
@@ -12,29 +13,17 @@ public class SlidingWindowBuffer
     private readonly int _maxSamples;
     private readonly TimeSpan _retentionPeriod;
 
-
-
-
-
     public SlidingWindowBuffer(TimeSpan retentionPeriod, int maxSamples)
     {
         this._retentionPeriod = retentionPeriod;
         this._maxSamples = maxSamples;
     }
 
-
-
-
-
     public void Add(TrainingSample sample)
     {
         this._buffer.AddLast(sample);
         Prune();
     }
-
-
-
-
 
     private void Prune()
     {
@@ -43,10 +32,6 @@ public class SlidingWindowBuffer
                (this._buffer.First!.Value.Timestamp < cutoff || this._buffer.Count > this._maxSamples))
             this._buffer.RemoveFirst();
     }
-
-
-
-
 
     public IReadOnlyList<TrainingSample> GetSnapshot()
     {

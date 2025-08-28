@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LightweightAI.Core\LightweightAI.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

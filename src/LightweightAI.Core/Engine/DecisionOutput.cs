@@ -9,9 +9,6 @@
 // === DecisionOutput.cs ===
 
 
-using System.Collections.Immutable;
-
-
 namespace LightweightAI.Core.Engine;
 
 
@@ -21,7 +18,7 @@ public sealed record DecisionOutput(
     DateTimeOffset MetricWindowEnd,
     double Score,
     bool IsAlert,
-    ImmutableDictionary<string, double> Payload
+    System.Collections.Immutable.ImmutableDictionary<string, double> Payload
 )
 {
     // Provenance / envelope metadata
@@ -33,14 +30,3 @@ public sealed record DecisionOutput(
     public string SeverityScaleRef { get; init; } = string.Empty;
     public DateTime Timestamp { get; init; }
 }
-
-
-
-public sealed record MetricDecision(
-    string MetricKey,
-    DateTimeOffset MetricWindowStart,
-    DateTimeOffset MetricWindowEnd,
-    double Score,
-    bool IsAlert,
-    ImmutableDictionary<string, double> Payload
-);

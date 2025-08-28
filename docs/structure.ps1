@@ -1,4 +1,17 @@
-﻿# Init-LightSecAI.ps1
+﻿# =====================================================================
+# Document Title   : Repository Structure Bootstrap Script
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : Initializes baseline folder structure and placeholder files.
+# Related Docs     : Architecture Overview
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
+# Init-LightSecAI.ps1
 # Creates the LightSecAI C# solution folder structure from the current directory
 
 # Define the directory layout

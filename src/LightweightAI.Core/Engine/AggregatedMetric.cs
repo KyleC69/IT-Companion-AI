@@ -6,9 +6,6 @@
 // Do not remove file headers
 
 
-using System.Collections.Immutable;
-
-
 namespace LightweightAI.Core.Engine;
 
 
@@ -18,5 +15,5 @@ public readonly record struct AggregatedMetric(
     DateTimeOffset WindowEnd,
     long Count,
     double WeightedScore,
-    ImmutableDictionary<string, double> Dimensions
+    System.Collections.Immutable.ImmutableDictionary<string, double> Dimensions
 );

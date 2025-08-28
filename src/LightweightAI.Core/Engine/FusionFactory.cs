@@ -1,4 +1,4 @@
-﻿// Project Name: LightweightAI.Core
+// Project Name: LightweightAI.Core
 // File Name: FusionFactory.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
@@ -6,25 +6,3 @@
 // Do not remove file headers
 
 
-using AICompanion.Tests;
-
-
-namespace LightweightAI.Core.Engine;
-
-
-public static class FusionFactory
-{
-    public static IFusionEngine CreateEngine()
-    {
-        return new FusionEngine();
-    }
-
-
-
-
-
-    public static IFusionPipeline CreatePipeline()
-    {
-        return new FusionPipeline(CreateEngine());
-    }
-}

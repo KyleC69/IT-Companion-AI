@@ -1,4 +1,27 @@
-﻿Raw System Feeds
+﻿# =====================================================================
+# Document Title   : Data Flow ASCII
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : ASCII representation of data flow for quick CLI reference.
+# Related Docs     : ai-dataflow.md
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
+---
+Title: Data Flow ASCII
+File: AIDataFlow.txt
+Description: ASCII representation companion to data flow diagram.
+Version: 0.1.0
+LastUpdated: 2025-08-28
+Status: Draft
+Tags: [ascii, dataflow]
+---
+
+Raw System Feeds
      ↓
 Source Loaders + Refinery Modules
      ↓

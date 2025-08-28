@@ -22,8 +22,6 @@
     <Compile Remove="Engine\Config.cs" />
     <Compile Remove="Engine\models\Aggregation.cs" />
     <Compile Remove="Engine\models\ReslientModels.cs" />
-    <Compile Remove="Loaders\qANDa\wholepipe2.cs" />
-    <Compile Remove="Loaders\qANDa\wholepipeline.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,12 +37,6 @@
     <PackageReference Include="Microsoft.ML" Version="5.0.0-preview.25373.1" />
     <PackageReference Include="Microsoft.ML.DataView" Version="5.0.0-preview.25373.1" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
-  </ItemGroup>
-
-
-
-  <ItemGroup>
-    <Folder Include="Loaders\qANDa\" />
   </ItemGroup>
 
 

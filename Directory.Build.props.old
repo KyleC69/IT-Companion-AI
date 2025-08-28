@@ -1,0 +1,22 @@
+<Project>
+  <!-- Define a root for reuse -->
+  <PropertyGroup>
+    <!-- This directory is where Directory.Build.props lives -->
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+	  <RootNamespace>LightweightAI.Core</RootNamespace>
+  </PropertyGroup>
+
+  <!--<ItemGroup>
+    --><!-- Include orphaned .cs files that ended up in some external folder --><!--
+    <Compile Include="$(RepoRoot)..\Loaders\**\*.cs">
+      --><!-- Present them under a virtual folder inside each project --><!--
+      <Link>OrphanedSources\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+
+    --><!-- Example for resources / json config --><!--
+    <None Include="$(RepoRoot)..\OrphanedSources\**\*.json">
+      <Link>OrphanedSources\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>-->
+</Project>

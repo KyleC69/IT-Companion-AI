@@ -1,4 +1,17 @@
-﻿
+﻿# =====================================================================
+# Document Title   : Detailed Architecture Specification
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : Deep technical specification of components, targets, and performance.
+# Related Docs     : AI-Overview.md; AI-FusionModel.md
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
+
 ---
 
 # **LightweightAI – Detailed Architecture Specification**
@@ -130,6 +143,6 @@ LightweightAI is a modular, low‑latency anomaly detection and decision fusion 
 
 ---
 
-**performance characterization tables** with precision/recall curves, memory/CPU benchmarks under different loads, and drift detection sensitivity plots — useful if you’re prepping for stakeholder review or compliance submission. 
+**performance characterization tables** with precision/recall curves, memory/CPU benchmarks under different loads, and drift detection sensitivity plots — useful if you’re prepping for stakeholder review or compliance submission.
 
 
