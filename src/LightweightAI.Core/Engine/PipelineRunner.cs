@@ -115,7 +115,7 @@ public sealed class PipelineRunner : IPipelineRunner
                             Timestamp: norm.TimestampUtc.UtcDateTime,
                             Payload: norm.Fields.ToDictionary(
                                 k => k.Key,
-                                v => v.Value ?? new object() // Replace nulls with a non-null object
+                                v => v.Value
                             )
                         );
                         var adjusted = _rules.ApplyOverrides(ctx, fused.Score);
