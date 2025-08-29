@@ -10,7 +10,7 @@ jobs:
         run: |
           BRANCH="${{ github.head_ref }}"
           # Allowed patterns:
-          if [[ ! "$BRANCH" =~ ^(feature|feat|bugfix|fix|chore|docs|refactor|hotfix)\/[a-z0-9._-]+$ ]]; then
+          if [[ ! "$BRANCH" =~ ^(feature|feat|bugfix|fix|chore|docs|refactor|hotfix|working)\/[a-z0-9._-]+$ ]]; then
             echo "::error file=branch-naming::Branch '$BRANCH' must match one of: feature/, feat/, bugfix/, fix/, chore/, docs/, refactor/, hotfix/."
             exit 1
           fi
