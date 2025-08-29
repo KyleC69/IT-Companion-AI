@@ -48,7 +48,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<Engine.Alerts.IAlertSink>(sp => new Engine.Alerts.SmtpAlertSink("localhost",25,"alerts@local","ops@local"));
         services.PostConfigure<Engine.AlertDispatcher>(d =>
         {
-            foreach (var sink in sp.GetServices<Engine.Alerts.IAlertSink>())
+            var serviceProvider = services.BuildServiceProvider();
+            foreach (var sink in serviceProvider.GetServices<Engine.Alerts.IAlertSink>())
                 d.AddSink(sink);
         });
 

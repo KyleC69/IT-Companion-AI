@@ -13,6 +13,9 @@ using LightweightAI.Core.Loaders.Generic;
 using LightweightAI.Core.Loaders.PerMon;
 using LightweightAI.Core.Loaders.Windows;
 
+using Microsoft.Extensions.DependencyInjection;
+
+
 namespace LightweightAI.Core.Engine.Intake;
 
 /// <summary>
@@ -57,7 +60,7 @@ internal sealed class IngestionConfigurator : IIngestionConfigurator
         var dict = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
         if (def.Params is { } p && p.ValueKind == JsonValueKind.Object)
         {
-            foreach (var prop in p.Value.EnumerateObject())
+            foreach (var prop in p.EnumerateObject())
                 dict[prop.Name] = prop.Value.ToString();
         }
 
@@ -68,9 +71,9 @@ internal sealed class IngestionConfigurator : IIngestionConfigurator
             case "eventlog":
             case "wevt":
                 var channels = def.Params is { } && def.Params.Value.TryGetProperty("channels", out var chEl) && chEl.ValueKind == JsonValueKind.Array
-                    ? chEl.Value.EnumerateArray().Select(e => e.GetString() ?? string.Empty).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray()
+                    ? chEl.EnumerateArray().Select(e => e.GetString() ?? string.Empty).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray()
                     : new[] { "System", "Application" };
-                var xpath = def.Params is { } && def.Params.Value.TryGetProperty("xpath", out var xEl) ? xEl.Value.GetString() : null;
+                var xpath = def.Params is { } && def.Params.Value.TryGetProperty("xpath", out var xEl) ? xEl.GetString() : null;
                 return (new EventLogMultiChannelLoader(channels, xpath), dict);
             case "perfmon":
                 return (ActivatorUtilities.CreateInstance<PerfmonLoader>(sp), dict);
@@ -79,11 +82,11 @@ internal sealed class IngestionConfigurator : IIngestionConfigurator
             case "trace":
             case "etw":
                 var providers = def.Params is { } && def.Params.Value.TryGetProperty("providers", out var provEl) && provEl.ValueKind == JsonValueKind.Array
-                    ? provEl.Value.EnumerateArray().Select(e => e.GetString() ?? string.Empty).Where(s => !string.IsNullOrWhiteSpace(s))
+                    ? provEl.EnumerateArray().Select(e => e.GetString() ?? string.Empty).Where(s => !string.IsNullOrWhiteSpace(s))
                     : new[] { "Microsoft-Windows-Kernel-Process" };
                 return (new EtwRealTimeLoader("MiniAI-RT", providers), dict);
             case "wmi":
-                var wql = def.Params is { } && def.Params.Value.TryGetProperty("wql", out var wqlEl) ? (wqlEl.Value.GetString() ?? "SELECT * FROM Win32_OperatingSystem") : "SELECT * FROM Win32_OperatingSystem";
+                var wql = def.Params is { } && def.Params.Value.TryGetProperty("wql", out var wqlEl) ? (wqlEl.GetString() ?? "SELECT * FROM Win32_OperatingSystem") : "SELECT * FROM Win32_OperatingSystem";
                 return (new WmiQueryLoader(wql), dict);
             case "generic":
                 // generic JSON feed: require path parameter; parser resolves at runtime

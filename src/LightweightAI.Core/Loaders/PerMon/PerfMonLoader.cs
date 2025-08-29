@@ -38,7 +38,7 @@ public sealed class PerfmonLoader : ISourceLoader
             var ts = map.TryGetValue("Time", out var t) && DateTimeOffset.TryParse(t?.ToString(), out var dto) ? dto.UtcDateTime : DateTime.UtcNow;
             var host = map.TryGetValue("Host", out var h) ? h?.ToString() ?? "unknown" : "unknown";
 
-            yield return new RawEvent(request.SourceKey, eventId: 0, ts, host, null, "Info", map, "perfmon:csv");
+            yield return new RawEvent(request.SourceKey, EventId: 0, ts, host, null, "Info", map, "perfmon:csv");
         }
     }
 }
