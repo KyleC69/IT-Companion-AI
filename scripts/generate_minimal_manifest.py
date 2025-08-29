@@ -20,6 +20,8 @@ Parameters (edit these constants):
  - BRANCH:      Branch name to anchor blob/raw URLs
  - PATH_PREFIX: Only include files whose path starts with this (default 'src/')
  - EXCLUDE_PATTERNS: List of regex fragments. Any match => file excluded.
+ 
+Desired path: https://github.com/KyleC69/IT-Companion-AI/tree/master/src/LightweightAI.Core
 
 Placeholders in docs/FILE_MANIFEST.md are identified by exact blocks:
 ```
@@ -55,7 +57,7 @@ from typing import List
 # ------------------------- Configuration ------------------------- #
 REPO = "KyleC69/IT-Companion-AI"    # org/repo slug
 BRANCH = "master"                   # Branch used for URLs (auto-detected if "auto")
-PATH_PREFIX = "src/"                # Only include paths starting with this prefix (leave empty to include all)
+PATH_PREFIX = "src/LightweightAI.Core"                # Only include paths starting with this prefix (leave empty to include all)
 EXCLUDE_PATTERNS = [                # Regex patterns; if *any* matches the full path, it is excluded
     r"/bin/",
     r"/obj/",
