@@ -8,7 +8,12 @@
 
 namespace LightweightAI.Core.Engine;
 
-
+/// <summary>
+/// Implements a simple hysteresis state machine used to suppress alert oscillation
+/// around a threshold boundary. The decider flips to <c>true</c> only after the
+/// observed value exceeds an upper threshold and returns to <c>false</c> only after
+/// it drops below a lower threshold.
+/// </summary>
 public class HysteresisDecider
 {
     private readonly double _lower;
@@ -29,6 +34,9 @@ public class HysteresisDecider
 
 
 
+    /// <summary>
+    /// Applies hysteresis logic to the provided value and returns the current latched state.
+    /// </summary>
     public bool Decide(double value)
     {
         if (value > this._upper)

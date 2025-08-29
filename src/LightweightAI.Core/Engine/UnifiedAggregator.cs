@@ -9,6 +9,11 @@ using System.Linq;
 
 namespace LightweightAI.Core.Engine;
 
+/// <summary>
+/// Aggregates individual rule evaluation results into a coarse composite event signal,
+/// computing an average score and a triggered flag (any rule matched). This provides
+/// a lightweight summary fed into higher level statistical / fusion stages.
+/// </summary>
 public class UnifiedAggregator
 {
     public AggregatedEvent Aggregate(IEnumerable<RuleResult> ruleResults)

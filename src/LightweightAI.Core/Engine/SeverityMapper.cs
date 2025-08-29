@@ -13,6 +13,11 @@ namespace LightweightAI.Core.Engine;
 
 
 // === SeverityMapper.cs ===
+/// <summary>
+/// Maps arbitrary model output objects (converted to a string key) into an integer severity score
+/// using a provided lookup dictionary. Acts as an indirection layer so model/raw detector outputs
+/// can be decoupled from downstream fusion / alerting severity scales and easily reconfigured.
+/// </summary>
 public class SeverityMapper : ISeverityMapper
 {
     private readonly Dictionary<string, int> _severityMap;

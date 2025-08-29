@@ -14,6 +14,11 @@ namespace LightweightAI.Core.Engine.Fusion;
 
 
 // === FusionBroker.cs ===
+/// <summary>
+/// Orchestrates final decision provenance logging by bridging raw fusion metrics,
+/// severity mapping, and asynchronous routing via an <see cref="IRunner"/>. Acts
+/// as a coordination layer that can evolve independently of the core fusion math.
+/// </summary>
 public class FusionBroker
 {
     private readonly IProvenanceLogger _provenanceLogger;
@@ -87,6 +92,11 @@ public class FusionBroker
 
 
     // SeverityMapper.cs
+    /// <summary>
+    /// Default severity mapper implementation used inside the broker when an external
+    /// mapper is not injected. Converts model outputs (string keys) into integer severities
+    /// using a config snapshot map.
+    /// </summary>
     public class SeverityMapper : ISeverityMapper
     {
         public int MapSeverity(object modelOutput, ConfigSnapshot config)
@@ -101,6 +111,10 @@ public class FusionBroker
 
 
     // === FusionResult.cs ===
+    /// <summary>
+    /// Encapsulates the raw output from the fusion/model stage necessary for provenance
+    /// hashing and downstream severity mapping prior to producing a decision record.
+    /// </summary>
     public class FusionResult
     {
         public required string EventId { get; set; }
@@ -118,6 +132,10 @@ public class FusionBroker
 
 
     // === ConfigSnapshot.cs ===
+    /// <summary>
+    /// Lightweight, versioned configuration/state view consumed by the broker for severity and
+    /// optional settings lookups allowing deterministic decision reconstruction.
+    /// </summary>
     public class ConfigSnapshot
     {
         // Incrementing revision number or hash so we can tie decisions to a config state

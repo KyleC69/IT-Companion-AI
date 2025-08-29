@@ -13,6 +13,11 @@ namespace LightweightAI.Core.Engine.Provenence;
 
 
 // === ProvenanceLogger.cs ===
+/// <summary>
+/// Simple console-based implementation of <see cref="IProvenanceLogger"/> intended for
+/// early development. Emits formatted decision metadata; production version should
+/// enforce append-only storage and integrity hashing.
+/// </summary>
 public class ProvenanceLogger : IProvenanceLogger
 {
     public void Log(ProvenancedDecision decision)

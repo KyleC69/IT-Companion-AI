@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Created by yFiles WPF 3.4.0.0-->
+<graphml xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/3.0" xmlns:y="http://www.yworks.com/xml/yfiles-common/3.0" xmlns:sys="http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml.wpf/3.0/ygraphml.xsd " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://graphml.graphdrawing.org/xmlns">
+  <key id="d0" attr.type="boolean" attr.name="Expanded" for="node" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/folding/Expanded">
+    <default>true</default>
+  </key>
+  <key id="d1" attr.name="metadata" for="node">
+    <default>
+      <x:Null />
+    </default>
+  </key>
+  <key id="d2" attr.type="boolean" attr.name="is_group_node" for="node">
+    <default>false</default>
+  </key>
+  <key id="d3" attr.type="string" attr.name="type_node" for="node" />
+  <key id="d4" attr.name="path" for="node">
+    <default>
+      <x:Null />
+    </default>
+  </key>
+  <key id="d5" attr.type="boolean" attr.name="is_static" for="node">
+    <default>false</default>
+  </key>
+  <key id="d6" attr.type="string" attr.name="type_element" for="node" />
+  <key id="d7" attr.type="string" attr.name="type" for="node" />
+  <key id="d8" attr.type="string" attr.name="access" for="node" />
+  <key id="d9" attr.type="string" attr.name="fqn" for="node" />
+  <key id="d10" attr.type="string" attr.name="display_name" for="node" />
+  <key id="d11" attr.name="NodeLabels" for="node" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeLabels" />
+  <key id="d12" attr.name="NodeGeometry" for="node" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeGeometry" />
+  <key id="d13" attr.name="UserTags" for="all" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/UserTags" />
+  <key id="d14" attr.name="NodeViewState" for="node" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/folding/1.1/NodeViewState" />
+  <key id="d15" attr.type="string" attr.name="target" for="edge" />
+  <key id="d16" attr.type="string" attr.name="source" for="edge" />
+  <key id="d17" attr.type="string" attr.name="dependency_type" for="edge" />
+  <key id="d18" attr.name="EdgeLabels" for="edge" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/EdgeLabels" />
+  <key id="d19" attr.name="EdgeGeometry" for="edge" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/EdgeGeometry" />
+  <key id="d20" attr.name="EdgeViewState" for="edge" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/folding/1.1/EdgeViewState" />
+  <key id="d21" attr.name="PortLabels" for="port" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/PortLabels" />
+  <key id="d22" attr.name="PortLocationParameter" for="port" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/PortLocationParameter">
+    <default>
+      <x:Static Member="y:FreeNodePortLocationModel.NodeCenterAnchored" />
+    </default>
+  </key>
+  <key id="d23" attr.name="PortViewState" for="port" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/folding/1.1/PortViewState" />
+  <key id="d24" attr.name="SharedData" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/SharedData" />
+  <key id="d25" attr.name="layouting" />
+  <key id="d26" attr.name="graph_control_center" />
+  <key id="d27" attr.name="graph_control_zoom" />
+  <key id="d28" attr.name="grouping_depth" />
+  <key id="d29" attr.name="grouping_id" />
+  <data key="d24">
+    <y:SharedData />
+  </data>
+  <data key="d25">Organic</data>
+  <data key="d26">
+    <y:PointD X="1359.0042857142857" Y="-207" />
+  </data>
+  <data key="d27">0.575415279868131</data>
+  <data key="d28">0</data>
+  <data key="d29">None</data>
+  <graph id="G">
+    <node id="n0">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Interface]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String">
+          <sys:String>E:\MiniAI\src\LightweightAI.Core\Refinery\IRefineryLoader.cs</sys:String>
+        </x:Array>
+      </data>
+      <data key="d6"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3AIRefineryLoader]]></data>
+      <data key="d7"><![CDATA[interface]]></data>
+      <data key="d8"><![CDATA[public]]></data>
+      <data key="d9"><![CDATA[IRefineryLoader]]></data>
+      <data key="d10"><![CDATA[IRefineryLoader]]></data>
+      <data key="d12">
+        <y:RectD X="234.66706349206348" Y="-261" Width="334.53333333333336" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.166666666666667,1" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.833333333333333,1" />
+        </data>
+      </port>
+      <port name="p2">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.5,1" />
+        </data>
+      </port>
+      <port name="p3">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.75,0" />
+        </data>
+      </port>
+      <port name="p4">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.25,0" />
+        </data>
+      </port>
+    </node>
+    <node id="n1">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String">
+          <sys:String>E:\MiniAI\src\LightweightAI.Core\Loaders\Events\EventLogLoader.cs</sys:String>
+        </x:Array>
+      </data>
+      <data key="d6"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Events.EventLogLoader]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[public]]></data>
+      <data key="d9"><![CDATA[LightweightAI.Core.Loaders.Events.EventLogLoader]]></data>
+      <data key="d10"><![CDATA[EventLogLoader]]></data>
+      <data key="d12">
+        <y:RectD X="10.000238095238103" Y="-88" Width="336.50666666666666" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.833333333333333,0" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.5,0" />
+        </data>
+      </port>
+      <port name="p2">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.166666666666667,0" />
+        </data>
+      </port>
+    </node>
+    <node id="n2">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String">
+          <sys:String>E:\MiniAI\src\LightweightAI.Core\Loaders\Services\ServiceLoader.cs</sys:String>
+        </x:Array>
+      </data>
+      <data key="d6"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[public]]></data>
+      <data key="d9"><![CDATA[LightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d10"><![CDATA[ServiceLoader]]></data>
+      <data key="d12">
+        <y:RectD X="1684.6042063492064" Y="-88" Width="307.87333333333333" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.0500000000000005,0" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.55,0" />
+        </data>
+      </port>
+      <port name="p2">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.45,0" />
+        </data>
+      </port>
+      <port name="p3">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.35,0" />
+        </data>
+      </port>
+      <port name="p4">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.85,0" />
+        </data>
+      </port>
+      <port name="p5">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.25,0" />
+        </data>
+      </port>
+      <port name="p6">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.65,0" />
+        </data>
+      </port>
+      <port name="p7">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.95,0" />
+        </data>
+      </port>
+      <port name="p8">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.75,0" />
+        </data>
+      </port>
+      <port name="p9">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.15,0" />
+        </data>
+      </port>
+    </node>
+    <node id="n3">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String">
+          <sys:String>E:\MiniAI\src\LightweightAI.Core\Loaders\Drivers\DriverLoader.cs</sys:String>
+        </x:Array>
+      </data>
+      <data key="d6"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[public]]></data>
+      <data key="d9"><![CDATA[LightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d10"><![CDATA[DriverLoader]]></data>
+      <data key="d12">
+        <y:RectD X="484.51880952380947" Y="-88" Width="293.11" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.214285714285714,0" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.357142857142857,0" />
+        </data>
+      </port>
+      <port name="p2">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.0714285714285712,0" />
+        </data>
+      </port>
+      <port name="p3">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.928571428571429,0" />
+        </data>
+      </port>
+      <port name="p4">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.785714285714286,0" />
+        </data>
+      </port>
+      <port name="p5">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.642857142857143,0" />
+        </data>
+      </port>
+      <port name="p6">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.5,0" />
+        </data>
+      </port>
+    </node>
+    <node id="n4">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String">
+          <sys:String>E:\MiniAI\src\LightweightAI.Core\Engine\config\SourceConfig.cs</sys:String>
+        </x:Array>
+      </data>
+      <data key="d6"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Engine.config.SourceConfig]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[public]]></data>
+      <data key="d9"><![CDATA[LightweightAI.Core.Engine.config.SourceConfig]]></data>
+      <data key="d10"><![CDATA[SourceConfig]]></data>
+      <data key="d12">
+        <y:RectD X="374.88690476190476" Y="-414" Width="299.56666666666672" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.875,1" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.375,1" />
+        </data>
+      </port>
+      <port name="p2">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.125,1" />
+        </data>
+      </port>
+      <port name="p3">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.625,1" />
+        </data>
+      </port>
+    </node>
+    <node id="n5">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String" />
+      </data>
+      <data key="d6"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataTable]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[PUBLIC]]></data>
+      <data key="d9"><![CDATA[System.Data.DataTable]]></data>
+      <data key="d10"><![CDATA[DataTable]]></data>
+      <data key="d12">
+        <y:RectD X="94.273492063492057" Y="-414" Width="250.61333333333334" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.875,1" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.625,1" />
+        </data>
+      </port>
+      <port name="p2">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.125,1" />
+        </data>
+      </port>
+      <port name="p3">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.375,1" />
+        </data>
+      </port>
+    </node>
+    <node id="n6">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String" />
+      </data>
+      <data key="d6"><![CDATA[CsvHelper%2C%20Version%3D33.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3D8c4959082be5c823%3A%3Afd7becfda6c541839320eeabe1e193ea37600%3A%3Adll/T%3ACsvHelper.CsvReader]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[PUBLIC]]></data>
+      <data key="d9"><![CDATA[CsvHelper.CsvReader]]></data>
+      <data key="d10"><![CDATA[CsvReader]]></data>
+      <data key="d12">
+        <y:RectD X="1883.9346031746031" Y="-261" Width="256.13" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.5,1" />
+        </data>
+      </port>
+    </node>
+    <node id="n7">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String" />
+      </data>
+      <data key="d6"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.IO.StreamReader]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[PUBLIC]]></data>
+      <data key="d9"><![CDATA[System.IO.StreamReader]]></data>
+      <data key="d10"><![CDATA[StreamReader]]></data>
+      <data key="d12">
+        <y:RectD X="651.07412698412691" Y="-261" Width="307.37" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.25,1" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.5,0" />
+        </data>
+      </port>
+      <port name="p2">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.75,1" />
+        </data>
+      </port>
+    </node>
+    <node id="n8">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String" />
+      </data>
+      <data key="d6"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.Globalization.CultureInfo]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[PUBLIC]]></data>
+      <data key="d9"><![CDATA[System.Globalization.CultureInfo]]></data>
+      <data key="d10"><![CDATA[CultureInfo]]></data>
+      <data key="d12">
+        <y:RectD X="2437.2416666666668" Y="-261" Width="270.76666666666665" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.5,1" />
+        </data>
+      </port>
+    </node>
+    <node id="n9">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Abstract]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String" />
+      </data>
+      <data key="d6"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.IO.TextReader]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[PUBLIC]]></data>
+      <data key="d9"><![CDATA[System.IO.TextReader]]></data>
+      <data key="d10"><![CDATA[TextReader]]></data>
+      <data key="d12">
+        <y:RectD X="704.45380952380958" Y="-414" Width="267.30666666666667" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.833333333333333,1" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.5,1" />
+        </data>
+      </port>
+      <port name="p2">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.166666666666666,1" />
+        </data>
+      </port>
+    </node>
+    <node id="n10">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String" />
+      </data>
+      <data key="d6"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataColumnCollection]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[PUBLIC]]></data>
+      <data key="d9"><![CDATA[System.Data.DataColumnCollection]]></data>
+      <data key="d10"><![CDATA[DataColumnCollection]]></data>
+      <data key="d12">
+        <y:RectD X="988.444126984127" Y="-261" Width="426.88" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.75,1" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.25,1" />
+        </data>
+      </port>
+    </node>
+    <node id="n11">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String" />
+      </data>
+      <data key="d6"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataRow]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[PUBLIC]]></data>
+      <data key="d9"><![CDATA[System.Data.DataRow]]></data>
+      <data key="d10"><![CDATA[DataRow]]></data>
+      <data key="d12">
+        <y:RectD X="2170.0648412698415" Y="-261" Width="237.17666666666668" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.499999999999999,1" />
+        </data>
+      </port>
+    </node>
+    <node id="n12">
+      <data key="d1">
+        <sys:Dictionary x:TypeArguments="sys:String,sys:String" />
+      </data>
+      <data key="d3"><![CDATA[Unknown]]></data>
+      <data key="d4">
+        <x:Array Type="sys:String" />
+      </data>
+      <data key="d6"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataRowCollection]]></data>
+      <data key="d7"><![CDATA[class]]></data>
+      <data key="d8"><![CDATA[PUBLIC]]></data>
+      <data key="d9"><![CDATA[System.Data.DataRowCollection]]></data>
+      <data key="d10"><![CDATA[DataRowCollection]]></data>
+      <data key="d12">
+        <y:RectD X="1445.324365079365" Y="-261" Width="378.61" Height="88" />
+      </data>
+      <port name="p0">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.75,1" />
+        </data>
+      </port>
+      <port name="p1">
+        <data key="d22">
+          <y:FreeNodePortLocationModelParameter Ratio="0.25,1" />
+        </data>
+      </port>
+    </node>
+    <edge id="e0" source="n1" target="n0" sourceport="p0" targetport="p0">
+      <data key="d15"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3AIRefineryLoader]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Events.EventLogLoader]]></data>
+      <data key="d17"><![CDATA[Inheritance]]></data>
+    </edge>
+    <edge id="e1" source="n2" target="n0" sourceport="p0" targetport="p1">
+      <data key="d15"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3AIRefineryLoader]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Inheritance]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1699.99787301587,-128" />
+          <y:Bend Location="513.444841269841,-128" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e2" source="n3" target="n0" sourceport="p0" targetport="p2">
+      <data key="d15"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3AIRefineryLoader]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d17"><![CDATA[Inheritance]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="547.328095238095,-108" />
+          <y:Bend Location="401.93373015873,-108" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e3" source="n2" target="n4" sourceport="p1" targetport="p0">
+      <data key="d15"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Engine.config.SourceConfig]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1853.93452380952,-301" />
+          <y:Bend Location="637.007738095238,-301" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e4" source="n2" target="n5" sourceport="p2" targetport="p0">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataTable]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1823.14720634921,-98" />
+          <y:Bend Location="1843.93452380952,-98" />
+          <y:Bend Location="1843.93452380952,-291" />
+          <y:Bend Location="313.560158730159,-291" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e5" source="n0" target="n4" sourceport="p3" targetport="p1">
+      <data key="d15"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Engine.config.SourceConfig]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3AIRefineryLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="485.567063492063,-271" />
+          <y:Bend Location="487.224404761905,-271" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e6" source="n0" target="n5" sourceport="p4" targetport="p1">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataTable]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3AIRefineryLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="318.300396825397,-271" />
+          <y:Bend Location="250.906825396825,-271" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e7" source="n1" target="n4" sourceport="p1" targetport="p2">
+      <data key="d15"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Engine.config.SourceConfig]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Events.EventLogLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="178.253571428571,-281" />
+          <y:Bend Location="412.332738095238,-281" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e8" source="n1" target="n5" sourceport="p2" targetport="p2">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataTable]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Events.EventLogLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="66.0845238095238,-227" />
+          <y:Bend Location="125.600158730159,-227" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e9" source="n3" target="n4" sourceport="p1" targetport="p3">
+      <data key="d15"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Engine.config.SourceConfig]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="589.200793650794,-271" />
+          <y:Bend Location="562.116071428571,-271" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e10" source="n3" target="n5" sourceport="p2" targetport="p3">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataTable]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="505.455238095238,-98" />
+          <y:Bend Location="188.253571428571,-98" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e11" source="n2" target="n12" sourceport="p3" targetport="p0">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataRowCollection]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1792.35987301587,-158" />
+          <y:Bend Location="1729.28186507936,-158" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e12" source="n2" target="n11" sourceport="p4" targetport="p0">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataRow]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1946.29653968254,-108" />
+          <y:Bend Location="2288.65317460317,-108" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e13" source="n2" target="n10" sourceport="p5" targetport="p0">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataColumnCollection]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1761.57253968254,-148" />
+          <y:Bend Location="1308.60412698413,-148" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e14" source="n2" target="n9" sourceport="p6" targetport="p0">
+      <data key="d15"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.IO.TextReader]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1884.72187301587,-98" />
+          <y:Bend Location="1863.93452380952,-98" />
+          <y:Bend Location="1863.93452380952,-311" />
+          <y:Bend Location="927.209365079365,-311" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e15" source="n3" target="n12" sourceport="p3" targetport="p1">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataRowCollection]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="756.692380952381,-98" />
+          <y:Bend Location="1539.97686507937,-98" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e16" source="n3" target="n10" sourceport="p4" targetport="p1">
+      <data key="d15"><![CDATA[System.Data.Common%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3Afe93577141144f44b8da7fe76b4b1f0f25b10%3A%3Adll/T%3ASystem.Data.DataColumnCollection]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="714.819523809524,-108" />
+          <y:Bend Location="1095.16412698413,-108" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e17" source="n3" target="n7" sourceport="p5" targetport="p0">
+      <data key="d15"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.IO.StreamReader]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="672.946666666667,-118" />
+          <y:Bend Location="727.916626984127,-118" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e18" source="n2" target="n8" sourceport="p7" targetport="p0">
+      <data key="d15"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.Globalization.CultureInfo]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1977.08387301587,-98" />
+          <y:Bend Location="2572.625,-98" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e19" source="n7" target="n9" sourceport="p1" targetport="p1">
+      <data key="d15"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.IO.TextReader]]></data>
+      <data key="d16"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.IO.StreamReader]]></data>
+      <data key="d17"><![CDATA[Inheritance]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="804.759126984127,-271" />
+          <y:Bend Location="838.107142857143,-271" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e20" source="n2" target="n6" sourceport="p8" targetport="p0">
+      <data key="d15"><![CDATA[CsvHelper%2C%20Version%3D33.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3D8c4959082be5c823%3A%3Afd7becfda6c541839320eeabe1e193ea37600%3A%3Adll/T%3ACsvHelper.CsvReader]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1915.50920634921,-118" />
+          <y:Bend Location="2011.9996031746,-118" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e21" source="n3" target="n9" sourceport="p6" targetport="p2">
+      <data key="d15"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.IO.TextReader]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Drivers.DriverLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="631.073809523809,-271" />
+          <y:Bend Location="749.004920634921,-271" />
+        </x:List>
+      </data>
+    </edge>
+    <edge id="e22" source="n2" target="n7" sourceport="p9" targetport="p2">
+      <data key="d15"><![CDATA[System.Runtime%2C%20Version%3D9.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db03f5f7f11d50a3a%3A%3A5ee4e2db8cb642d8bc4a6567a75d8e9acef20%3A%3Adll/T%3ASystem.IO.StreamReader]]></data>
+      <data key="d16"><![CDATA[942d750f-f17f-287b-0dde-729d5198fdee%28LightweightAI.Core%29-F9878BA2%5Bnet9.0%5D/T%3ALightweightAI.Core.Loaders.Services.ServiceLoader]]></data>
+      <data key="d17"><![CDATA[Usages]]></data>
+      <data key="d19">
+        <x:List>
+          <y:Bend Location="1730.78520634921,-138" />
+          <y:Bend Location="881.601626984127,-138" />
+        </x:List>
+      </data>
+    </edge>
+  </graph>
+</graphml>
