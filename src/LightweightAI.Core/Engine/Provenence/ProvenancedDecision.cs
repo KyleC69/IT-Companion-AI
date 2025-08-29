@@ -8,7 +8,10 @@
 
 namespace LightweightAI.Core.Engine.Provenence;
 
-
+/// <summary>
+/// Enriched decision record persisted to provenance logging streams. Contains the
+/// original metric decision plus identifiers and severity used for audit reconstruction.
+/// </summary>
 public sealed record ProvenancedDecision
 {
     public required MetricDecision Metrics { get; init; }
