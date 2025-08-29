@@ -11,5 +11,5 @@ namespace LightweightAI.Core.Engine.config;
 
 public class SourceConfig
 {
-    public Stream Path { get; set; }
+    public string Path { get; set; }
 }
