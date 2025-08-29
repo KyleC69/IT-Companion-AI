@@ -20,7 +20,7 @@ public record QAEnvelope<TAnswer>(
     // Append‑only helper
     public QAEnvelope<TAnswer> WithProvenance(string stage, string detail, object? parameters = null)
     {
-        this.Provenance.Add(stage, detail,ProvImportance.Important, parameters);
+        this.Provenance.Add(stage, detail, ProvImportance.Important, parameters);
         return this;
     }
 }
