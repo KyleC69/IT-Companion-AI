@@ -18,6 +18,6 @@ public sealed record ProvenancedDecision
     public required string ModelId { get; init; }
     public required string ModelVersion { get; init; }
     public double Severity { get; init; }
-    public string SeverityScaleRef { get; init; } //  HACK:  Property is not being used consistently. Must FIX
+    public required string SeverityScaleRef { get; init; }
     public DateTime Timestamp { get; init; }
 }
