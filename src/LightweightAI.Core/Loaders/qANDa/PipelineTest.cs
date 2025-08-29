@@ -6,6 +6,12 @@
 // Do not remove file headers
 
 
+        using LightweightAI.Core.Abstractions;              // DefaultNormalizer, OneHotEncoder, detectors
+using LightweightAI.Core.Engine;                    // PipelineRunner
+using LightweightAI.Core.Engine.FastDetectors;      // Ewma, ZScore, IncrementalKnn wrappers
+using LightweightAI.Core.Refinery;                  // FeatureEncoder, FeatureReducer
+
+
 namespace LightweightAI.Core.Loaders.qANDa;
 
 
@@ -13,22 +19,18 @@ public static class PipelineTest
 {
     public static void RunTests()
     {
-        var runner = new Engine.PipelineRunner();
+        // Explicit construction of dependencies (keeps DI concerns out of this test helper)
+        var normalizer = new DefaultNormalizer();
+        var oneHot = new OneHotEncoder(new Dictionary<int,int>(), new Dictionary<string,int>());
+        var encoder = new FeatureEncoder(oneHot);
+        var reducer = new FeatureReducer();
+        var ewma = new Ewma(new EwmaDetector());
+        var z = new ZScore(new ZScoreDetector());
+        var knn = new IncrementalKnn(new WindowedKnnDensity());
 
-        var inputs = new[]
-        {
-            "What is the retention policy?",
-            "How is audit logging handled?",
-            "Tell me about the anomaly detection module.",
-            "What happens if the buffer explodes?",
-            "Explain provenance mapping."
-        };
+        var runner = new PipelineRunner(normalizer, encoder, reducer, ewma, z, knn);
 
-        foreach (var input in inputs)
-        {
-            //AnswerEnvelope result = runner.Run(input, "test-suite");
-            // Console.WriteLine(result.ToJson());
-            //  Console.WriteLine(new string('-', 80));
-        }
+        // NOTE: To actually execute, construct SourceExecutionPlan instances and call:
+        // await runner.RunAsync(plans, ct);
     }
 }

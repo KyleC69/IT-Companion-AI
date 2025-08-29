@@ -108,7 +108,16 @@ public sealed class PipelineRunner : IPipelineRunner
                     // Apply rule precedence hard floor overrides if rules provided
                     if (_rules is not null)
                     {
-                        var ctx = new EventContext(norm.Host, norm.SourceKey, norm.EventId, norm.TimestampUtc.UtcDateTime, norm.Fields.ToDictionary(k => k.Key, v => (object?)v.Value));
+                        var ctx = new EventContext(
+                            HostId: norm.Host,
+                            SourceId: norm.SourceKey,
+                            EventId: norm.EventId,
+                            Timestamp: norm.TimestampUtc.UtcDateTime,
+                            Payload: norm.Fields.ToDictionary(
+                                k => k.Key,
+                                v => v.Value ?? new object() // Replace nulls with a non-null object
+                            )
+                        );
                         var adjusted = _rules.ApplyOverrides(ctx, fused.Score);
                         if (Math.Abs(adjusted - fused.Score) > 1e-9)
                             fused = fused with { Score = adjusted, IsAlert = adjusted >= _fusionConfig.AlertThreshold };
