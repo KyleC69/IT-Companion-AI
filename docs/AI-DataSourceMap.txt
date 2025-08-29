@@ -1,4 +1,17 @@
-﻿Yep — I was talking about a **lineage‑style training map** that shows, at a glance, exactly how each input field in your pipeline is sourced, validated, and consumed downstream. Think of it like your anomaly‑detection context window diagram, but for **data provenance and processing flow**.
+﻿# =====================================================================
+# Document Title   : Data Source Lineage Map
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : Provenance and lineage mapping for key pipeline fields and consumers.
+# Related Docs     : AI-DataKeyMap.md; AI-Dev-Quick-Ref.md
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
+Yep — I was talking about a **lineage‑style training map** that shows, at a glance, exactly how each input field in your pipeline is sourced, validated, and consumed downstream. Think of it like your anomaly‑detection context window diagram, but for **data provenance and processing flow**.
 
 Here’s what I had in mind:
 

@@ -1,4 +1,4 @@
-﻿// Project Name: LightweightAI.Core
+// Project Name: LightweightAI.Core
 // File Name: IFusionPipeline.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
@@ -6,10 +6,3 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Engine;
-
-
-public interface IFusionPipeline
-{
-    IEnumerable<DecisionOutput> Process(IEnumerable<DecisionInput> inputs, FusionConfig cfg);
-}

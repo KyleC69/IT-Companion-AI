@@ -1,4 +1,4 @@
-﻿// Project Name: LightweightAI.Core
+// Project Name: LightweightAI.Core
 // File Name: IFusionEngine.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
@@ -6,13 +6,3 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Engine;
-
-
-namespace AICompanion.Tests;
-
-
-public interface IFusionEngine
-{
-    DecisionOutput Fuse(DecisionInput input, FusionConfig cfg);
-}

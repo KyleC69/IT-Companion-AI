@@ -1,4 +1,4 @@
-﻿// Project Name: LightweightAI.Core
+// Project Name: LightweightAI.Core
 // File Name: IRunner.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
@@ -6,10 +6,3 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Engine;
-
-
-public interface IRunner
-{
-    void Enqueue(DecisionOutput decision);
-}

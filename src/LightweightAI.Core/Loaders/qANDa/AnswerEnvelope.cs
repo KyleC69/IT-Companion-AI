@@ -6,9 +6,6 @@
 // Do not remove file headers
 
 
-using System.Text.Json;
-
-
 namespace LightweightAI.Core.Loaders.qANDa;
 
 
@@ -29,7 +26,7 @@ public class AnswerEnvelope
 
     public string ToJson()
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions
+        return System.Text.Json.JsonSerializer.Serialize(this, new System.Text.Json.JsonSerializerOptions
         {
             WriteIndented = true
         });

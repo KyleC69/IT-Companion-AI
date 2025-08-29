@@ -1,4 +1,18 @@
-﻿Perfect — here’s a ready‑to‑reference **pre‑defined value set** for the schema fields we flagged as needing strict, known lists. These should live in the repo as version‑controlled config files so they can be centrally updated without touching code.
+﻿# =====================================================================
+# Document Title   : Training Data Presets
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : Reference value sets for categories, severities, flags, and event normalization.
+# Related Docs     : AI-Dev-Quick-Ref.md; AI-DataKeyMap.md
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
+
+Perfect — here’s a ready‑to‑reference **pre‑defined value set** for the schema fields we flagged as needing strict, known lists. These should live in the repo as version‑controlled config files so they can be centrally updated without touching code.
 
 ---
 

@@ -1,4 +1,17 @@
-﻿Right — the quick‑ref I just gave you was a **pared‑down “core set”** for at‑a‑glance work. The full schema you’ve been shaping is 12 columns wide, so here’s an **expanded enterprise quick‑reference** that restores all of them, including the support/meta fields that didn’t make it into the 8‑col snapshot.
+﻿# =====================================================================
+# Document Title   : 12-Column Event Schema – Dev Quick Reference
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : Quick reference for full unified 12-column event schema.
+# Related Docs     : AI-DataKeyMap.md; AI-TrainingDataPresets.md
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
+Right — the quick‑ref I just gave you was a **pared‑down “core set”** for at‑a‑glance work. The full schema you’ve been shaping is 12 columns wide, so here’s an **expanded enterprise quick‑reference** that restores all of them, including the support/meta fields that didn’t make it into the 8‑col snapshot.
 
 ---
 

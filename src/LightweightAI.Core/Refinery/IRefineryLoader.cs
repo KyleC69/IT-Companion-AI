@@ -6,3 +6,11 @@
 // Do not remove file headers
 
 
+using LightweightAI.Core.Engine.config;
+
+
+
+public interface IRefineryLoader
+{
+    System.Data.DataTable Load(SourceConfig config);
+}

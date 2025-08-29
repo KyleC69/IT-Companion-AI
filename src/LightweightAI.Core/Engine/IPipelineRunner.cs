@@ -1,4 +1,4 @@
-﻿// Project Name: LightweightAI.Core
+// Project Name: LightweightAI.Core
 // File Name: IPipelineRunner.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
@@ -6,12 +6,3 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Engine;
-
-
-public interface IPipelineRunner
-{
-    void Initialize();
-    void Run();
-    void Teardown();
-}

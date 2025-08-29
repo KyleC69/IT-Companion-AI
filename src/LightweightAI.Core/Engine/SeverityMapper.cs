@@ -6,7 +6,7 @@
 // Do not remove file headers
 
 
-using AICompanion.Tests;
+using LightweightAI.Core.Engine.Fusion;
 
 
 namespace LightweightAI.Core.Engine;
@@ -36,4 +36,9 @@ public class SeverityMapper : ISeverityMapper
         var key = modelOutput?.ToString() ?? "UNKNOWN";
         return this._severityMap.TryGetValue(key, out var score) ? score : 0;
     }
+
+
+
+
+
 }
