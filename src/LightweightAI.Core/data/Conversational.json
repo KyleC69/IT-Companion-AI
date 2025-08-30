@@ -1,9 +1,0 @@
-﻿{
-  "instruction": "Explain Windows Event ID 4625 to a junior analyst",
-  "input": "",
-  "output":
-    "4625 indicates a failed logon. Common causes: bad password, disabled account, invalid user. Triage: check SubStatus, source IP, frequency."
-}{"instruction":"What does Sysmon Event ID 1 mean?","input":"","output":"Sysmon 1 logs process creation. Review Image, CommandLine, ParentImage, hashes. Alert on LOLBins and suspicious parents."}
-{"instruction":"How to harden against brute-force logons?","input":"","output":"Enforce lockout policies, enable 4625 auditing, monitor failed-to-success ratios, enforce MFA and strong password policies."}
-{"instruction":"Office spawned PowerShell — risk?","input":"Parent=WINWORD.EXE Child=powershell.exe","output":"High risk. Map to ATT&CK T1059.001. Inspect ScriptBlock, AMSI, and network connections. Consider isolating host."}
-{"instruction":"What does Event ID 4720 imply?","input":"","output":"4720 signals a local user account creation. Validate requester, group membership, and timing. Persistence risk (T1136.001)."}

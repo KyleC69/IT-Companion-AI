@@ -6,6 +6,9 @@
 // Do not remove file headers
 
 
+namespace LightweightAI.Core.Loaders.qANDa;
+
+
 public class Normalizer
 {
     public string Normalize(string input, out int removedCount)

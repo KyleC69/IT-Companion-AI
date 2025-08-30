@@ -5,9 +5,9 @@
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
-using System.Linq;
 
 namespace LightweightAI.Core.Loaders.qANDa;
+
 
 public static class StopwordFilter
 {
@@ -16,7 +16,11 @@ public static class StopwordFilter
         "the", "is", "at", "which", "on", "and", "a", "an", "of", "to", "in", "for", "with", "by", "as", "that"
     };
 
-    public static List<string> Apply(List<string> tokens)
+
+
+
+
+    public static List<string> Apply(List<string>? tokens)
     {
         if (tokens == null) return new List<string>();
         return tokens.Where(t => !Stopwords.Contains(t)).ToList();

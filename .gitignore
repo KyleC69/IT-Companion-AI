@@ -511,6 +511,7 @@ $RECYCLE.BIN/
 *.swp
 
 /docs/templates/AIImplementationChecklist (2).md
+<<<<<<< HEAD
 
  manifest/file-paths.txt
  manifest/html-urls.txt
@@ -518,3 +519,12 @@ $RECYCLE.BIN/
  manifest/raw-urls.txt
  manifest/raw-urls.txt
 
+=======
+=======
+>>>>>>> Stashed changes
+/OrphanedSource.csproj
+/SolutionFolder.csproj
+/SolutionFolder.sln
+/Topology.txt
+/currentstatus.txt
+>>>>>>> 32a1a31 (WIP Refactor mostly complete, Loaders and Telemetry hooks implemented. Does not build. Push for GH action manifest)

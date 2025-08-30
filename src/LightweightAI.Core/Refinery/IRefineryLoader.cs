@@ -9,6 +9,8 @@
 using LightweightAI.Core.Engine.config;
 
 
+namespace LightweightAI.Core.Refinery;
+
 
 public interface IRefineryLoader
 {

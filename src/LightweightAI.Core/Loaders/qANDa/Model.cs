@@ -6,6 +6,9 @@
 // Do not remove file headers
 
 
+namespace LightweightAI.Core.Loaders.qANDa;
+
+
 public class Model
 {
     public (string Answer, double Confidence) Infer(string question)

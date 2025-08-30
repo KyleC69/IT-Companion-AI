@@ -6,11 +6,15 @@
 // Do not remove file headers
 
 
+using LightweightAI.Core.Interfaces;
+
+
 namespace LightweightAI.Core.Engine;
 
+
 /// <summary>
-/// Demonstration rule: triggers on Windows failed logon Event ID 4625 assigning a higher
-/// score when matched. Serves as a template for additional static rules.
+///     Demonstration rule: triggers on Windows failed logon Event ID 4625 assigning a higher
+///     score when matched. Serves as a template for additional static rules.
 /// </summary>
 public class ExampleRule : IRule
 {

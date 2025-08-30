@@ -6,20 +6,30 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Engine.Interfaces;
-using LightweightAI.Core.Engine.models;
+using LightweightAI.Core.Engine.Models;
+using LightweightAI.Core.Interfaces;
+
 
 namespace LightweightAI.Core.Loaders.qANDa;
+
 
 public class InMemoryEnvelopeStore : IEnvelopeStore
 {
     private readonly Dictionary<Guid, object> _map = new();
+
+
+
+
 
     public void Save<T>(QAEnvelope<T> envelope)
     {
         this._map[envelope.Id] = envelope;
         Console.WriteLine($"[Repo] Saved QAEnvelope {envelope.Id}");
     }
+
+
+
+
 
     public QAEnvelope<T>? Get<T>(Guid id)
     {

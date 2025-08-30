@@ -11,10 +11,11 @@
 
 namespace LightweightAI.Core.Engine;
 
+
 /// <summary>
-/// Final fused decision artifact including core scoring attributes plus enriched
-/// provenance (model identifiers, fusion signature, severity mapping) enabling
-/// deterministic audit and replay.
+///     Final fused decision artifact including core scoring attributes plus enriched
+///     provenance (model identifiers, fusion signature, severity mapping) enabling
+///     deterministic audit and replay.
 /// </summary>
 public sealed record DecisionOutput(
     string MetricKey,
