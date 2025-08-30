@@ -442,7 +442,7 @@ public sealed class ProcessLoader(ProcessLoaderConfig config, Services.IInventor
 
 
 
-    [Obsolete("Obsolete")]
+    [Obsolete("TryGetSignatureInfo is obsolete due to unreliable certificate validation. Use platform-specific APIs or a dedicated security library for signature verification instead.")]
     private static (string? signer, bool? valid) TryGetSignatureInfo(string filePath, bool onlineRevocation)
     {
         try
