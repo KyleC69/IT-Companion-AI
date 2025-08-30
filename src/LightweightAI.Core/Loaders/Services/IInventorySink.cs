@@ -1,0 +1,15 @@
+﻿// Project Name: LightweightAI.Core
+// File Name: IInventorySink.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
+namespace LightweightAI.Core.Loaders.Services;
+
+
+public interface IInventorySink
+{
+    Task EmitBatchAsync(IReadOnlyList<ServiceRecord> batch, CancellationToken ct);
+}

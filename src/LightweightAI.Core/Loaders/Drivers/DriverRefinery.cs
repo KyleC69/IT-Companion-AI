@@ -6,7 +6,7 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Loaders.Loaders.Drivers;
+namespace LightweightAI.Core.Loaders.Drivers;
 
 
 public static class DriverRefinery

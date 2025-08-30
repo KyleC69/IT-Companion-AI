@@ -6,6 +6,9 @@
 // Do not remove file headers
 
 
+namespace LightweightAI.Core.Refinery;
+
+
 public sealed record QaQuestion(
     string EventId,
     DateTimeOffset Timestamp,

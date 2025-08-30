@@ -6,31 +6,18 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Engine.Interfaces;
-using LightweightAI.Core.Engine.models;
+using LightweightAI.Core.Engine.Models;
+using LightweightAI.Core.Interfaces;
 
 
 namespace LightweightAI.Core.Engine;
-public class EnvelopeRehydrator
+
+
+public class EnvelopeRehydrator(IEnvelopeStore store)
 {
-    private readonly IEnvelopeStore _store;
-
-
-
-
-
-    public EnvelopeRehydrator(IEnvelopeStore store)
-    {
-        this._store = store;
-    }
-
-
-
-
-
     public QAEnvelope<T> Rehydrate<T>(Guid id)
     {
-        return this._store.Get<T>(id) ?? throw new InvalidOperationException($"Envelope {id} not found.");
+        return store.Get<T>(id) ?? throw new InvalidOperationException($"Envelope {id} not found.");
     }
 
 

@@ -6,29 +6,17 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Engine;
+using LightweightAI.Core.Interfaces;
 
 
-public sealed class FusionPipeline : IFusionPipeline
+namespace LightweightAI.Core.Engine.Fusion;
+
+
+public sealed class FusionPipeline(IFusionEngine engine) : IFusionPipeline
 {
-    private readonly IFusionEngine _engine;
-
-
-
-
-
-    public FusionPipeline(IFusionEngine engine)
-    {
-        this._engine = engine;
-    }
-
-
-
-
-
     public IEnumerable<DecisionOutput> Process(IEnumerable<DecisionInput> inputs, FusionConfig cfg)
     {
         foreach (DecisionInput i in inputs)
-            yield return this._engine.Fuse(i, cfg);
+            yield return engine.Fuse(i, cfg);
     }
 }

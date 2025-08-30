@@ -6,21 +6,23 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Engine.models;
+using LightweightAI.Core.Engine.Models;
 
 
 namespace LightweightAI.Core.Engine;
+
+
 public class TrainingContextProvider
 {
     public TrainingContext GetActiveContext()
     {
         return new TrainingContext(
-            DatasetRevision: "2025-07-15",
-            PreprocessingHash: "sha256:abcd1234...",
-            ModelVersion: "qa-model-v2.1",
-            TrainingDateUtc: new DateTime(2025, 7, 15),
-            Hyperparameters: new[] { "context=5", "threshold=0.85" },
-            Metrics: new[] { "f1=0.92", "precision=0.94" }
+            "2025-07-15",
+            "sha256:abcd1234...",
+            "qa-model-v2.1",
+            new DateTime(2025, 7, 15),
+            new[] { "context=5", "threshold=0.85" },
+            new[] { "f1=0.92", "precision=0.94" }
         );
     }
 }

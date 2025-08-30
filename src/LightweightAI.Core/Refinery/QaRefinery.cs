@@ -6,7 +6,7 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.DataRefineries;
+namespace LightweightAI.Core.Refinery;
 
 
 public sealed class QaRefinery

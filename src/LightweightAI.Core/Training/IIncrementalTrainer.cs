@@ -6,6 +6,9 @@
 // Do not remove file headers
 
 
+namespace LightweightAI.Core.Training;
+
+
 public interface IIncrementalTrainer
 {
     void Ingest(TrainingSample sample);

@@ -6,19 +6,13 @@
 // Do not remove file headers
 
 
-public class AuditFriendlyTrainer : IIncrementalTrainer
+namespace LightweightAI.Core.Training;
+
+
+public class AuditFriendlyTrainer(TimeSpan retentionPeriod, int maxSamples) : IIncrementalTrainer
 {
     private readonly List<TrainingSample> _pendingBatch = new();
-    private readonly SlidingWindowBuffer _window;
-
-
-
-
-
-    public AuditFriendlyTrainer(TimeSpan retentionPeriod, int maxSamples)
-    {
-        this._window = new SlidingWindowBuffer(retentionPeriod, maxSamples);
-    }
+    private readonly SlidingWindowBuffer _window = new(retentionPeriod, maxSamples);
 
 
 

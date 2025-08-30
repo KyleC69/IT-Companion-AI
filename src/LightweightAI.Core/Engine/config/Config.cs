@@ -5,13 +5,15 @@
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
+
 namespace LightweightAI.Core.Engine.config;
 
+
 /// <summary>
-/// Placeholder root configuration anchor for engine components. Intended to evolve into a strongly
-/// typed object graph (ingestion sources, fusion weights, thresholds, retention policies) that can
-/// be bound from JSON / environment configuration providers.
+///     Placeholder root configuration anchor for engine components. Intended to evolve into a strongly
+///     typed object graph (ingestion sources, fusion weights, thresholds, retention policies) that can
+///     be bound from JSON / environment configuration providers.
 /// </summary>
-public sealed class Config { }
-
-
+public sealed class Config
+{
+}

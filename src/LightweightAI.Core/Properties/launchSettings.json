@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LightweightAI.Core": {
+      "commandName": "Project",
+      "hotReloadEnabled": false
+    }
+  }
+}
