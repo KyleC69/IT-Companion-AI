@@ -19,7 +19,7 @@ namespace LightweightAI.Core.Training;
 
 public class ProvenanceLog
 {
-    private readonly ProvenanceLog _inner = new();
+    private readonly LightweightAI.Core.Engine.Provenance.ProvenanceLog _inner = new();
 
     public IReadOnlyList<ProvenanceEntry> Entries => this._inner.Entries;
 
