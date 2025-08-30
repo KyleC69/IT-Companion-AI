@@ -1,5 +1,4 @@
-// Project Name: LightweightAI.Core
-// File Name: ReslientModels.cs
+// File Name: ResilientModels.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
 // License: All Rights Reserved. No use without consent.
