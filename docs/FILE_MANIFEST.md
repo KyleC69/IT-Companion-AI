@@ -511,4 +511,4 @@ For ingestion agents that only want raw plaintext without parsing this Markdown:
 - 1 (SystemExit) = Missing template doc
 - Non-zero from git subprocess = underlying git error
 
-Generated: 2025-08-29T16:42:17Z
+Generated: 2025-08-30T13:42:46Z
