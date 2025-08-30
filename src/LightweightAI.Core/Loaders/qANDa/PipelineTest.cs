@@ -6,10 +6,18 @@
 // Do not remove file headers
 
 
-        using LightweightAI.Core.Abstractions;              // DefaultNormalizer, OneHotEncoder, detectors
-using LightweightAI.Core.Engine;                    // PipelineRunner
-using LightweightAI.Core.Engine.FastDetectors;      // Ewma, ZScore, IncrementalKnn wrappers
-using LightweightAI.Core.Refinery;                  // FeatureEncoder, FeatureReducer
+// DefaultNormalizer, OneHotEncoder, detectors
+
+
+using LightweightAI.Core.Analyzers;
+using LightweightAI.Core.Engine;
+using LightweightAI.Core.Engine.FastDetectors;
+using LightweightAI.Core.Refinery;
+// PipelineRunner
+// Ewma, ZScore, IncrementalKnn wrappers
+
+
+// FeatureEncoder, FeatureReducer
 
 
 namespace LightweightAI.Core.Loaders.qANDa;
@@ -21,7 +29,7 @@ public static class PipelineTest
     {
         // Explicit construction of dependencies (keeps DI concerns out of this test helper)
         var normalizer = new DefaultNormalizer();
-        var oneHot = new OneHotEncoder(new Dictionary<int,int>(), new Dictionary<string,int>());
+        var oneHot = new OneHotEncoder(new Dictionary<int, int>(), new Dictionary<string, int>());
         var encoder = new FeatureEncoder(oneHot);
         var reducer = new FeatureReducer();
         var ewma = new Ewma(new EwmaDetector());

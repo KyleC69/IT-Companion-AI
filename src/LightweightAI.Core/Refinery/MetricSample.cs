@@ -6,16 +6,13 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.DataRefineries
-{
-    // Shared EventId enforcement
+namespace LightweightAI.Core.Refinery;
+// Shared EventId enforcement
 
 
-    // ===== METRIC REFINERY =====
+// ===== METRIC REFINERY =====
 
-
-    // ===== Q&A REFINERY =====
-}
+// ===== Q&A REFINERY =====
 
 
 

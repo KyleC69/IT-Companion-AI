@@ -8,10 +8,11 @@
 
 namespace LightweightAI.Core.Engine;
 
+
 /// <summary>
-/// Canonical event envelope passed into rule evaluation and early enrichment stages
-/// containing host, source, event id, timestamp and a flexible payload map for
-/// additional extracted attributes.
+///     Canonical event envelope passed into rule evaluation and early enrichment stages
+///     containing host, source, event id, timestamp and a flexible payload map for
+///     additional extracted attributes.
 /// </summary>
 public record EventContext(
     string HostId,

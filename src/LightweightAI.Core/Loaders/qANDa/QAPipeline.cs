@@ -7,11 +7,14 @@
 
 
 using LightweightAI.Core.Engine;
-using LightweightAI.Core.Engine.models;
-using LightweightAI.Core.Engine.Provenence;
+using LightweightAI.Core.Engine.Models;
+using LightweightAI.Core.Engine.Provenance;
+
+using ProvenanceLog = LightweightAI.Core.Training.ProvenanceLog;
 
 
 namespace LightweightAI.Core.Loaders.qANDa;
+
 
 public class QAPipeline
 {
@@ -26,15 +29,23 @@ public class QAPipeline
 
     private readonly InMemoryEnvelopeStore _store = new();
 
+
+
+
+
     public QAPipeline()
     {
-        var training = this._contextProvider.GetActiveContext();
+        TrainingContext training = this._contextProvider.GetActiveContext();
         this._checkpointSvc.FreezeKnownGood(KnownGoodName, ConfigHash, training);
     }
 
+
+
+
+
     public QAEnvelope<string> HandleQuestion(string question, string clientId)
     {
-        var trainingCtx = this._checkpointSvc.ResetToKnownGood(KnownGoodName);
+        TrainingContext trainingCtx = this._checkpointSvc.ResetToKnownGood(KnownGoodName);
 
         QAEnvelope<string> qa = new QAEnvelope<string>(
             Guid.NewGuid(),
@@ -61,6 +72,10 @@ public class QAPipeline
 
         return qa;
     }
+
+
+
+
 
     public QAEnvelope<string> RehydrateAndResume(Guid id)
     {

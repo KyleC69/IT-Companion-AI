@@ -6,7 +6,10 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Engine;
+using LightweightAI.Core.Interfaces;
+
+
+namespace LightweightAI.Core.Engine.Fusion;
 
 
 public static class FusionFactory

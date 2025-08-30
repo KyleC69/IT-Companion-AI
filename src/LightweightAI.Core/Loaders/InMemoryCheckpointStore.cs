@@ -7,11 +7,13 @@
 
 
 using LightweightAI.Core.Engine;
+using LightweightAI.Core.Interfaces;
 
 
 namespace LightweightAI.Core.Loaders;
 
-public class InMemoryCheckpointStore : LightweightAI.Core.Engine.Interfaces.ICheckpointStore
+
+public class InMemoryCheckpointStore : ICheckpointStore
 {
     private readonly Dictionary<string, OrchestrationCheckpoint> _store = new();
 

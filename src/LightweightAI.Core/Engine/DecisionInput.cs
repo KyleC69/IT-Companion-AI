@@ -6,11 +6,15 @@
 // Do not remove file headers
 
 
+using LightweightAI.Core.Models;
+
+
 namespace LightweightAI.Core.Engine;
 
+
 /// <summary>
-/// Data contract passed into the fusion engine containing the aggregated metric
-/// envelope, latest statistical snapshot, and anomaly signal for unified scoring.
+///     Data contract passed into the fusion engine containing the aggregated metric
+///     envelope, latest statistical snapshot, and anomaly signal for unified scoring.
 /// </summary>
 public readonly record struct DecisionInput(
     AggregatedMetric Metric,

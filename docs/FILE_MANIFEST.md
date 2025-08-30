@@ -124,7 +124,7 @@ src/
       RefineryPipeline.cs
     Training/
       AuditFriendlyTrainer.cs
-      ProvenenceLog.cs
+      ProvenanceLog.cs
       SlidingWindowBuffer.cs
       TraningSample.cs
       usage.cs
@@ -244,7 +244,7 @@ src/LightweightAI.Core/Refinery/DriverLoader.cs
 src/LightweightAI.Core/Refinery/IRefineryLoader.cs
 src/LightweightAI.Core/Refinery/RefineryPipeline.cs
 src/LightweightAI.Core/Training/AuditFriendlyTrainer.cs
-src/LightweightAI.Core/Training/ProvenenceLog.cs
+src/LightweightAI.Core/Training/ProvenanceLog.cs
 src/LightweightAI.Core/Training/SlidingWindowBuffer.cs
 src/LightweightAI.Core/Training/TraningSample.cs
 src/LightweightAI.Core/Training/usage.cs
@@ -358,7 +358,7 @@ https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Re
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Refinery/IRefineryLoader.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Refinery/RefineryPipeline.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Training/AuditFriendlyTrainer.cs
-https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Training/ProvenenceLog.cs
+https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Training/ProvenanceLog.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Training/SlidingWindowBuffer.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Training/TraningSample.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Training/usage.cs
@@ -472,7 +472,7 @@ https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/Lightweight
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Refinery/IRefineryLoader.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Refinery/RefineryPipeline.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Training/AuditFriendlyTrainer.cs
-https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Training/ProvenenceLog.cs
+https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Training/ProvenanceLog.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Training/SlidingWindowBuffer.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Training/TraningSample.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Training/usage.cs

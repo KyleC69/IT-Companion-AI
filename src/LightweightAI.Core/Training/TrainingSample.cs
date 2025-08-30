@@ -6,11 +6,14 @@
 // Do not remove file headers
 
 
+namespace LightweightAI.Core.Training;
+
+
 public record TrainingSample(
     Guid EventId,
     DateTime Timestamp,
     string SourceId,
     float ConfidenceScore,
     string Label,
-    object Payload // Replace with a concrete type if needed
+    object Payload // Can be vector, token list, etc.
 );

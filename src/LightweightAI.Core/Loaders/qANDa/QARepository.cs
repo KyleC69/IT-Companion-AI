@@ -6,7 +6,7 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Engine.models;
+using LightweightAI.Core.Engine.Models;
 
 
 namespace LightweightAI.Core.Loaders.qANDa;

@@ -1,8 +1,0 @@
-[
-  {
-    "Category": "AuthenticationFailure",
-    "RiskMin": 7.0,
-    "Techniques": ["T1110"],
-    "Findings": ["Possible brute-force attempt", "Check account lockout policy"]
-  }
-]

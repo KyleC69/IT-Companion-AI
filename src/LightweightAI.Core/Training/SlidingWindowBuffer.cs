@@ -5,19 +5,17 @@
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
-using System.Linq;
 
-public class SlidingWindowBuffer
+namespace LightweightAI.Core.Training;
+
+
+public class SlidingWindowBuffer(TimeSpan retentionPeriod, int maxSamples)
 {
     private readonly LinkedList<TrainingSample> _buffer = new();
-    private readonly int _maxSamples;
-    private readonly TimeSpan _retentionPeriod;
 
-    public SlidingWindowBuffer(TimeSpan retentionPeriod, int maxSamples)
-    {
-        this._retentionPeriod = retentionPeriod;
-        this._maxSamples = maxSamples;
-    }
+
+
+
 
     public void Add(TrainingSample sample)
     {
@@ -25,13 +23,21 @@ public class SlidingWindowBuffer
         Prune();
     }
 
+
+
+
+
     private void Prune()
     {
-        DateTime cutoff = DateTime.UtcNow - this._retentionPeriod;
+        DateTime cutoff = DateTime.UtcNow - retentionPeriod;
         while (this._buffer.Count > 0 &&
-               (this._buffer.First!.Value.Timestamp < cutoff || this._buffer.Count > this._maxSamples))
+               (this._buffer.First!.Value.Timestamp < cutoff || this._buffer.Count > maxSamples))
             this._buffer.RemoveFirst();
     }
+
+
+
+
 
     public IReadOnlyList<TrainingSample> GetSnapshot()
     {
