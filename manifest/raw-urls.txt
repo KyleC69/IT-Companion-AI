@@ -104,6 +104,7 @@ https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/Lightweight
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Interop/MEMORY_BASIC_INFORMATION32.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Interop/MEMORY_BASIC_INFORMATION64.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Interop/MEM_STATE.cs
+https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Interop/WindowsTcpConnections.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/LightweightAI.Core.csproj
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Loaders/AppLogIngest.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Loaders/Conversational/AnswerEnvelope.cs
@@ -198,6 +199,7 @@ https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/Lightweight
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/AnomalyType.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/AuditRecord.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/Contracts.cs
+https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/DataLoaders.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/DecisionInput.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/DecisionOutput.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/EncodedEvent.cs
@@ -216,6 +218,7 @@ https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/Lightweight
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/MetricSample.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/Model.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/ModelFactory.cs
+https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/ModelType.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/NetworkConnectionRecord.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/NetworkRecord.cs
 https://raw.githubusercontent.com/KyleC69/IT-Companion-AI/master/src/LightweightAI.Core/Models/OrchestrationCheckpoint.cs

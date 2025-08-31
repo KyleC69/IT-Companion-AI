@@ -104,6 +104,7 @@ https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/In
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Interop/MEMORY_BASIC_INFORMATION32.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Interop/MEMORY_BASIC_INFORMATION64.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Interop/MEM_STATE.cs
+https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Interop/WindowsTcpConnections.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/LightweightAI.Core.csproj
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Loaders/AppLogIngest.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Loaders/Conversational/AnswerEnvelope.cs
@@ -198,6 +199,7 @@ https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Mo
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/AnomalyType.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/AuditRecord.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/Contracts.cs
+https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/DataLoaders.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/DecisionInput.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/DecisionOutput.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/EncodedEvent.cs
@@ -216,6 +218,7 @@ https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Mo
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/MetricSample.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/Model.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/ModelFactory.cs
+https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/ModelType.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/NetworkConnectionRecord.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/NetworkRecord.cs
 https://github.com/KyleC69/IT-Companion-AI/blob/master/src/LightweightAI.Core/Models/OrchestrationCheckpoint.cs
