@@ -2,6 +2,7 @@ name: Minimal File Manifest
 
 permissions:
   contents: write
+  actions: write
 
 on:
   push:
