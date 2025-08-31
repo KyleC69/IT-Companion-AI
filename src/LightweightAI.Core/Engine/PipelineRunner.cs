@@ -1,4 +1,4 @@
-// Project Name: LightweightAI.Core
+﻿// Project Name: LightweightAI.Core
 // File Name: PipelineRunner.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
@@ -114,14 +114,36 @@ public sealed class PipelineRunner(
 
                     if (fused.IsAlert && alerts is not null)
                     {
-                        var external = new ProvenancedDecision(
-                            TimestampUtc: DateTimeOffset.UtcNow,
-                            CorrelationId: fused.MetricKey,
-                            Risk: (float)Math.Clamp((double)fused.Score, 0, 1),
-                            Severity: fused.Score.ToString("F2"),
-                            Summary: fused.IsAlert ? "ALERT" : "OK",
-                            DetailJson: string.Empty,
-                            ProvenanceChainHash: string.Empty);
+                        
+                        // Replace the construction of ProvenancedDecision with property initialization
+                        var external = new ProvenancedDecision
+                        {
+                            Metrics = new MetricDecision
+                            {
+                                MetricKey= fused.MetricKey,
+                                MetricWindowStart = fused.MetricWindowStart,
+                                MetricWindowEnd = fused.MetricWindowEnd,
+                                Score = fused.Score,
+                                IsAlert = fused.IsAlert,
+                                Payload = fused.Payload
+                                
+                                // Add other MetricDecision properties as needed
+                            },
+                            EventId = fused.EventId.GetHashCode(),
+                            FusionSignature = fused.FusionSignature,
+                            ModelId = fused.ModelId,
+                            ModelVersion = fused.ModelVersion,
+                            Severity = fused.Severity,
+                            Risk = (float)Math.Clamp((double)fused.Score, 0, 1),
+                            SeverityScaleRef = fused.SeverityScaleRef,
+                            Timestamp = DateTime.UtcNow,
+                            TimestampUtc = DateTimeOffset.UtcNow,
+                            CorrelationId = string.Empty,
+                            Summary = fused.IsAlert ? "ALERT" : "OK",
+                            Tags = null // Set tags as needed
+                        };
+                        
+                        
                         try
                         {
                             await alerts.DispatchAsync(external, ct);

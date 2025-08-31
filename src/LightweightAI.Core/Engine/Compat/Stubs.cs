@@ -1,4 +1,4 @@
-// Central stubs to satisfy missing platform/API references (minimal compile-only)
+﻿// Central stubs to satisfy missing platform/API references (minimal compile-only)
 
 
 using System.Collections;
@@ -12,16 +12,7 @@ using Microsoft.Diagnostics.Tracing.Session;
 namespace LightweightAI.Core.Engine.Compat;
 
 
-// ServiceController stub
-public class ServiceController
-{
-    public string ServiceName { get; set; } = string.Empty;
-    public string DisplayName { get; set; } = string.Empty;
-    public string Status { get; set; } = "Unknown";
-    public string ServiceType { get; set; } = "Unknown";
-    public static ServiceController[] GetServices() => Array.Empty<ServiceController>();
-    public static IEnumerable GetDevices() => Array.Empty<ServiceController>();
-}
+
 
 // Tracing level enum placeholder
 public enum TracingLevel { Critical = 1, Error = 2, Warning = 3, Informational = 4, Verbose = 5 }

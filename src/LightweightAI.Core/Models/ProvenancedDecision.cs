@@ -1,4 +1,4 @@
-// Added missing properties required by sinks and logger
+﻿// Added missing properties required by sinks and logger
 
 
 using System.Collections.Immutable;
@@ -18,7 +18,8 @@ public sealed class ProvenancedDecision
     public double Risk { get; set; }
     public string SeverityScaleRef { get; set; } = string.Empty;
     public DateTime Timestamp { get; set; }
-    public DateTimeOffset TimestampUtc => this.Timestamp == default ? DateTimeOffset.UtcNow : new DateTimeOffset(this.Timestamp, TimeSpan.Zero);
+    public DateTimeOffset TimestampUtc { get; set; }
+
     public string CorrelationId { get; set; } = string.Empty;
     public string Summary { get; set; } = string.Empty;
     public IImmutableDictionary<string, string> Tags { get; set; } = ImmutableDictionary<string, string>.Empty;

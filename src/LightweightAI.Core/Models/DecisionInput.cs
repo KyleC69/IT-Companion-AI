@@ -20,5 +20,5 @@ namespace LightweightAI.Core.Models;
 public readonly record struct DecisionInput(
     AggregatedMetric Metric,
     Snapshot Trend,
-    Engine.AnomalySignal Anomaly
+    AnomalySignal Anomaly
 );

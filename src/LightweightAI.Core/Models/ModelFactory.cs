@@ -12,21 +12,14 @@ namespace LightweightAI.Core.Models;
 public static class ModelFactory
 {
     //TODO: Implement StreamAnomalyModel
-    public static IModel CreateStreamModel()
+    public static IStreamAnomalyModel CreateStreamModel()
     {
-        return new StreamAnomalyModel();
-    }
-
-
-
-
-
-    //TODO: Implement SnapshotTrendModel
-    public static IModel CreateSnapshotModel()
-    {
-        return new SnapshotTrendModel();
+        var cfg = new AnomalyConfig(Alpha: 0.3, ZThreshold: 2.7, 3.0);
+        var model = new StreamAnomalyModel(cfg);
+        return model;
     }
 }
+
 
 
 // Placeholder models

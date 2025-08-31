@@ -5,10 +5,9 @@
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
-
 using LightweightAI.Core.Engine.Compat;
 using LightweightAI.Core.Loaders.Services;
-
+using System.ServiceProcess;
 using Microsoft.Win32;
 
 
@@ -178,7 +177,19 @@ public sealed class DriverLoader(DriverLoaderConfig config, IDriverSink sink, IL
 
 
 
-
+    /// <summary>
+    /// Determines whether there are any significant differences between two <see cref="DriverRecord"/> instances.
+    /// </summary>
+    /// <param name="oldRec">The original <see cref="DriverRecord"/> instance.</param>
+    /// <param name="newRec">The updated <see cref="DriverRecord"/> instance.</param>
+    /// <returns>
+    /// <c>true</c> if there are differences between the two records; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    /// This method compares key properties of the <see cref="DriverRecord"/> instances, such as 
+    /// <see cref="DriverRecord.Status"/>, <see cref="DriverRecord.StartType"/>, <see cref="DriverRecord.Type"/>, 
+    /// <see cref="DriverRecord.BinaryPath"/>, and <see cref="DriverRecord.Signed"/>.
+    /// </remarks>
     private static bool HasChanged(DriverRecord oldRec, DriverRecord newRec)
     {
         return oldRec.Status != newRec.Status ||
@@ -191,7 +202,12 @@ public sealed class DriverLoader(DriverLoaderConfig config, IDriverSink sink, IL
 
 
 
-
+    /// <summary>
+    /// Creates a copy of the specified <see cref="DriverRecord"/> and assigns a new change type to it.
+    /// </summary>
+    /// <param name="src">The source <see cref="DriverRecord"/> to clone.</param>
+    /// <param name="changeType">The type of change to associate with the cloned record (e.g., "Added", "Modified", or "Removed").</param>
+    /// <returns>A new <see cref="DriverRecord"/> instance with the same properties as the source, but with the specified change type.</returns>
     private static DriverRecord CloneWithChange(DriverRecord src, string changeType)
     {
         return new DriverRecord
