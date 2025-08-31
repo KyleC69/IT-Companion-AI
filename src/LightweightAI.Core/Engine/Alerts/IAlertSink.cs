@@ -1,0 +1,19 @@
+// Project Name: LightweightAI.Core
+// File Name: IAlertSink.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
+namespace LightweightAI.Core.Engine.Alerts;
+
+
+/// <summary>
+///     Abstraction for destination-specific alert delivery (SMTP, Syslog, Webhook, etc.).
+/// </summary>
+public interface IAlertSink
+{
+    string Name { get; }
+    Task SendAsync(ProvenancedDecision decision, CancellationToken ct = default);
+}

@@ -6,13 +6,15 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Engine;
+namespace LightweightAI.Core.Engine;
 
 
-namespace AICompanion.Tests;
 
-
-// === ProvenanceLogger.cs ===
+/// <summary>
+///     Simple console-based implementation of <see cref="IProvenanceLogger" /> intended for
+///     early development. Emits formatted decision metadata; production version should
+///     enforce append-only storage and integrity hashing.
+/// </summary>
 public class ProvenanceLogger : IProvenanceLogger
 {
     public void Log(ProvenancedDecision decision)
@@ -23,17 +25,3 @@ public class ProvenanceLogger : IProvenanceLogger
     }
 }
 
-
-
-public sealed record ProvenancedDecision
-{
-    public required MetricDecision Metrics { get; init; }
-
-    public float EventId { get; init; }
-    public required string FusionSignature { get; init; }
-    public required string ModelId { get; init; }
-    public required string ModelVersion { get; init; }
-    public double Severity { get; init; }
-    public string SeverityScaleRef { get; init; } //  HACK:  Property is not being used consistently. Must FIX
-    public DateTime Timestamp { get; init; }
-}

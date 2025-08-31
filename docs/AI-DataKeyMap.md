@@ -1,5 +1,24 @@
-﻿```.\docs\visual diagram showi.png```
-
+﻿# =====================================================================
+# Document Title   : 12-Column Schema Key
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : Defines lineage, validation, and use of unified schema columns.
+# Related Docs     : AI-DataSourceMap.txt; AI-Dev-Quick-Ref.md
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
+---
+Title: 12-Column Schema Key
+File: AI-DataKeyMap.md
+Description: Source, validation, transforms, and consumers for unified 12-column schema.
+Version: 0.1.0
+LastUpdated: 2025-08-28
+Status: Draft
+Tags: [schema, lineage, reference]
 ---
 
 ## **12‑Column Schema – Column Key**

@@ -1,0 +1,110 @@
+// Project Name: LightweightAI.Core
+// File Name: EventLogMultiChannelLoader.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
+#if WINDOWS
+using System.Diagnostics.Eventing.Reader;
+#endif
+using System.Runtime.CompilerServices;
+
+
+
+namespace LightweightAI.Core.Loaders.Windows;
+
+
+/// <summary>
+///     Loads historical Windows Event Log entries from one or more channels (e.g. System, Application, Security)
+///     using Event Log Query filtering. Designed for bootstrapping model training with broad diagnostic coverage.
+/// </summary>
+public sealed class EventLogMultiChannelLoader(
+    IEnumerable<string> channels,
+    string? xpathQuery = null,
+    int maxPerChannel = 10_000)
+    : ISourceLoader
+{
+    private readonly string[] _channels = channels.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    private readonly int _maxPerChannel = maxPerChannel;
+    private readonly string? _xpathQuery = xpathQuery; // Optional fine grained filter.
+
+
+
+
+
+    public async IAsyncEnumerable<RawEvent> LoadAsync(SourceRequest request,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+#if !WINDOWS
+        yield break; // Not supported on non-Windows platforms.
+#else
+        foreach (var channel in _channels)
+        {
+            ct.ThrowIfCancellationRequested();
+            int count = 0;
+            EventLogQuery q = _xpathQuery is null
+                ? new EventLogQuery(channel, PathType.LogName)
+                : new EventLogQuery(channel, PathType.LogName, _xpathQuery) { TolerateQueryErrors = true };
+            using var reader = new EventLogReader(q);
+            for (EventRecord? rec = reader.ReadEvent(); rec != null && count < _maxPerChannel; rec = reader.ReadEvent())
+            {
+                using (rec)
+                {
+                    var ts = rec.TimeCreated?.ToUniversalTime() ?? DateTime.UtcNow;
+                    var host = rec.MachineName ?? "unknown";
+                    var evtId = rec.Id;
+                    var severity = rec.LevelDisplayName ?? "Info";
+                    var fields = new Dictionary<string, object?>
+                    {
+                        ["Channel"] = channel,
+                        ["Provider"] = rec.ProviderName,
+                        ["RecordId"] = rec.RecordId,
+                        ["Opcode"] = rec.OpcodeDisplayName,
+                        ["Keywords"] =
+ rec.KeywordsDisplayNames is null ? string.Empty : string.Join(',', rec.KeywordsDisplayNames)
+                    };
+                    // Capture properties
+                    if (rec.Properties is { Count: > 0 })
+                    {
+                        int i = 0;
+                        foreach (var p in rec.Properties)
+                            fields[$"Prop{i++}"] = p.Value;
+                    }
+
+                    yield return new RawEvent(
+                        SourceKey: request.SourceKey,
+                        EventId: evtId,
+                        TimestampUtc: ts,
+                        Host: host,
+                        User: rec.UserId?.Value,
+                        Severity: NormalizeSeverity(severity),
+                        Fields: fields,
+                        ProvenanceTag: $"wevt:{channel}:{rec.RecordId}"
+                    );
+                    count++;
+                }
+                if (count % 256 == 0)
+                    await Task.Yield();
+            }
+        }
+#endif
+    }
+
+
+
+
+
+    private static string NormalizeSeverity(string s)
+    {
+        return s switch
+        {
+            "Critical" => "Critical",
+            "Error" => "Error",
+            "Warning" => "Warn",
+            "Information" => "Info",
+            _ => "Info"
+        };
+    }
+}

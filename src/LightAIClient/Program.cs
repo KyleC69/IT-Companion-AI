@@ -6,7 +6,8 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Loaders.qANDa;
+using LightweightAI.Core.Loaders.Conversational;
+
 
 
 namespace LightAIClient;

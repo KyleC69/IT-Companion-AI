@@ -1,8 +1,27 @@
-﻿Gotcha — we’ll strip out the Python tooling entirely and frame the training process in a **CLI / PowerShell‑first workflow**, so a new collaborator can follow it end‑to‑end without touching a `.py` file.  
-
-Here’s the **PowerShell‑native How‑To** for bringing both models online.
-
+﻿# =====================================================================
+# Document Title   : Model Training How-To (PowerShell & CLI Only)
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : End-to-end PowerShell-first workflow for model training and deployment.
+# Related Docs     : AI-TrainingDataPresets.md; AI-Dev-Quick-Ref.md; AI-FusionModel.md
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
 ---
+Title: Model Training How-To (PowerShell & CLI Only)
+File: AI-Collaborators.md
+Description: PowerShell-first workflow for preparing, training, evaluating, and deploying LightweightAI models.
+Version: 0.1.0
+LastUpdated: 2025-08-28
+Status: Draft
+Tags: [training, workflow, powershell, models]
+---
+
+
 
 # **LightweightAI – Model Training How‑To (PowerShell & CLI Only)**
 
@@ -160,3 +179,5 @@ Here’s a clean “Spec Sheet” style section you can drop straight into the R
 ---
 
 If you want, I can also give you a **field‑level lineage map** showing exactly where each of these columns originates in the ingestion pipeline and which modules consume them — makes it far easier for a new dev to trace data from log to model to action. Would that be useful to add next?
+
+

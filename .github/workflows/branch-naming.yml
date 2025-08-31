@@ -1,0 +1,16 @@
+name: Enforce branch naming
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  naming:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          # Allowed patterns:
+          if [[ ! "$BRANCH" =~ ^(feature|feat|bugfix|fix|chore|docs|refactor|hotfix)\/[a-z0-9._-]+$ ]]; then
+            echo "::error file=branch-naming::Branch '$BRANCH' must match one of: feature/, feat/, bugfix/, fix/, chore/, docs/, refactor/, hotfix/."
+            exit 1
+          fi

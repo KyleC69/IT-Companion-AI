@@ -1,4 +1,17 @@
-﻿
+﻿# =====================================================================
+# Document Title   : Architecture Overview
+# Version          : v0.1.0
+# Date Created     : 2025-08-28
+# Last Modified    : 2025-08-28
+# Author(s)        : Unknown
+# Reviewed By      : 
+# Status           : Draft
+# Purpose          : High-level architectural summary of LightweightAI platform.
+# Related Docs     : AI-TechnicalSpecs.md; AI-FusionModel.md
+# Change Log       :
+#   - 2025-08-28 | System | Initial header applied
+# =====================================================================
+
 ---
 
 # LightweightAI – Architecture Overview

@@ -6,19 +6,13 @@
 // Do not remove file headers
 
 
-public class AuditFriendlyTrainer : IIncrementalTrainer
+namespace LightweightAI.Core.Training;
+
+
+public class AuditFriendlyTrainer(TimeSpan retentionPeriod, int maxSamples) : IIncrementalTrainer
 {
     private readonly List<TrainingSample> _pendingBatch = new();
-    private readonly SlidingWindowBuffer _window;
-
-
-
-
-
-    public AuditFriendlyTrainer(TimeSpan retentionPeriod, int maxSamples)
-    {
-        this._window = new SlidingWindowBuffer(retentionPeriod, maxSamples);
-    }
+    private readonly SlidingWindowBuffer _window = new(retentionPeriod, maxSamples);
 
 
 
@@ -54,23 +48,3 @@ public class AuditFriendlyTrainer : IIncrementalTrainer
         return this._window.GetSnapshot();
     }
 }
-
-
-
-public interface IIncrementalTrainer
-{
-    void Ingest(TrainingSample sample);
-    void TrainNextBatch();
-    IReadOnlyList<TrainingSample> GetWindowSnapshot();
-}
-
-
-
-public record TrainingSample(
-    Guid EventId,
-    DateTime Timestamp,
-    string SourceId,
-    float ConfidenceScore,
-    string Label,
-    object Payload // Replace with a concrete type if needed
-);
