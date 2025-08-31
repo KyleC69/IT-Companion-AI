@@ -10,8 +10,8 @@
 // Previously in AICompanion.Tests causing cross-project namespace LightweightAI.Core.inconsistency.
 
 
-using LightweightAI.Core.Engine;
-using LightweightAI.Core.Engine.Fusion;
+using LightweightAI.Core.Config;
+
 
 
 namespace LightweightAI.Core.Interfaces;

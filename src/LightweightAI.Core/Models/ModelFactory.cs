@@ -6,10 +6,7 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Interfaces;
-
-
-namespace LightweightAI.Core.Engine.Models;
+namespace LightweightAI.Core.Models;
 
 
 public static class ModelFactory

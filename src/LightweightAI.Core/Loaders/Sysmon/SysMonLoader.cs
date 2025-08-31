@@ -8,11 +8,12 @@
 
 using System.Diagnostics.Eventing.Reader;
 
-using LightweightAI.Core.Abstractions;
+using LightweightAI.Core.Config;
 using LightweightAI.Core.Engine;
-using LightweightAI.Core.Engine.Models;
 
 using Microsoft.Extensions.Options;
+
+
 
 
 namespace LightweightAI.Core.Loaders.Sysmon;
@@ -69,12 +70,13 @@ public sealed class SysmonLoader(
         var batchCount = 0;
         EventBookmark? lastBookmark = null;
 
-        for (EventRecord? rec = SafeRead(reader); rec != null; rec = SafeRead(reader))
+        for (System.Diagnostics.Eventing.Reader.EventRecord? rec = SafeRead(reader); rec != null; rec = SafeRead(reader))
         {
             ct.ThrowIfCancellationRequested();
 
             using (rec)
             {
+                RawEvent? toYield = null;
                 try
                 {
                     DateTime ts = rec.TimeCreated?.ToUniversalTime() ?? DateTime.UtcNow;
@@ -103,8 +105,9 @@ public sealed class SysmonLoader(
                         if (this._opt.UseSchemaNames && SysmonSchema.TryGetPropertyNames(evtId, out var mapped))
                             names = mapped;
 
-                        foreach ((EventProperty? p, var i) in rec.Properties.Select((p, i) => (p, i)))
+                        for (var i = 0; i < rec.Properties.Count; i++)
                         {
+                            EventProperty? p = rec.Properties[i];
                             var key = names is not null && i < names.Length
                                 ? $"Sysmon.{names[i]}"
                                 : this._opt.UseSchemaNames
@@ -115,8 +118,7 @@ public sealed class SysmonLoader(
                         }
                     }
 
-                    // Emit RawEvent
-                    yield return new RawEvent(
+                    toYield = new RawEvent(
                         SourceKey: request.SourceKey,
                         EventId: evtId,
                         TimestampUtc: ts,
@@ -131,9 +133,12 @@ public sealed class SysmonLoader(
                 }
                 catch (Exception ex)
                 {
-                    log.LogWarning(ex, "SysmonLoader: failed to process record {RecordId} on {Channel}", rec.RecordId,
+                    log.LogWarning(ex, "SysmonLoader: failed to process record {RecordId} on {Channel}", rec?.RecordId,
                         this._opt.Channel);
                 }
+
+                if (toYield is not null)
+                    yield return toYield;
             }
 
             batchCount++;
@@ -160,7 +165,7 @@ public sealed class SysmonLoader(
 
 
 
-    private static EventRecord? SafeRead(EventLogReader reader)
+    private static System.Diagnostics.Eventing.Reader.EventRecord? SafeRead(EventLogReader reader)
     {
         try
         {

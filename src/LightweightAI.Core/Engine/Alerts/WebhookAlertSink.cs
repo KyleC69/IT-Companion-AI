@@ -8,8 +8,6 @@
 
 using System.Net.Http.Json;
 
-using LightweightAI.Core.Engine.Provenance;
-
 
 
 namespace LightweightAI.Core.Engine.Alerts;
@@ -22,7 +20,6 @@ public sealed class WebhookAlertSink(string url) : IAlertSink, IDisposable
 {
     private readonly HttpClient _http = new();
     public string Name => "webhook";
-
 
 
 

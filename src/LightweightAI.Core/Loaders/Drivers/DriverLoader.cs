@@ -6,7 +6,7 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Engine.Compat;
 using LightweightAI.Core.Loaders.Services;
 
 using Microsoft.Win32;

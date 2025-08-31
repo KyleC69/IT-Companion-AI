@@ -10,7 +10,8 @@ using System.Collections;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Config;
+using LightweightAI.Core.Engine.Compat;
 
 using Microsoft.Win32;
 
@@ -525,22 +526,6 @@ public sealed class ServiceLoader(ServiceLoaderConfig config, IInventorySink sin
 }
 
 
-// TODO: Replace with actual ServiceController from System.ServiceProcess
-// Missing implementation to allow compilation on non-Windows platforms
-internal class ServiceController
-{
-    public static IEnumerable GetDevices()
-    {
-        throw new NotImplementedException();
-    }
-
-
-
-
-
-
-    public string ServiceName { get; set; }
-}
 
 
 // -------------------------

@@ -6,9 +6,9 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Config;
 using LightweightAI.Core.Loaders.Windows;
-using LightweightAI.Core.Models;
+
 
 
 namespace LightweightAI.Core.Analyzers;

@@ -6,13 +6,10 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Abstractions;
+using LightweightAI.Core.Config;
 using LightweightAI.Core.Engine.FastDetectors;
-using LightweightAI.Core.Engine.Fusion;
-using LightweightAI.Core.Engine.Intake;
-using LightweightAI.Core.Engine.Models;
-using LightweightAI.Core.Interfaces;
 using LightweightAI.Core.Refinery;
+
 
 
 namespace LightweightAI.Core.Engine;
@@ -100,8 +97,7 @@ public sealed class PipelineRunner(
                             norm.SourceKey,
                             norm.EventId,
                             norm.TimestampUtc.UtcDateTime,
-                            norm.Fields.ToDictionary(
-                                k => k.Key,
+                            Enumerable.ToDictionary<KeyValuePair<string, object>, string, object>(norm.Fields, k => k.Key,
                                 v => v.Value ?? new object() // Replace nulls with a non-null object
                             )
                         );
@@ -118,10 +114,10 @@ public sealed class PipelineRunner(
 
                     if (fused.IsAlert && alerts is not null)
                     {
-                        var external = new Abstractions.ProvenancedDecision(
+                        var external = new ProvenancedDecision(
                             TimestampUtc: DateTimeOffset.UtcNow,
                             CorrelationId: fused.MetricKey,
-                            Risk: (float)Math.Clamp(fused.Score, 0, 1),
+                            Risk: (float)Math.Clamp((double)fused.Score, 0, 1),
                             Severity: fused.Score.ToString("F2"),
                             Summary: fused.IsAlert ? "ALERT" : "OK",
                             DetailJson: string.Empty,

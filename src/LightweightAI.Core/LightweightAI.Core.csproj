@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
 	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+	  <RootNamespace>LightweightAI.Core</RootNamespace>
     <AssemblyName>KC.$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
 
@@ -20,17 +21,6 @@
     <IsPublishable>False</IsPublishable>
     <NoWarn>1701;1702;CA1416</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Engine\Config.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Models\Contracts.cs" />
-    <None Include="Engine\Aggregation.cs" />
-    <None Include="Models\ReslientModels.cs" />
-  </ItemGroup>
-
 
 
   <ItemGroup>

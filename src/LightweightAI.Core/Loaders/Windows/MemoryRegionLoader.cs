@@ -11,7 +11,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Config;
+using LightweightAI.Core.Interop;
+
 
 
 namespace LightweightAI.Core.Loaders.Windows;

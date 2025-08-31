@@ -6,7 +6,7 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Engine.Models;
+namespace LightweightAI.Core.Models;
 
 
 public record TrainingContext(

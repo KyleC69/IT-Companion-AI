@@ -6,7 +6,7 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Engine.Models;
+namespace LightweightAI.Core.Models;
 
 
 public readonly record struct ProvenanceKey(Guid HostId, string SourceId, int RawEventId);
@@ -28,9 +28,7 @@ public sealed record AnomalySignal(
     double PValue, // lower = more anomalous
     string Detector, // e.g., "ssa_spike"
     string Notes,
-    double ZScore)
-{
-}
+    double ZScore);
 
 
 

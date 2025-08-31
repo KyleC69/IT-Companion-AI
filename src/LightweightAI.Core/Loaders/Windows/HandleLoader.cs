@@ -9,7 +9,8 @@
 using System.ComponentModel;
 using System.Diagnostics;
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Config;
+
 
 
 namespace LightweightAI.Core.Loaders.Windows;

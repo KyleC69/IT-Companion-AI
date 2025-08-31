@@ -6,8 +6,7 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Loaders.Windows;
-
+namespace LightweightAI.Core.Loaders.Windows;
 
 
 public interface IInventorySink

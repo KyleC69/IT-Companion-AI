@@ -5,7 +5,7 @@
 // Do not remove file headers
 
 
-namespace LightweightAI.Core.Engine;
+namespace LightweightAI.Core.Models;
 
 //TODO: Class was truncated, needs review and completion
 //HACK: ** MUST FIX NAMESPACE ISSUE DURING REFACTOR **

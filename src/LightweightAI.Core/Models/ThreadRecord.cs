@@ -18,6 +18,11 @@ public sealed class ThreadRecord
     public string PriorityLevel { get; set; } = "";
     public string ThreadState { get; set; } = "";
     public string? WaitReason { get; set; }
-    public string SchemaVersion { get; set; } = "1.0";
-    public string ChangeType { get; set; } = "Unchanged";
+    public string Host { get; set; } = "";
+    public string SourceId { get; set; } = "";
+    public string LoaderName { get; set; } = "";
+    public string SchemaVersion { get; set; } = "";
+    public string CollectionMethod { get; set; } = "";
+    public string RecordId { get; set; } = "";
+    public string ChangeType { get; set; } = "";
 }

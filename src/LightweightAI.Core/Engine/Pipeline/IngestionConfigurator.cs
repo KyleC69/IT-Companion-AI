@@ -9,18 +9,17 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using LightweightAI.Core.Abstractions;
-using LightweightAI.Core.Engine.Models;
-using LightweightAI.Core.Interfaces;
 using LightweightAI.Core.Loaders.Generic;
-using LightweightAI.Core.Loaders.PerMon;
+using LightweightAI.Core.Loaders.Perfmon;
 using LightweightAI.Core.Loaders.Sysmon;
 using LightweightAI.Core.Loaders.Windows;
 
 using Microsoft.Extensions.DependencyInjection;
+using LightweightAI.Core.Loaders.Windows;
 
 
-namespace LightweightAI.Core.Engine.Intake;
+
+namespace LightweightAI.Core.Engine.Pipeline;
 
 
 internal sealed class IngestionConfigurator : IIngestionConfigurator
@@ -92,7 +91,7 @@ internal sealed class IngestionConfigurator : IIngestionConfigurator
                         ? provEl.EnumerateArray().Select(e => e.GetString() ?? string.Empty)
                             .Where(s => !string.IsNullOrWhiteSpace(s))
                         : new[] { "Microsoft-Windows-Kernel-Process" };
-                return (new EtwRealTimeLoader("MiniAI-RT", providers), dict);
+                return (new EtwLoader("MiniAI-RT", providers), dict);
 
 
             case "wmi":

@@ -6,6 +6,8 @@
 // Do not remove file headers
 
 
+using LightweightAI.Core.Config;
+
 using Microsoft.Diagnostics.Tracing.Parsers;
 
 

@@ -6,11 +6,11 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Loaders.qANDa;
-using LightweightAI.Core.Training;
+using LightweightAI.Core.Loaders.Conversational;
 
 
-namespace LightweightAI.Core.Engine.Models;
+
+namespace LightweightAI.Core.Models;
 
 
 public record QAEnvelope<TAnswer>(
@@ -18,7 +18,7 @@ public record QAEnvelope<TAnswer>(
     string Question,
     TAnswer Answer,
     TrainingContext TrainingContext,
-    ProvenanceLog Provenance
+    Training.ProvenanceLog Provenance
 )
 {
     // Append‑only helper

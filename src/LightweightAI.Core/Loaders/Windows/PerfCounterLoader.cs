@@ -9,7 +9,8 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Config;
+
 
 
 namespace LightweightAI.Core.Loaders.Windows;

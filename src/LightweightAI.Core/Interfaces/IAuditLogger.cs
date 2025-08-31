@@ -21,9 +21,7 @@ namespace LightweightAI.Core.Interfaces;
 //TODO: NEED TO VERIFY IF THESE INTERFACES ARE STILL NEEDED THEN IMPLEMENT THEM AS REQUIRED
 
 
-public interface IIntakeDriver
-    {
-    }
+public interface IIntakeDriver;
 
 
 

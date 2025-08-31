@@ -9,13 +9,14 @@
 using System.Collections.Concurrent;
 
 
-namespace LightweightAI.Core.Engine.Intake;
+
+namespace LightweightAI.Core.Engine;
 
 
 /// <summary>
 ///     Maintains simple rolling (time based) statistics per source key for incoming encoded events.
 ///     Window length is fixed; older samples are evicted on insert. Computes snapshot statistics
-///     required to populate <see cref="Snapshot" /> and <see cref="AggregatedMetric" /> records.
+///     required to populate <see cref="Snapshot" /> and <see cref="Core.Models.AggregatedMetric" /> records.
 /// </summary>
 internal sealed class RollingWindowAggregator(TimeSpan windowLength)
 {
@@ -27,7 +28,7 @@ internal sealed class RollingWindowAggregator(TimeSpan windowLength)
 
     public (AggregatedMetric metric, Snapshot snapshot) Add(string key, DateTimeOffset ts, double value)
     {
-        DequeEntry entry = this._state.GetOrAdd(key, _ => new DequeEntry());
+        DequeEntry entry = _state.GetOrAdd(key, _ => new DequeEntry());
         entry.LastTs = ts;
         entry.Samples.AddLast((ts, value));
         entry.Sum += value;

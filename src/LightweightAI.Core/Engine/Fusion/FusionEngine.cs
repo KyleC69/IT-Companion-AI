@@ -6,7 +6,8 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Config;
+
 
 
 namespace LightweightAI.Core.Engine.Fusion;
@@ -14,8 +15,8 @@ namespace LightweightAI.Core.Engine.Fusion;
 
 /// <summary>
 ///     Performs weighted score aggregation over a set of metric / trend / anomaly fields
-///     (as supplied via <see cref="DecisionInput" />) using a configured weight map, producing
-///     a deterministic <see cref="DecisionOutput" /> with provenance payload of individual
+///     (as supplied via <see cref="LightweightAI.Core.Models.DecisionInput" />) using a configured weight map, producing
+///     a deterministic <see cref="LightweightAI.Core.Models.DecisionOutput" /> with provenance payload of individual
 ///     contributions. This forms the core of the fusion layer prior to hysteresis and rule
 ///     precedence adjustments.
 /// </summary>

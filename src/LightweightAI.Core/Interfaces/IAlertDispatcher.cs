@@ -6,10 +6,7 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Engine.Provenance;
-
-
-namespace LightweightAI.Core.Abstractions;
+namespace LightweightAI.Core.Interfaces;
 
 
 public interface IAlertDispatcher

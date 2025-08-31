@@ -1,14 +1,14 @@
 
 # dotenv files
 .env
-
+*.sln
 # User-specific files
 *.rsuser
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
-
+*.old
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -547,3 +547,12 @@ $RECYCLE.BIN/
 /SolutionFolder.sln
 /Topology.txt
 /currentstatus.txt
+/AI-policyTemp.md
+/SolutionContents.md
+/DOCUMENTATION_MANIFEST.Template.md
+/DOCUMENTATION_MANIFEST.md
+/DocumentationHeaderTemplate.md
+/Directory.Build.props.old
+/.gitignore
+/.gitignore
+/StructureVerification.md

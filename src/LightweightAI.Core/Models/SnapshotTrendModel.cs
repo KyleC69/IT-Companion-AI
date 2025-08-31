@@ -12,10 +12,7 @@
 // All logic preserved. Empty duplicate removed.
 
 
-using LightweightAI.Core.Interfaces;
-
-
-namespace LightweightAI.Core.Engine.Models;
+namespace LightweightAI.Core.Models;
 
 
 public class SnapshotTrendModel : IModel

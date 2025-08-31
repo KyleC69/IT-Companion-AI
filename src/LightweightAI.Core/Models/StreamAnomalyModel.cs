@@ -12,13 +12,10 @@
 // All logic preserved. Empty duplicate removed.
 
 
-using LightweightAI.Core.Interfaces;
+namespace LightweightAI.Core.Models;
 
 
-namespace LightweightAI.Core.Engine.Models;
-
-
-public class StreamAnomalyModel : IModel
+public partial class StreamAnomalyModel 
 {
     /// <summary>
     ///     Placeholder Predict implementation (returns 0.0). Origin: original implementation file. Duplicate was empty.

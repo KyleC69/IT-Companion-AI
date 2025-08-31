@@ -9,17 +9,50 @@
 // Consolidated variant: This Training.ProvenanceLog delegates to core Provenance.ProvenanceLog to avoid divergence.
 
 
-using LightweightAI.Core.Engine.Provenance;
-using LightweightAI.Core.Interfaces;
-using LightweightAI.Core.Loaders.qANDa;
+using LightweightAI.Core.Loaders.Conversational;
+
 
 
 namespace LightweightAI.Core.Training;
 
-
+/// <summary>
+/// Represents a log that tracks the provenance of operations or events during the training process.
+/// </summary>
+/// <remarks>
+/// This class provides functionality to record and manage provenance entries, 
+/// which include details about specific stages, their importance, and associated parameters.
+/// It supports pruning of non-essential entries based on specified criteria.
+/// </remarks>
 public class ProvenanceLog
 {
-    private readonly LightweightAI.Core.Engine.Provenance.ProvenanceLog _inner = new();
+    
+    public ProvenanceLog()
+    {
+        _entries = new List<ProvenanceEntry>();
+    }
+    
+    private List<ProvenanceEntry> _entries = new();
+
+
+
+
+
+
+    public ProvenanceLog(List<ProvenanceEntry> entries)
+    {
+        _entries = entries;
+    }
+
+
+
+
+
+
+    public ProvenanceLog(IReadOnlyList<ProvenanceEntry> entries)
+    {
+        _entries = entries.ToList();
+    }
+    private readonly ProvenanceLog _inner = new();
 
     public IReadOnlyList<ProvenanceEntry> Entries => this._inner.Entries;
 

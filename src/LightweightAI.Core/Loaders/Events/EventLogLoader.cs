@@ -9,7 +9,9 @@ using System.Diagnostics.Eventing.Reader;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
-using LightweightAI.Core.Interfaces;
+
+
+
 
 namespace LightweightAI.Core.Loaders.Events;
 
@@ -115,16 +117,16 @@ public sealed class EventLogLoader : IDisposable
 
                 if (_config.StartAt == EventStartPosition.End)
                 {
-                    EventRecord? last = null;
+                    System.Diagnostics.Eventing.Reader.EventRecord? last = null;
                     while (true)
                     {
-                        EventRecord? ev = reader.ReadEvent();
-                        if (ev == null) break;
+                        System.Diagnostics.Eventing.Reader.EventRecord? ev = reader.ReadEvent();
+                        if (ev is null) break;
                         last?.Dispose();
                         last = ev;
                     }
 
-                    if (last != null)
+                    if (last is not null)
                     {
                         bookmark = last.Bookmark;
                         last.Dispose();
@@ -148,11 +150,11 @@ public sealed class EventLogLoader : IDisposable
         var count = 0;
         for (var i = 0; i < _config.MaxPerChannelPerPoll && !ct.IsCancellationRequested; i++)
         {
-            EventRecord? rec = null;
+            System.Diagnostics.Eventing.Reader.EventRecord? rec = null;
             try
             {
                 rec = state.Bookmark == null ? state.Reader.ReadEvent() : state.Reader.ReadEvent(state.Bookmark);
-                if (rec == null) break;
+                if (rec is null) break;
 
                 state.Bookmark = rec.Bookmark;
 
@@ -200,7 +202,7 @@ public sealed class EventLogLoader : IDisposable
         return count;
     }
 
-    private EventEnvelope? Convert(EventRecord rec)
+    private EventEnvelope? Convert(System.Diagnostics.Eventing.Reader.EventRecord rec)
     {
         try
         {
@@ -294,25 +296,25 @@ public sealed class EventLogLoader : IDisposable
         }
     }
 
-    private static string SafeLevelName(EventRecord rec)
+    private static string SafeLevelName(System.Diagnostics.Eventing.Reader.EventRecord rec)
     {
         try { return rec.LevelDisplayName ?? (rec.Level?.ToString() ?? "Unknown"); }
         catch { return rec.Level?.ToString() ?? "Unknown"; }
     }
 
-    private static string SafeTaskName(EventRecord rec)
+    private static string SafeTaskName(System.Diagnostics.Eventing.Reader.EventRecord rec)
     {
         try { return rec.TaskDisplayName ?? (rec.Task?.ToString() ?? ""); }
         catch { return rec.Task?.ToString() ?? ""; }
     }
 
-    private static string SafeOpcodeName(EventRecord rec)
+    private static string SafeOpcodeName(System.Diagnostics.Eventing.Reader.EventRecord rec)
     {
         try { return rec.OpcodeDisplayName ?? (rec.Opcode?.ToString() ?? ""); }
         catch { return rec.Opcode?.ToString() ?? ""; }
     }
 
-    private static string[] SafeKeywordsDisplay(EventRecord rec)
+    private static string[] SafeKeywordsDisplay(System.Diagnostics.Eventing.Reader.EventRecord rec)
     {
         try
         {

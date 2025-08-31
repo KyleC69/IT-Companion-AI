@@ -11,7 +11,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Config;
+using LightweightAI.Core.Engine.Compat;
 
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
@@ -211,9 +212,8 @@ public sealed class EtwLoader : IDisposable
                     using var s = new TraceEventSession(this._config.SessionName);
                     s.Stop();
                 }
-                catch (Exception e)
+                catch
                 {
-                    //TODO: distinguish access denied vs not found
                     /* ignore */
                 }
             }
@@ -226,15 +226,11 @@ public sealed class EtwLoader : IDisposable
 
         this._session = new TraceEventSession(this._config.SessionName, null)
         {
-            BufferSizeMB = this._config.BufferSizeMB,
-              Circular = this._config.Circular
+            BufferSizeMB = this._config.BufferSizeMB
         };
 
         if (this._config.RealTimeSession)
-            this._session.Source?.RegisterUnhandledEvent(delegate
-            {
-                /* no-op: we handle per-provider callbacks */
-            });
+            this._session.Source?.RegisterUnhandledEvent(delegate { });
 
         // Ensure disposal on CTRL+C scenarios
         this._session.StopOnDispose = true;
@@ -256,17 +252,18 @@ public sealed class EtwLoader : IDisposable
             try
             {
                 var level = (TracingLevel)Clamp(p.Level, 0, 5);
-                var keywords = p.Keywords;
+                // Keywords expected as ulong by TraceEvent API when using numeric overloads
+                ulong keywords = unchecked((ulong)p.Keywords);
 
                 if (p.ProviderGuid != Guid.Empty)
                 {
-                    this._session.EnableProvider(p.ProviderGuid, level, keywords);
+                    this._session.EnableProvider(p.ProviderGuid, (TraceEventLevel)level, keywords);
                     this._log.Info(
                         $"{Loader} enabled provider GUID={p.ProviderGuid} Level={(int)level} Keywords=0x{keywords:X}");
                 }
                 else if (!string.IsNullOrWhiteSpace(p.ProviderName))
                 {
-                    this._session.EnableProvider(p.ProviderName!, level, keywords);
+                    this._session.EnableProvider(p.ProviderName!, (TraceEventLevel)level, keywords);
                     this._log.Info(
                         $"{Loader} enabled provider Name='{p.ProviderName}' Level={(int)level} Keywords=0x{keywords:X}");
                 }
@@ -289,8 +286,6 @@ public sealed class EtwLoader : IDisposable
                             this._log.Warn($"{Loader} event handler error: {ex.Message}");
                     }
                 };
-
-              //  this._subscriptions.Add(sub); TODO: Something is missing here
             }
             catch (Exception ex)
             {
@@ -301,14 +296,8 @@ public sealed class EtwLoader : IDisposable
         // Start processing on a background thread
         Task.Run(() =>
         {
-            try
-            {
-                this._session!.Source.Process(); // blocking, exits when session stopped
-            }
-            catch (Exception ex)
-            {
-                this._log.Error($"{Loader} session processing error: {ex.Message}");
-            }
+            try { this._session!.Source.Process(); }
+            catch (Exception ex) { this._log.Error($"{Loader} session processing error: {ex.Message}"); }
         });
     }
 
@@ -355,10 +344,10 @@ public sealed class EtwLoader : IDisposable
         var eventName = data.EventName ?? "";
         var taskName = Safe(() => data.TaskName) ?? "";
         var opcodeName = Safe(() => data.OpcodeName) ?? "";
-        var task = Safe(() => (int)data.Task) ?? 0;
-        var opcode = Safe(() => (int)data.Opcode) ?? 0;
-        var level = Safe(() => (int)data.Level) ?? 0;
-        var keywords = Safe(() => (ulong)data.Keywords) ?? 0UL;
+        int task = SafeNullable(() => (int)data.Task) ?? 0;
+        int opcode = SafeNullable(() => (int)data.Opcode) ?? 0;
+        int level = SafeNullable(() => (int)data.Level) ?? 0;
+        ulong keywords = SafeNullable(() => (ulong)data.Keywords) ?? 0UL;
 
         // Identity and context
         var pid = data.ProcessID;
@@ -384,24 +373,15 @@ public sealed class EtwLoader : IDisposable
         if (this._config.IncludePayload)
             try
             {
-                if (data.PayloadNames is { Count: > 0 })
+                if (data.PayloadNames is { Length: > 0 })
                 {
-                    payload = new Dictionary<string, string>(data.PayloadNames.Length,
-                        StringComparer.OrdinalIgnoreCase);
+                    payload = new Dictionary<string, string>(data.PayloadNames.Length, StringComparer.OrdinalIgnoreCase);
                     for (var i = 0; i < data.PayloadNames.Length; i++)
                     {
                         var name = data.PayloadNames[i] ?? $"field{i}";
                         string val;
-                        try
-                        {
-                            var obj = data.PayloadValue(i);
-                            val = obj?.ToString() ?? "";
-                        }
-                        catch
-                        {
-                            val = "";
-                        }
-
+                        try { val = data.PayloadValue(i)?.ToString() ?? ""; }
+                        catch { val = ""; }
                         payload[name] = val;
                     }
                 }
@@ -585,6 +565,16 @@ public sealed class EtwLoader : IDisposable
         {
             return default;
         }
+    }
+
+
+
+
+
+    private static int? SafeNullable<T>(Func<T> f) where T : struct
+    {
+        try { return f(); }
+        catch { return null; }
     }
 
 

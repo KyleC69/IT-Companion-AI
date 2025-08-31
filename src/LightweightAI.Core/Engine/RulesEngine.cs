@@ -6,15 +6,12 @@
 // Do not remove file headers
 
 
-using LightweightAI.Core.Interfaces;
-
-
 namespace LightweightAI.Core.Engine;
 
 
 /// <summary>
 ///     Hosts and evaluates a collection of <see cref="IRule" /> instances against an incoming
-///     <see cref="EventContext" />. Provides a simple, in‑memory rule evaluation pipeline whose
+///     <see cref="LightweightAI.Core.Models.EventContext" />. Provides a simple, in‑memory rule evaluation pipeline whose
 ///     results (match flag + score) are later aggregated and potentially fused with statistical
 ///     / model driven signals. Adds optional precedence / hard‑floor override semantics.
 /// </summary>

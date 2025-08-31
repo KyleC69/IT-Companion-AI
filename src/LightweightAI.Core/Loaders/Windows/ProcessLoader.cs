@@ -11,7 +11,8 @@ using System.Management;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-using LightweightAI.Core.Interfaces;
+using LightweightAI.Core.Config;
+
 
 
 namespace LightweightAI.Core.Loaders.Windows;

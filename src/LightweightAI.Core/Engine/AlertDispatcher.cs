@@ -8,8 +8,6 @@
 
 using System.Threading.Channels;
 
-using LightweightAI.Core.Abstractions;
-using LightweightAI.Core.Engine.Provenance;
 
 
 namespace LightweightAI.Core.Engine;
@@ -97,6 +95,12 @@ public sealed class AlertDispatcher : IAlertDispatcher, IAsyncDisposable
             /* shutdown */
         }
     }
+
+
+
+
+
+
 }
 
 
@@ -113,11 +117,9 @@ public class ILoggerSeverity<T>
 
 
 
-
-
-
-    public void LogWarning(Exception Message, string SysmonloaderFailedToProcessRecordRecordidOnChannel, long? RecRecordId, string OptChannel)
+    // Structured overload similar to ILogger pattern (Exception, message, params object[])
+    public void LogWarning(Exception ex, string messageTemplate, params object?[] args)
     {
-        throw new NotImplementedException();
+        Console.WriteLine($"WARN: {string.Format(messageTemplate, args)} Exception={ex.GetType().Name}:{ex.Message}");
     }
 }
