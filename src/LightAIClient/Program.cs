@@ -6,7 +6,10 @@
 // Do not remove file headers
 
 
+using System.CommandLine;
+
 using LightweightAI.Core.Loaders.Conversational;
+using LightweightAI.Core.Models;
 
 
 
@@ -15,41 +18,111 @@ namespace LightAIClient;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    private static int Main(string[] args)
     {
         Console.Title = "Pipeline Trainer & Response Tester";
+        Console.WriteLine(Environment.NewLine);
         Console.WriteLine("=== Modular AI Pipeline Console ===");
         Console.WriteLine("Type 'exit' to quit, 'batch' to run test suite, or 'train' to simulate training mode.\n");
 
-        var runner = new QPipelineRunner();
 
-        while (true)
+        #region "Train command and sub options"
+
+        Command trainCommand = new("train", "Train a model with specified parameters.");
+        Command statusCommand = new("status", "Check the status of the training process.");
+        Command promptCommand = new("prompt", "Prompt the IT Q&A model with a test input during training.");
+        Command purgeCommand = new("purge", "Purge all training data and reset the model.");
+
+        // Model Type from LightweightAI.Core.Models
+        Option<ModelType> modelOption = new("--model")
         {
-            Console.Write("Input > ");
-            var input = Console.ReadLine();
+            Description = "Choose the model you wish to train."
+        };
 
-            if (string.IsNullOrWhiteSpace(input)) continue;
-            if (input.Equals("exit", StringComparison.OrdinalIgnoreCase)) break;
+        Option<DataLoaders> loaderArguments = new("--loaders")
+        {
+            Description = "Choose the combination of data loaders to use during this phase",
+            AllowMultipleArgumentsPerToken = true
+        };
 
-            if (input.Equals("batch", StringComparison.OrdinalIgnoreCase))
-                //  QPipelineTest.RunTests();
-                continue;
+        #endregion
 
-            if (input.Equals("train", StringComparison.OrdinalIgnoreCase))
-            {
-                RunTrainingMode(runner);
-                continue;
-            }
+        // Set the action for the train command.
+        trainCommand.SetAction(parseResult =>
+        {
+            ModelType modelType = parseResult.GetValue(modelOption);
+            DataLoaders loaders = parseResult.GetValue(loaderArguments);
+            Console.WriteLine($"Training model: {modelType} with loaders: {loaders}");
+        });
 
-            AnswerEnvelope result = runner.Run(input, "console-user");
-            Console.WriteLine(result.ToJson());
-            Console.WriteLine(new string('-', 80));
+
+
+
+
+
+        RootCommand rootCommand = new("IT AI Companion training system");
+        rootCommand.Subcommands.Add(trainCommand);
+        rootCommand.Subcommands.Add(statusCommand);
+        rootCommand.Subcommands.Add(promptCommand);
+        rootCommand.Subcommands.Add(purgeCommand);
+
+        // Add options to the train command.
+        trainCommand.Options.Add(modelOption);
+        trainCommand.Options.Add(loaderArguments);
+
+
+
+
+        return rootCommand.Parse(args).Invoke();
+
+
+
+    }
+
+
+
+
+
+
+    internal static void BuildTrainerInputs(QPipelineRunner pipe)
+    {
+        
+        
+        
+    }
+
+
+
+
+
+
+    private static void StartPipeline()
+    {
+        
+        
+        
+    }
+
+
+    internal static void ReadFile(FileInfo file, int delay, ConsoleColor fgColor, bool lightMode)
+    {
+        Console.BackgroundColor = lightMode ? ConsoleColor.White : ConsoleColor.Black;
+        Console.ForegroundColor = fgColor;
+        foreach (var line in File.ReadLines(file.FullName))
+        {
+            Console.WriteLine(line);
+            Thread.Sleep(TimeSpan.FromMilliseconds(delay * line.Length));
         }
     }
 
 
 
 
+
+
+
+
+    /*
 
     private static void RunTrainingMode(QPipelineRunner runner)
     {
@@ -71,4 +144,8 @@ internal class Program
 
         Console.WriteLine("--- Training Complete ---\n");
     }
+
+
+
+    */
 }

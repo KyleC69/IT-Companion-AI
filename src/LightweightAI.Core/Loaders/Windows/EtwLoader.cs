@@ -1,4 +1,4 @@
-// Project Name: LightweightAI.Core
+﻿// Project Name: LightweightAI.Core
 // File Name: EtwLoader.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
@@ -17,6 +17,7 @@ using LightweightAI.Core.Engine.Compat;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
+
 
 
 // TraceEvent packages
@@ -58,14 +59,16 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     public EtwLoader(EtwLoaderConfig config, IEtwSink sink, ILoggerSeverity log)
     {
-        this._config = config ?? throw new ArgumentNullException(nameof(config));
-        this._sink = sink ?? throw new ArgumentNullException(nameof(sink));
-        this._log = log ?? throw new ArgumentNullException(nameof(log));
-        this._dedup = new DedupIndex(this._config.DedupWindow, this._config.DedupMaxPerWindow,
-            this._config.DedupCapacity, log);
+        _config = config ?? throw new ArgumentNullException(nameof(config));
+        _sink = sink ?? throw new ArgumentNullException(nameof(sink));
+        _log = log ?? throw new ArgumentNullException(nameof(log));
+        _dedup = new DedupIndex(_config.DedupWindow, _config.DedupMaxPerWindow,
+            _config.DedupCapacity, log);
     }
+
 
 
 
@@ -73,7 +76,11 @@ public sealed class EtwLoader : IDisposable
 
     public void Dispose()
     {
-        if (this._disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
+
         StopAsync().GetAwaiter().GetResult();
     }
 
@@ -81,29 +88,35 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     public async Task StartAsync(CancellationToken external)
     {
-        this._log.Info(
-            $"{Loader} starting. Session='{this._config.SessionName}' BatchSize={this._config.BatchSize} FlushInterval={this._config.FlushInterval} Providers={this._config.Providers.Count} Kernel={this._config.EnableKernel}");
+        _log.Info(
+            $"{Loader} starting. Session='{_config.SessionName}' BatchSize={_config.BatchSize} FlushInterval={_config.FlushInterval} Providers={_config.Providers.Count} Kernel={_config.EnableKernel}");
 
         // Merge external and internal tokens
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(external, this._cts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(external, _cts.Token);
         CancellationToken ct = linkedCts.Token;
 
         InitializeSession();
 
         // Subscribe providers
         SubscribeProviders();
-        if (this._config.EnableKernel) EnableKernelProviders();
+        if (_config.EnableKernel)
+        {
+            EnableKernelProviders();
+        }
 
         // Start background pump
-        this._pumpTask = Task.Run(() => PumpLoopAsync(ct), ct);
+        _pumpTask = Task.Run(() => PumpLoopAsync(ct), ct);
 
         // The TraceEventSession runs on its own native thread; just await cancellation
         try
         {
             while (!ct.IsCancellationRequested)
+            {
                 await Task.Delay(TimeSpan.FromMilliseconds(200), ct).ConfigureAwait(false);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -111,8 +124,9 @@ public sealed class EtwLoader : IDisposable
         }
 
         await StopAsync().ConfigureAwait(false);
-        this._log.Info($"{Loader} stopped.");
+        _log.Info($"{Loader} stopped.");
     }
+
 
 
 
@@ -120,23 +134,29 @@ public sealed class EtwLoader : IDisposable
 
     public async Task StopAsync()
     {
-        if (this._disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
 
         try
         {
-            this._cts.Cancel();
+            _cts.Cancel();
 
             try
             {
-                if (this._pumpTask != null)
-                    await this._pumpTask.ConfigureAwait(false);
+                if (_pumpTask != null)
+                {
+                    await _pumpTask.ConfigureAwait(false);
+                }
             }
             catch
             {
                 /* ignore */
             }
 
-            foreach (IDisposable d in this._subscriptions)
+            foreach (IDisposable d in _subscriptions)
+            {
                 try
                 {
                     d.Dispose();
@@ -145,24 +165,27 @@ public sealed class EtwLoader : IDisposable
                 {
                     /* ignore */
                 }
+            }
 
-            this._subscriptions.Clear();
+            _subscriptions.Clear();
 
-            if (this._kernelEnabled && this._session != null)
-                try
-                {
-                    this._session.DisableKernelProvider((KernelTraceEventParser.Keywords)this._config.KernelKeywords);
-                }
-                catch
-                {
-                    /* ignore */
-                }
-
-            if (this._session != null)
+            if (_kernelEnabled && _session != null)
             {
                 try
                 {
-                    this._session.Stop();
+                    _session.DisableKernelProvider((KernelTraceEventParser.Keywords)_config.KernelKeywords);
+                }
+                catch
+                {
+                    /* ignore */
+                }
+            }
+
+            if (_session != null)
+            {
+                try
+                {
+                    _session.Stop();
                 }
                 catch
                 {
@@ -171,21 +194,22 @@ public sealed class EtwLoader : IDisposable
 
                 try
                 {
-                    this._session.Dispose();
+                    _session.Dispose();
                 }
                 catch
                 {
                     /* ignore */
                 }
 
-                this._session = null;
+                _session = null;
             }
         }
         finally
         {
-            this._disposed = true;
+            _disposed = true;
         }
     }
+
 
 
 
@@ -199,17 +223,18 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     private void InitializeSession()
     {
         // Best effort to clean up an existing session with the same name
-        if (TraceEventSession.GetActiveSession(this._config.SessionName) != null)
+        if (TraceEventSession.GetActiveSession(_config.SessionName) != null)
         {
-            if (this._config.TakeoverExistingSession)
+            if (_config.TakeoverExistingSession)
             {
-                this._log.Warn($"{Loader} taking over existing ETW session '{this._config.SessionName}'.");
+                _log.Warn($"{Loader} taking over existing ETW session '{_config.SessionName}'.");
                 try
                 {
-                    using var s = new TraceEventSession(this._config.SessionName);
+                    using var s = new TraceEventSession(_config.SessionName);
                     s.Stop();
                 }
                 catch
@@ -220,24 +245,27 @@ public sealed class EtwLoader : IDisposable
             else
             {
                 throw new InvalidOperationException(
-                    $"ETW session '{this._config.SessionName}' already exists. Set TakeoverExistingSession=true to reuse.");
+                    $"ETW session '{_config.SessionName}' already exists. Set TakeoverExistingSession=true to reuse.");
             }
         }
 
-        this._session = new TraceEventSession(this._config.SessionName, null)
+        _session = new TraceEventSession(_config.SessionName, null)
         {
-            BufferSizeMB = this._config.BufferSizeMB
+            BufferSizeMB = _config.BufferSizeMB
         };
 
-        if (this._config.RealTimeSession)
-            this._session.Source?.RegisterUnhandledEvent(delegate { });
+        if (_config.RealTimeSession)
+        {
+            _session.Source?.RegisterUnhandledEvent(delegate { });
+        }
 
         // Ensure disposal on CTRL+C scenarios
-        this._session.StopOnDispose = true;
+        _session.StopOnDispose = true;
 
-        this._log.Info(
-            $"{Loader} session created. RealTime={this._config.RealTimeSession} BufferMB={this._config.BufferSizeMB} Circular={this._config.Circular}");
+        _log.Info(
+            $"{Loader} session created. RealTime={_config.RealTimeSession} BufferMB={_config.BufferSizeMB} Circular={_config.Circular}");
     }
+
 
 
 
@@ -245,36 +273,44 @@ public sealed class EtwLoader : IDisposable
 
     private void SubscribeProviders()
     {
-        if (this._session == null) throw new InvalidOperationException("Session not initialized.");
-        if (this._session.Source == null) throw new InvalidOperationException("Session source not available.");
+        if (_session == null)
+        {
+            throw new InvalidOperationException("Session not initialized.");
+        }
 
-        foreach (EtwProviderSpec p in this._config.Providers)
+        if (_session.Source == null)
+        {
+            throw new InvalidOperationException("Session source not available.");
+        }
+
+        foreach (EtwProviderSpec p in _config.Providers)
+        {
             try
             {
                 var level = (TracingLevel)Clamp(p.Level, 0, 5);
                 // Keywords expected as ulong by TraceEvent API when using numeric overloads
-                ulong keywords = unchecked((ulong)p.Keywords);
+                var keywords = unchecked((ulong)p.Keywords);
 
                 if (p.ProviderGuid != Guid.Empty)
                 {
-                    this._session.EnableProvider(p.ProviderGuid, (TraceEventLevel)level, keywords);
-                    this._log.Info(
+                    _session.EnableProvider(p.ProviderGuid, (TraceEventLevel)level, keywords);
+                    _log.Info(
                         $"{Loader} enabled provider GUID={p.ProviderGuid} Level={(int)level} Keywords=0x{keywords:X}");
                 }
                 else if (!string.IsNullOrWhiteSpace(p.ProviderName))
                 {
-                    this._session.EnableProvider(p.ProviderName!, (TraceEventLevel)level, keywords);
-                    this._log.Info(
+                    _session.EnableProvider(p.ProviderName!, (TraceEventLevel)level, keywords);
+                    _log.Info(
                         $"{Loader} enabled provider Name='{p.ProviderName}' Level={(int)level} Keywords=0x{keywords:X}");
                 }
                 else
                 {
-                    this._log.Warn($"{Loader} skipped provider with neither name nor GUID.");
+                    _log.Warn($"{Loader} skipped provider with neither name nor GUID.");
                     continue;
                 }
 
                 // Attach a generic callback that fires for all events from all providers
-                this._session.Source.Dynamic.All += data =>
+                _session.Source.Dynamic.All += data =>
                 {
                     try
                     {
@@ -282,22 +318,31 @@ public sealed class EtwLoader : IDisposable
                     }
                     catch (Exception ex)
                     {
-                        if (this._config.AuditLog)
-                            this._log.Warn($"{Loader} event handler error: {ex.Message}");
+                        if (_config.AuditLog)
+                        {
+                            _log.Warn($"{Loader} event handler error: {ex.Message}");
+                        }
                     }
                 };
             }
             catch (Exception ex)
             {
-                this._log.Error(
+                _log.Error(
                     $"{Loader} failed to enable provider '{p.ProviderName ?? p.ProviderGuid.ToString()}': {ex.Message}");
             }
+        }
 
         // Start processing on a background thread
         Task.Run(() =>
         {
-            try { this._session!.Source.Process(); }
-            catch (Exception ex) { this._log.Error($"{Loader} session processing error: {ex.Message}"); }
+            try
+            {
+                _session!.Source.Process();
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"{Loader} session processing error: {ex.Message}");
+            }
         });
     }
 
@@ -305,21 +350,27 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     private void EnableKernelProviders()
     {
-        if (this._session == null) throw new InvalidOperationException("Session not initialized.");
+        if (_session == null)
+        {
+            throw new InvalidOperationException("Session not initialized.");
+        }
+
         try
         {
-            var kws = (KernelTraceEventParser.Keywords)this._config.KernelKeywords;
-            this._session.EnableKernelProvider(kws);
-            this._kernelEnabled = true;
-            this._log.Info($"{Loader} kernel providers enabled Keywords=0x{this._config.KernelKeywords:X}");
+            var kws = (KernelTraceEventParser.Keywords)_config.KernelKeywords;
+            _session.EnableKernelProvider(kws);
+            _kernelEnabled = true;
+            _log.Info($"{Loader} kernel providers enabled Keywords=0x{_config.KernelKeywords:X}");
         }
         catch (Exception ex)
         {
-            this._log.Error($"{Loader} failed to enable kernel providers: {ex.Message}");
+            _log.Error($"{Loader} failed to enable kernel providers: {ex.Message}");
         }
     }
+
 
 
 
@@ -333,27 +384,29 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     private void OnEvent(TraceEvent data)
     {
         // Timestamp normalization
-        var ts = data.TimeStamp.ToUniversalTime();
+        DateTime ts = data.TimeStamp.ToUniversalTime();
 
         // Basic identity
         var providerName = data.ProviderName ?? "Unknown";
-        var providerGuid = data.ProviderGuid;
+        Guid providerGuid = data.ProviderGuid;
         var eventName = data.EventName ?? "";
         var taskName = Safe(() => data.TaskName) ?? "";
         var opcodeName = Safe(() => data.OpcodeName) ?? "";
-        int task = SafeNullable(() => (int)data.Task) ?? 0;
-        int opcode = SafeNullable(() => (int)data.Opcode) ?? 0;
-        int level = SafeNullable(() => (int)data.Level) ?? 0;
-        ulong keywords = SafeNullable(() => (ulong)data.Keywords) ?? 0UL;
+        var task = SafeNullable(() => (int)data.Task) ?? 0;
+        var opcode = SafeNullable(() => (int)data.Opcode) ?? 0;
+        var level = SafeNullable(() => (int)data.Level) ?? 0;
+        var keywords = (ulong)SafeNullable(() => (ulong)data.Keywords);
 
         // Identity and context
         var pid = data.ProcessID;
         var tid = data.ThreadID;
         string? procName = null;
-        if (this._config.IncludeProcessName && pid > 0)
+        if (_config.IncludeProcessName && pid > 0)
+        {
             try
             {
                 using var p = Process.GetProcessById(pid);
@@ -363,6 +416,7 @@ public sealed class EtwLoader : IDisposable
             {
                 /* process may have exited */
             }
+        }
 
         // Activity correlation
         var activityId = data.ActivityID == Guid.Empty ? null : data.ActivityID.ToString();
@@ -370,18 +424,27 @@ public sealed class EtwLoader : IDisposable
 
         // Payload extraction
         Dictionary<string, string>? payload = null;
-        if (this._config.IncludePayload)
+        if (_config.IncludePayload)
+        {
             try
             {
                 if (data.PayloadNames is { Length: > 0 })
                 {
-                    payload = new Dictionary<string, string>(data.PayloadNames.Length, StringComparer.OrdinalIgnoreCase);
+                    payload = new Dictionary<string, string>(data.PayloadNames.Length,
+                        StringComparer.OrdinalIgnoreCase);
                     for (var i = 0; i < data.PayloadNames.Length; i++)
                     {
                         var name = data.PayloadNames[i] ?? $"field{i}";
                         string val;
-                        try { val = data.PayloadValue(i)?.ToString() ?? ""; }
-                        catch { val = ""; }
+                        try
+                        {
+                            val = data.PayloadValue(i)?.ToString() ?? "";
+                        }
+                        catch
+                        {
+                            val = "";
+                        }
+
                         payload[name] = val;
                     }
                 }
@@ -390,10 +453,14 @@ public sealed class EtwLoader : IDisposable
             {
                 /* ignore payload failures */
             }
+        }
 
         // Render a simple message when asked (best-effort)
         string? message = null;
-        if (this._config.IncludeRenderedMessage) message = BuildRendered(providerName, eventName, payload);
+        if (_config.IncludeRenderedMessage)
+        {
+            message = BuildRendered(providerName, eventName, payload);
+        }
 
         // Normalization & hash
         var normalized = Normalize(message ?? eventName);
@@ -420,8 +487,8 @@ public sealed class EtwLoader : IDisposable
 
             UtcTimestamp = ts,
 
-            RenderedMessage = this._config.IncludeRenderedMessage ? message : null,
-            Payload = this._config.IncludePayload ? payload : null,
+            RenderedMessage = _config.IncludeRenderedMessage ? message : null,
+            Payload = _config.IncludePayload ? payload : null,
 
             NormalizedMessage = normalized,
             EventHash = hash,
@@ -435,21 +502,27 @@ public sealed class EtwLoader : IDisposable
         };
 
         // Dedup guard
-        var allow = this._config.DedupMaxPerWindow <= 0 || this._dedup.Allow(env.EventHash, env.UtcTimestamp);
+        var allow = _config.DedupMaxPerWindow <= 0 || _dedup.Allow(env.EventHash, env.UtcTimestamp);
         if (!allow)
         {
-            if (this._config.AuditLog)
-                this._log.Debug(
+            if (_config.AuditLog)
+            {
+                _log.Debug(
                     $"{Loader} dedup suppressed: {providerName}:{eventName} Hash={Trunc(env.EventHash, 12)}");
+            }
+
             return;
         }
 
-        if (this._config.AuditLog)
-            this._log.Debug(
+        if (_config.AuditLog)
+        {
+            _log.Debug(
                 $"{Loader} audit Provider='{env.ProviderName}' Event='{env.EventName}' Level={env.Level} PID={env.ProcessId} Hash='{Trunc(env.EventHash, 12)}' Schema='{SchemaVersion}'");
+        }
 
-        this._queue.Enqueue(env);
+        _queue.Enqueue(env);
     }
+
 
 
 
@@ -463,31 +536,37 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     private async Task PumpLoopAsync(CancellationToken ct)
     {
-        List<EtwEventEnvelope> batch = new(this._config.BatchSize);
-        DateTime nextFlush = DateTime.UtcNow + this._config.FlushInterval;
+        List<EtwEventEnvelope> batch = new(_config.BatchSize);
+        DateTime nextFlush = DateTime.UtcNow + _config.FlushInterval;
 
         while (!ct.IsCancellationRequested)
+        {
             try
             {
                 // Drain queue up to batch size
-                while (batch.Count < this._config.BatchSize && this._queue.TryDequeue(out EtwEventEnvelope? item))
+                while (batch.Count < _config.BatchSize && _queue.TryDequeue(out EtwEventEnvelope? item))
+                {
                     batch.Add(item);
+                }
 
                 DateTime now = DateTime.UtcNow;
                 var timeToFlush = now >= nextFlush;
 
-                if (batch.Count >= this._config.BatchSize || (timeToFlush && batch.Count > 0))
+                if (batch.Count >= _config.BatchSize || (timeToFlush && batch.Count > 0))
                 {
-                    await this._sink.EmitBatchAsync(batch, ct).ConfigureAwait(false);
+                    await _sink.EmitBatchAsync(batch, ct).ConfigureAwait(false);
                     batch.Clear();
-                    nextFlush = now + this._config.FlushInterval;
-                    this._dedup.SweepExpired();
+                    nextFlush = now + _config.FlushInterval;
+                    _dedup.SweepExpired();
                 }
 
                 if (batch.Count == 0)
+                {
                     await Task.Delay(TimeSpan.FromMilliseconds(10), ct).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -495,22 +574,30 @@ public sealed class EtwLoader : IDisposable
             }
             catch (Exception ex)
             {
-                this._log.Error($"{Loader} pump error: {ex.Message}");
-                if (this._config.FailFast) throw;
+                _log.Error($"{Loader} pump error: {ex.Message}");
+                if (_config.FailFast)
+                {
+                    throw;
+                }
+
                 await Task.Delay(TimeSpan.FromMilliseconds(50), ct).ConfigureAwait(false);
             }
+        }
 
         // Final flush
         if (batch.Count > 0)
+        {
             try
             {
-                await this._sink.EmitBatchAsync(batch, CancellationToken.None).ConfigureAwait(false);
+                await _sink.EmitBatchAsync(batch, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
                 /* ignore */
             }
+        }
     }
+
 
 
 
@@ -524,17 +611,24 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     private static string? BuildRendered(string provider, string eventName, Dictionary<string, string>? payload)
     {
         if (payload is null || payload.Count == 0)
+        {
             return $"{provider}:{eventName}";
+        }
 
         var sb = new StringBuilder(provider.Length + eventName.Length + 32);
         sb.Append(provider).Append(':').Append(eventName).Append(' ');
         var first = true;
         foreach (KeyValuePair<string, string> kv in payload)
         {
-            if (!first) sb.Append(' ');
+            if (!first)
+            {
+                sb.Append(' ');
+            }
+
             sb.Append(kv.Key).Append('=').Append(kv.Value);
             first = false;
         }
@@ -546,10 +640,12 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     private static int Clamp(int v, int min, int max)
     {
         return v < min ? min : v > max ? max : v;
     }
+
 
 
 
@@ -571,11 +667,19 @@ public sealed class EtwLoader : IDisposable
 
 
 
-    private static int? SafeNullable<T>(Func<T> f) where T : struct
+
+    private static T? SafeNullable<T>(Func<T> f) where T : struct
     {
-        try { return f(); }
-        catch { return null; }
+        try
+        {
+            return f();
+        }
+        catch
+        {
+            return null;
+        }
     }
+
 
 
 
@@ -583,13 +687,18 @@ public sealed class EtwLoader : IDisposable
 
     private static string Normalize(string s)
     {
-        if (string.IsNullOrWhiteSpace(s)) return "";
+        if (string.IsNullOrWhiteSpace(s))
+        {
+            return "";
+        }
+
         s = RxGuid.Replace(s, "{GUID}");
         s = RxHex.Replace(s, "{HEX}");
         s = RxInt.Replace(s, "{N}");
         s = RxWs.Replace(s, " ").Trim();
         return s;
     }
+
 
 
 
@@ -607,8 +716,12 @@ public sealed class EtwLoader : IDisposable
 
         if (payload is { Count: > 0 })
             // Deterministic order by key
+        {
             foreach (KeyValuePair<string, string> kv in payload.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+            {
                 sb.Append('|').Append(kv.Key).Append('=').Append(kv.Value);
+            }
+        }
 
         // FNV-1a 64
         var hash = 1469598103934665603UL;
@@ -625,10 +738,12 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
     private static string Trunc(string? s, int n)
     {
         return string.IsNullOrEmpty(s) ? "" : s.Length <= n ? s : s.Substring(0, n);
     }
+
 
 
 
@@ -653,17 +768,21 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
         public bool Allow(string key, DateTime when)
         {
-            if (maxPerWindow <= 0) return true;
-
-            if (!this._map.TryGetValue(key, out DedupEntry? e))
+            if (maxPerWindow <= 0)
             {
-                e = new DedupEntry { First = when, Last = when, Count = 0 };
-                this._map[key] = e;
+                return true;
             }
 
-            if (when - e.First > this._window)
+            if (!_map.TryGetValue(key, out DedupEntry? e))
+            {
+                e = new DedupEntry { First = when, Last = when, Count = 0 };
+                _map[key] = e;
+            }
+
+            if (when - e.First > _window)
             {
                 e.First = when;
                 e.Count = 0;
@@ -684,26 +803,36 @@ public sealed class EtwLoader : IDisposable
 
 
 
+
         public void SweepExpired()
         {
             DateTime now = DateTime.UtcNow;
-            if (now < this._nextSweep) return;
-
-            // Remove stale keys
-            foreach (var k in this._map.Where(p => now - p.Value.Last > this._window).Select(p => p.Key).ToList())
-                this._map.Remove(k);
-
-            // Enforce capacity
-            if (this._map.Count > this._capacity)
+            if (now < _nextSweep)
             {
-                foreach (var k in this._map.OrderBy(p => p.Value.Last).Take(this._map.Count - this._capacity)
-                             .Select(p => p.Key).ToList())
-                    this._map.Remove(k);
-                this._log.Warn($"{Loader} dedup map truncated to capacity={this._capacity}");
+                return;
             }
 
-            this._nextSweep = now + TimeSpan.FromSeconds(5);
+            // Remove stale keys
+            foreach (var k in _map.Where(p => now - p.Value.Last > _window).Select(p => p.Key).ToList())
+            {
+                _map.Remove(k);
+            }
+
+            // Enforce capacity
+            if (_map.Count > _capacity)
+            {
+                foreach (var k in _map.OrderBy(p => p.Value.Last).Take(_map.Count - _capacity)
+                             .Select(p => p.Key).ToList())
+                {
+                    _map.Remove(k);
+                }
+
+                _log.Warn($"{Loader} dedup map truncated to capacity={_capacity}");
+            }
+
+            _nextSweep = now + TimeSpan.FromSeconds(5);
         }
+
 
 
 

@@ -8,6 +8,8 @@
 
 using System.Net;
 using System.Net.NetworkInformation;
+using LightweightAI.Core.Interop;
+using System.Runtime.InteropServices;
 
 
 
@@ -98,38 +100,76 @@ public sealed class NetworkConnectionLoader(
         Dictionary<string, NetworkConnectionRecord> result = new(StringComparer.OrdinalIgnoreCase);
         var ipProps = IPGlobalProperties.GetIPGlobalProperties();
 
-        try
+        // Windows enhanced path (OwningPid)
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            foreach (TcpConnectionInformation conn in ipProps.GetActiveTcpConnections())
+            try
             {
-                var rec = new NetworkConnectionRecord
+                foreach (var row in WindowsTcpConnections.GetAllTcpWithPidIPv4())
                 {
-                    Protocol = "TCP",
-                    LocalAddress = conn.LocalEndPoint.Address.ToString(),
-                    LocalPort = conn.LocalEndPoint.Port,
-                    RemoteAddress = conn.RemoteEndPoint.Address.ToString(),
-                    RemotePort = conn.RemoteEndPoint.Port,
-                    State = conn.State.ToString(),
-                    OwningPid = conn.ProcessId,
-                    Host = Environment.MachineName,
-                    SourceId = SourceId,
-                    LoaderName = Loader,
-                    SchemaVersion = SchemaVersion,
-                    CollectionMethod = CollectionMethod,
-                    RecordId = $"TCP:{conn.LocalEndPoint}-{conn.RemoteEndPoint}:{conn.ProcessId}",
-                    ChangeType = "Unchanged"
-                };
+                    var rec = new NetworkConnectionRecord
+                    {
+                        Protocol = "TCP",
+                        LocalAddress = row.LocalAddress,
+                        LocalPort = row.LocalPort,
+                        RemoteAddress = row.RemoteAddress,
+                        RemotePort = row.RemotePort,
+                        State = row.State,
+                        OwningPid = row.ProcessId,
+                        Host = Environment.MachineName,
+                        SourceId = SourceId,
+                        LoaderName = Loader,
+                        SchemaVersion = SchemaVersion,
+                        CollectionMethod = "GetExtendedTcpTable",
+                        RecordId = $"TCP:{row.LocalAddress}:{row.LocalPort}-{row.RemoteAddress}:{row.RemotePort}:{row.ProcessId}",
+                        ChangeType = "Unchanged"
+                    };
+                    result[rec.RecordId] = rec;
 
-                result[rec.RecordId] = rec;
-
-                if (this._config.AuditLog)
-                    this._log.Debug(
-                        $"{Loader} audit TCP {rec.LocalAddress}:{rec.LocalPort} -> {rec.RemoteAddress}:{rec.RemotePort} State={rec.State} PID={rec.OwningPid} Schema={SchemaVersion}");
+                    if (this._config.AuditLog)
+                        this._log.Debug($"{Loader} audit TCP {rec.LocalAddress}:{rec.LocalPort} -> {rec.RemoteAddress}:{rec.RemotePort} State={rec.State} PID={rec.OwningPid} Schema={SchemaVersion}");
+                }
+            }
+            catch (Exception ex)
+            {
+                this._log.Warn($"{Loader} GetExtendedTcpTable failed, falling back: {ex.Message}");
             }
         }
-        catch (Exception ex)
+
+        // Fallback (no PID) or non-Windows
+        if (result.Count == 0)
         {
-            this._log.Warn($"{Loader} failed to enumerate TCP connections: {ex.Message}");
+            try
+            {
+                foreach (TcpConnectionInformation conn in ipProps.GetActiveTcpConnections())
+                {
+                    var rec = new NetworkConnectionRecord
+                    {
+                        Protocol = "TCP",
+                        LocalAddress = conn.LocalEndPoint.Address.ToString(),
+                        LocalPort = conn.LocalEndPoint.Port,
+                        RemoteAddress = conn.RemoteEndPoint.Address.ToString(),
+                        RemotePort = conn.RemoteEndPoint.Port,
+                        State = conn.State.ToString(),
+                        OwningPid = 0, // Not available
+                        Host = Environment.MachineName,
+                        SourceId = SourceId,
+                        LoaderName = Loader,
+                        SchemaVersion = SchemaVersion,
+                        CollectionMethod = "IPGlobalProperties API",
+                        RecordId = $"TCP:{conn.LocalEndPoint}-{conn.RemoteEndPoint}:0",
+                        ChangeType = "Unchanged"
+                    };
+                    result[rec.RecordId] = rec;
+
+                    if (this._config.AuditLog)
+                        this._log.Debug($"{Loader} audit TCP {rec.LocalAddress}:{rec.LocalPort} -> {rec.RemoteAddress}:{rec.RemotePort} State={rec.State} PID={rec.OwningPid} Schema={SchemaVersion}");
+                }
+            }
+            catch (Exception ex)
+            {
+                this._log.Warn($"{Loader} failed to enumerate TCP connections: {ex.Message}");
+            }
         }
 
         try

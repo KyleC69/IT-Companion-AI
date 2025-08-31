@@ -8,6 +8,11 @@
 
 using LightweightAI.Core.Config;
 
+using Microsoft.Win32.TaskScheduler;
+
+using STask = Microsoft.Win32.TaskScheduler.Task;
+using Task = System.Threading.Tasks.Task;
+
 
 
 namespace LightweightAI.Core.Loaders.Windows;

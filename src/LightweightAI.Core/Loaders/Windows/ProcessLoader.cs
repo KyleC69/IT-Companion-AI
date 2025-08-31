@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.ServiceProcess;
 
 using LightweightAI.Core.Config;
 
@@ -18,7 +19,13 @@ using LightweightAI.Core.Config;
 namespace LightweightAI.Core.Loaders.Windows;
 
 
-public sealed class ProcessLoader(ProcessLoaderConfig config, Services.IInventorySink sink, ILoggerSeverity log)
+public interface IProcessInventorySink
+{
+    Task EmitBatchAsync(IReadOnlyList<ProcessRecord> batch, CancellationToken ct);
+}
+
+
+public sealed class ProcessLoader(ProcessLoaderConfig config, IProcessInventorySink sink, ILoggerSeverity log)
     : IDisposable
 {
     private const string SchemaVersion = "1.1";
@@ -30,7 +37,7 @@ public sealed class ProcessLoader(ProcessLoaderConfig config, Services.IInventor
 
     private readonly Dictionary<int, ProcessRecord> _lastSnapshot = new();
     private readonly ILoggerSeverity _log = log ?? throw new ArgumentNullException(nameof(log));
-    private readonly Services.IInventorySink _sink = sink ?? throw new ArgumentNullException(nameof(sink));
+    private readonly IProcessInventorySink _sink = sink ?? throw new ArgumentNullException(nameof(sink));
 
     private bool _disposed;
 
@@ -207,6 +214,7 @@ public sealed class ProcessLoader(ProcessLoaderConfig config, Services.IInventor
                 var record = new ProcessRecord
                 {
                     ProcessId = pid,
+                    Pid = pid,
                     ParentProcessId = ppid,
                     ProcessName = Safe(() => proc.ProcessName) ?? "",
                     MainWindowTitle = Safe(() => proc.MainWindowTitle),
@@ -215,6 +223,7 @@ public sealed class ProcessLoader(ProcessLoaderConfig config, Services.IInventor
                     DigitalSignature = signer,
                     SignatureValid = sigValid,
                     StartTimeUtc = startTime,
+                    StartTime = startTime,
                     CommandLine = cmd,
                     UserSid = userSid,
                     UserName = userName,

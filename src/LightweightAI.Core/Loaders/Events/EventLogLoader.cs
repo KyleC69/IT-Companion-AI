@@ -145,6 +145,23 @@ public sealed class EventLogLoader : IDisposable
             }
     }
 
+    
+    
+    
+    /// <summary>
+    /// Reads events from the specified event log channel and processes them into a batch.
+    /// </summary>
+    /// <param name="state">The state of the channel, including its reader and bookmark for tracking progress.</param>
+    /// <param name="batch">The collection to which the processed events will be added.</param>
+    /// <param name="ct">A <see cref="CancellationToken"/> to observe for cancellation requests.</param>
+    /// <returns>The number of events successfully read and added to the batch.</returns>
+    /// <remarks>
+    /// This method reads events from the event log channel using the provided <paramref name="state"/>.
+    /// It processes each event, applies deduplication logic, and adds eligible events to the <paramref name="batch"/>.
+    /// If an error occurs while reading, it logs the error and may throw an exception depending on the configuration.
+    /// </remarks>
+    /// <exception cref="EventLogException">Thrown when an error occurs while reading from the event log channel.</exception>
+    /// <exception cref="Exception">Thrown when an unexpected error occurs during the read operation.</exception>
     private int ReadChannel(ChannelState state, List<EventEnvelope> batch, CancellationToken ct)
     {
         var count = 0;
@@ -153,7 +170,8 @@ public sealed class EventLogLoader : IDisposable
             System.Diagnostics.Eventing.Reader.EventRecord? rec = null;
             try
             {
-                rec = state.Bookmark == null ? state.Reader.ReadEvent() : state.Reader.ReadEvent(state.Bookmark);
+                rec =  state.Reader.ReadEvent();
+                
                 if (rec is null) break;
 
                 state.Bookmark = rec.Bookmark;

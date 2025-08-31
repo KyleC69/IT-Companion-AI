@@ -1,4 +1,4 @@
-// Project Name: LightweightAI.Core
+﻿// Project Name: LightweightAI.Core
 // File Name: Aggregation.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz
@@ -10,6 +10,7 @@ using System.Buffers;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text;
 
 using LightweightAI.Core.Engine;
 
@@ -37,13 +38,6 @@ public readonly record struct EventRecord(
 public readonly record struct TrendPoint(DateTimeOffset At, double Value);
 
 
-
-public readonly record struct AnomalySignal(
-    DateTimeOffset At,
-    double Value,
-    double ZScore,
-    bool IsAnomaly
-);
 
 
 
@@ -111,6 +105,8 @@ public interface IUnifiedAggregator
 public interface ISnapshotTrendModel
 {
     Snapshot Current { get; }
+
+
     Snapshot Update(in TrendPoint p);
 }
 
@@ -131,10 +127,12 @@ public sealed class DataRefineryPipeline : IDataRefineryPipeline
 
 
 
+
     public DataRefineryPipeline(IEnumerable<IDataRefineryStep> steps)
     {
-        this._steps = steps.ToImmutableArray();
+        _steps = steps.ToImmutableArray();
     }
+
 
 
 
@@ -142,8 +140,12 @@ public sealed class DataRefineryPipeline : IDataRefineryPipeline
 
     public EventRecord Process(in EventRecord e, in RefineryContext ctx)
     {
-        var cur = e;
-        foreach (var step in this._steps) cur = step.Execute(cur, ctx);
+        EventRecord cur = e;
+        foreach (IDataRefineryStep step in _steps)
+        {
+            cur = step.Execute(cur, ctx);
+        }
+
         return cur;
     }
 }
@@ -154,13 +156,22 @@ public sealed class NormalizeFieldsStep : IDataRefineryStep
 {
     public EventRecord Execute(in EventRecord e, in RefineryContext ctx)
     {
-        var map = e.Fields;
+        ImmutableDictionary<string, string> map = e.Fields;
         if (!map.ContainsKey("actor") && !string.IsNullOrWhiteSpace(e.Actor))
+        {
             map = map.SetItem("actor", e.Actor);
+        }
+
         if (!map.ContainsKey("host") && !string.IsNullOrWhiteSpace(e.Host))
+        {
             map = map.SetItem("host", e.Host);
+        }
+
         if (!map.ContainsKey("provider") && !string.IsNullOrWhiteSpace(e.Provider))
+        {
             map = map.SetItem("provider", e.Provider);
+        }
+
         return e with { Fields = map };
     }
 }
@@ -171,7 +182,7 @@ public sealed class EnrichProvenanceStep : IDataRefineryStep
 {
     public EventRecord Execute(in EventRecord e, in RefineryContext ctx)
     {
-        var map = e.Fields
+        ImmutableDictionary<string, string> map = e.Fields
             .SetItem("source_id", e.SourceId)
             .SetItem("provider", e.Provider)
             .SetItem("event_id", e.EventId)
@@ -184,23 +195,24 @@ public sealed class EnrichProvenanceStep : IDataRefineryStep
 
 public sealed class DeduplicateStep : IDataRefineryStep
 {
-    private static string StableHash(string sourceId, string provider, string eventId, long seq, string payloadHash)
+    public EventRecord Execute(in EventRecord e, in RefineryContext ctx)
     {
-        var input = $"{sourceId}|{provider}|{eventId}|{seq}|{payloadHash}";
-        var bytes = System.Text.Encoding.UTF8.GetBytes(input);
-        Span<byte> hash = stackalloc byte[32];
-        SHA256.HashData(bytes, hash);
-        return Convert.ToHexString(hash);
+        var collisionKey = StableHash(e.SourceId, e.Provider, e.EventId, e.Sequence, e.PayloadHash);
+        return e with { Fields = e.Fields.SetItem("collision_key", collisionKey) };
     }
 
 
 
 
 
-    public EventRecord Execute(in EventRecord e, in RefineryContext ctx)
+
+    private static string StableHash(string sourceId, string provider, string eventId, long seq, string payloadHash)
     {
-        var collisionKey = StableHash(e.SourceId, e.Provider, e.EventId, e.Sequence, e.PayloadHash);
-        return e with { Fields = e.Fields.SetItem("collision_key", collisionKey) };
+        var input = $"{sourceId}|{provider}|{eventId}|{seq}|{payloadHash}";
+        var bytes = Encoding.UTF8.GetBytes(input);
+        Span<byte> hash = stackalloc byte[32];
+        SHA256.HashData(bytes, hash);
+        return Convert.ToHexString(hash);
     }
 }
 
@@ -210,12 +222,12 @@ public sealed class DeterministicAggregator : IAggregator
 {
     public IEnumerable<AggregatedMetric> Aggregate(IEnumerable<EventRecord> events, AggregatorConfig cfg)
     {
-        var ordered = events
+        IOrderedEnumerable<EventRecord> ordered = events
             .OrderBy(e => e.Timestamp)
             .ThenBy(e => e.Sequence)
             .ThenBy(e => e.PayloadHash, StringComparer.Ordinal);
 
-        var byWindow = ordered.GroupBy(e =>
+        IEnumerable<IGrouping<(DateTimeOffset start, DateTimeOffset end), EventRecord>> byWindow = ordered.GroupBy(e =>
         {
             var startTicks = e.Timestamp.UtcDateTime.Ticks - e.Timestamp.UtcDateTime.Ticks % cfg.Window.Ticks;
             var start = new DateTimeOffset(new DateTime(startTicks, DateTimeKind.Utc));
@@ -223,35 +235,43 @@ public sealed class DeterministicAggregator : IAggregator
             return (start, end);
         });
 
-        foreach (var win in byWindow)
+        foreach (IGrouping<(DateTimeOffset start, DateTimeOffset end), EventRecord> win in byWindow)
         {
-            var grouped = win.GroupBy(e => BuildKey(e, cfg.GroupBy));
-            foreach (var g in grouped)
+            IEnumerable<IGrouping<string, EventRecord>> grouped = win.GroupBy(e => BuildKey(e, cfg.GroupBy));
+            foreach (IGrouping<string, EventRecord> g in grouped)
             {
                 long count = 0;
                 var weighted = 0d;
                 var dims = ImmutableDictionary<string, double>.Empty.ToBuilder();
 
-                foreach (var e in g)
+                foreach (EventRecord e in g)
                 {
                     count++;
-                    foreach (var kv in cfg.DimensionWeights)
+                    foreach (KeyValuePair<string, double> kv in cfg.DimensionWeights)
+                    {
                         if (e.Fields.TryGetValue(kv.Key, out var s) && double.TryParse(s, out var v))
                         {
-                            if (dims.ContainsKey(kv.Key)) dims[kv.Key] += v * kv.Value;
-                            else dims[kv.Key] = v * kv.Value;
+                            if (dims.ContainsKey(kv.Key))
+                            {
+                                dims[kv.Key] += v * kv.Value;
+                            }
+                            else
+                            {
+                                dims[kv.Key] = v * kv.Value;
+                            }
                         }
+                    }
 
                     weighted += e.Severity;
                 }
 
                 yield return new AggregatedMetric(
-                    Key: g.Key,
-                    WindowStart: win.Key.start,
-                    WindowEnd: win.Key.end,
-                    Count: count,
-                    WeightedScore: weighted,
-                    Dimensions: dims.ToImmutable()
+                    g.Key,
+                    win.Key.start,
+                    win.Key.end,
+                    count,
+                    weighted,
+                    dims.ToImmutable()
                 );
             }
         }
@@ -261,9 +281,14 @@ public sealed class DeterministicAggregator : IAggregator
 
 
 
+
     private static string BuildKey(in EventRecord e, ImmutableArray<string> fields)
     {
-        if (fields.Length == 0) return "all";
+        if (fields.Length == 0)
+        {
+            return "all";
+        }
+
         var parts = ArrayPool<string>.Shared.Rent(fields.Length);
         try
         {
@@ -283,125 +308,6 @@ public sealed class DeterministicAggregator : IAggregator
     }
 }
 
-
-
-
-
-
-
-public sealed class SnapshotTrendModel : ISnapshotTrendModel
-{
-    private readonly TrendConfig _cfg;
-    private readonly Queue<TrendPoint> _window;
-    private double _ema;
-    private bool _hasLast;
-    private TrendPoint _last;
-    private double _sum;
-    private double _sumSquares;
-
-
-
-
-
-
-
-
-    public Snapshot Current { get; private set; }
-
-
-
-
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Snapshot Update(in TrendPoint p)
-    {
-        if (this._window.Count == 0)
-            this._ema = p.Value;
-        else
-            this._ema = this._cfg.Alpha * p.Value + (1 - this._cfg.Alpha) * this._ema;
-
-        this._window.Enqueue(p);
-        this._sum += p.Value;
-        this._sumSquares += p.Value * p.Value;
-
-        if (this._window.Count > this._cfg.Window)
-        {
-            var old = this._window.Dequeue();
-            this._sum -= old.Value;
-            this._sumSquares -= old.Value * old.Value;
-        }
-
-        var n = this._window.Count;
-        var mean = this._sum / Math.Max(1, n);
-        var variance = Math.Max(0, this._sumSquares / Math.Max(1, n) - mean * mean);
-        var std = Math.Sqrt(variance);
-
-        var trendDelta = 0d;
-        if (this._hasLast) trendDelta = p.Value - this._last.Value;
-        this._last = p;
-        this._hasLast = true;
-
-        this.Current = new Snapshot(
-            At: p.At,
-            Count: n,
-            Sum: this._sum,
-            Mean: mean,
-            StdDev: std,
-            Ema: this._ema,
-            TrendDelta: trendDelta
-        );
-
-        return this.Current;
-    }
-}
-
-
-
-public sealed partial class StreamAnomalyModel : IStreamAnomalyModel
-{
-    private readonly AnomalyConfig _cfg;
-    private double _ema;
-    private double _emaSq;
-    private bool _init;
-
-
-
-
-
-    public StreamAnomalyModel(AnomalyConfig cfg)
-    {
-        this._cfg = cfg;
-        this._ema = 0d;
-        this._emaSq = 0d;
-        this._init = false;
-    }
-
-
-
-
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public AnomalySignal Update(in TrendPoint p)
-    {
-        if (!this._init)
-        {
-            this._ema = p.Value;
-            this._emaSq = p.Value * p.Value;
-            this._init = true;
-            return new AnomalySignal(p.At, p.Value, 0, false);
-        }
-
-        this._ema = this._cfg.Alpha * p.Value + (1 - this._cfg.Alpha) * this._ema;
-        this._emaSq = this._cfg.Alpha * p.Value * p.Value + (1 - this._cfg.Alpha) * this._emaSq;
-
-        var variance = Math.Max(this._cfg.MinVariance, this._emaSq - this._ema * this._ema);
-        var std = Math.Sqrt(variance);
-        var z = std > 0 ? (p.Value - this._ema) / std : 0d;
-        var isAnom = Math.Abs(z) >= this._cfg.ZThreshold;
-
-        return new AnomalySignal(p.At, p.Value, z, isAnom);
-    }
-}
 
 
 
@@ -439,6 +345,7 @@ public sealed class SnapShotModels
     {
         return new SnapshotTrendModel(cfg);
     }
+
 
 
 

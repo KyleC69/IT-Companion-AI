@@ -38,11 +38,17 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
 
 
+
     public void Dispose()
     {
-        if (this._disposed) return;
-        this._disposed = true;
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
     }
+
 
 
 
@@ -50,32 +56,41 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
     public async Task StartAsync(CancellationToken ct)
     {
-        this._log.Info(
-            $"{Loader} starting. Interval={this._config.SampleInterval}, DeltaOnly={this._config.DeltaOnly}");
+        _log.Info(
+            $"{Loader} starting. Interval={_config.SampleInterval}, DeltaOnly={_config.DeltaOnly}");
 
         while (!ct.IsCancellationRequested)
+        {
             try
             {
                 Dictionary<string, MemoryRegionRecord> snapshot = CollectSnapshot();
 
                 IReadOnlyList<MemoryRegionRecord> toEmit;
-                if (this._config.DeltaOnly)
-                    toEmit = DiffSnapshots(this._lastSnapshot, snapshot);
+                if (_config.DeltaOnly)
+                {
+                    toEmit = DiffSnapshots(_lastSnapshot, snapshot);
+                }
                 else
+                {
                     toEmit = snapshot.Values.Select(r =>
                     {
                         r.ChangeType = "Unchanged";
                         return r;
                     }).ToList();
+                }
 
                 if (toEmit.Count > 0)
-                    await this._sink.EmitBatchAsync(toEmit, ct).ConfigureAwait(false);
+                {
+                    await _sink.EmitBatchAsync(toEmit, ct).ConfigureAwait(false);
+                }
 
-                this._lastSnapshot.Clear();
+                _lastSnapshot.Clear();
                 foreach (KeyValuePair<string, MemoryRegionRecord> kvp in snapshot)
-                    this._lastSnapshot[kvp.Key] = kvp.Value;
+                {
+                    _lastSnapshot[kvp.Key] = kvp.Value;
+                }
 
-                await Task.Delay(this._config.SampleInterval, ct).ConfigureAwait(false);
+                await Task.Delay(_config.SampleInterval, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -83,13 +98,19 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
             }
             catch (Exception ex)
             {
-                this._log.Error($"{Loader} loop error: {ex.Message}");
-                if (this._config.FailFast) throw;
+                _log.Error($"{Loader} loop error: {ex.Message}");
+                if (_config.FailFast)
+                {
+                    throw;
+                }
+
                 await Task.Delay(TimeSpan.FromSeconds(2), ct).ConfigureAwait(false);
             }
+        }
 
-        this._log.Info($"{Loader} stopped.");
+        _log.Info($"{Loader} stopped.");
     }
+
 
 
 
@@ -101,13 +122,19 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
         foreach (Process proc in Process.GetProcesses())
         {
-            if (ShouldSkipProcess(proc.ProcessName)) continue;
+            if (ShouldSkipProcess(proc.ProcessName))
+            {
+                continue;
+            }
 
             var hProcess = IntPtr.Zero;
             try
             {
                 hProcess = OpenForQuery(proc.Id);
-                if (hProcess == IntPtr.Zero) continue;
+                if (hProcess == IntPtr.Zero)
+                {
+                    continue;
+                }
 
                 var emittedForProc = 0;
                 EnumerateRegions(proc, hProcess, rec =>
@@ -115,12 +142,14 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
                     var key = rec.RecordId;
                     result[key] = rec;
 
-                    if (this._config.AuditLog)
-                        this._log.Debug(
+                    if (_config.AuditLog)
+                    {
+                        _log.Debug(
                             $"{Loader} audit PID={rec.Pid} Proc='{rec.ProcessName}' Base=0x{rec.BaseAddress} Size={rec.RegionSize} Prot='{rec.Protect}' Type='{rec.Type}' Path='{rec.MappedPath}'");
+                    }
 
                     emittedForProc++;
-                    return this._config.MaxRegionsPerProcess <= 0 || emittedForProc < this._config.MaxRegionsPerProcess;
+                    return _config.MaxRegionsPerProcess <= 0 || emittedForProc < _config.MaxRegionsPerProcess;
                 });
             }
             catch (Win32Exception)
@@ -133,11 +162,14 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
             }
             catch (Exception ex)
             {
-                this._log.Warn($"{Loader} failed for PID={proc.Id}: {ex.Message}");
+                _log.Warn($"{Loader} failed for PID={proc.Id}: {ex.Message}");
             }
             finally
             {
-                if (hProcess != IntPtr.Zero) Kernel32.CloseHandle(hProcess);
+                if (hProcess != IntPtr.Zero)
+                {
+                    Kernel32.CloseHandle(hProcess);
+                }
             }
         }
 
@@ -148,14 +180,22 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
 
 
+
     private bool ShouldSkipProcess(string name)
     {
-        if (this._config.IncludeOnlyProcesses?.Count > 0)
-            return !this._config.IncludeOnlyProcesses.Contains(name, StringComparer.OrdinalIgnoreCase);
-        if (this._config.ExcludeProcesses?.Count > 0)
-            return this._config.ExcludeProcesses.Contains(name, StringComparer.OrdinalIgnoreCase);
+        if (_config.IncludeOnlyProcesses?.Count > 0)
+        {
+            return !_config.IncludeOnlyProcesses.Contains(name, StringComparer.OrdinalIgnoreCase);
+        }
+
+        if (_config.ExcludeProcesses?.Count > 0)
+        {
+            return _config.ExcludeProcesses.Contains(name, StringComparer.OrdinalIgnoreCase);
+        }
+
         return false;
     }
+
 
 
 
@@ -169,12 +209,16 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
         // Try full query + VM_READ first
         var h = Kernel32.OpenProcess(QUERY | VM_READ, false, (uint)pid);
-        if (h != IntPtr.Zero) return h;
+        if (h != IntPtr.Zero)
+        {
+            return h;
+        }
 
         // Fall back to limited query (may still allow VirtualQueryEx for some regions)
         h = Kernel32.OpenProcess(QUERY_LIMITED | VM_READ, false, (uint)pid);
         return h;
     }
+
 
 
 
@@ -194,25 +238,40 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
             {
                 var mbi = new MEMORY_BASIC_INFORMATION64();
                 bytesReturned = Kernel32.VirtualQueryEx(hProcess, address, out mbi, (UIntPtr)mbiSize);
-                if (bytesReturned == 0) break;
+                if (bytesReturned == 0)
+                {
+                    break;
+                }
 
                 // Advance address before any continues to avoid infinite loops
                 var regionSize = mbi.RegionSize;
                 var baseAddr = mbi.BaseAddress;
                 var next = baseAddr + Math.Max(regionSize, 0x1000UL);
                 address = (UIntPtr)next;
+                if (ShouldSkipRegion(mbi.State))
+                {
+                    continue;
+                }
 
-                if (mbi.State == MEM_STATE.MEM_FREE) continue;
-                if (!this._config.IncludeReservedRegions && mbi.State == MEM_STATE.MEM_RESERVE) continue;
+                if (!_config.IncludeReservedRegions && ShouldSkipRegion(mbi.State))
+                {
+                    continue;
+                }
 
                 MemoryRegionRecord rec = BuildRecord(proc, mbi);
-                if (!onRecord(rec)) break;
+                if (!onRecord(rec))
+                {
+                    break;
+                }
             }
             else
             {
                 var mbi = new MEMORY_BASIC_INFORMATION32();
                 bytesReturned = Kernel32.VirtualQueryEx(hProcess, address, out mbi, (UIntPtr)mbiSize);
-                if (bytesReturned == 0) break;
+                if (bytesReturned == 0)
+                {
+                    break;
+                }
 
                 // Advance
                 var regionSize = mbi.RegionSize;
@@ -220,14 +279,38 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
                 var next = baseAddr + Math.Max(regionSize, 0x1000U);
                 address = next;
 
-                if (mbi.State == MEM_STATE.MEM_FREE) continue;
-                if (!this._config.IncludeReservedRegions && mbi.State == MEM_STATE.MEM_RESERVE) continue;
+                ShouldSkipRegion(mbi.State);
 
                 MemoryRegionRecord rec = BuildRecord(proc, mbi);
-                if (!onRecord(rec)) break;
+                if (!onRecord(rec))
+                {
+                    break;
+                }
             }
         }
     }
+
+
+
+
+
+
+// Helper method to determine if a memory region should be skipped
+    private bool ShouldSkipRegion(uint state)
+    {
+        if (MEM_STATE.MEM_FREE.Equals(state))
+        {
+            return true;
+        }
+
+        if (!_config.IncludeReservedRegions && MEM_STATE.MEM_RESERVE.Equals(state))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 
 
 
@@ -268,6 +351,7 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
 
 
+
     private MemoryRegionRecord BuildRecord(Process proc, MEMORY_BASIC_INFORMATION32 mbi)
     {
         var prot = ProtectionToString(mbi.Protect);
@@ -303,40 +387,35 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
 
 
+
+    // Refactored for clarity: single responsibility, early exits, no redundant proc.Handle access
     private string TryGetMappedPath(Process proc, UIntPtr baseAddr)
     {
+        IntPtr hProcess = IntPtr.Zero;
         try
         {
-            var hProcess = proc.Handle; // May throw; alternative is using our opened handle.
-        }
-        catch
-        {
-            // Use our previously opened handle (more reliable)
-        }
+            // Always open a fresh lightweight query handle (original handle may lack perms)
+            hProcess = OpenForQuery(proc.Id);
+            if (hProcess == IntPtr.Zero)
+                return string.Empty;
 
-        // We need the explicit handle we opened for VirtualQueryEx, so prefer OpenForQuery again.
-        var path = string.Empty;
-        var hProcess = OpenForQuery(proc.Id);
-        if (hProcess == IntPtr.Zero) return path;
-
-        try
-        {
             var sb = new StringBuilder(1024);
             var len = PsApi.GetMappedFileNameW(hProcess, baseAddr, sb, (uint)sb.Capacity);
-            if (len > 0) path = NormalizeDevicePath(sb.ToString());
+            if (len <= 0)
+                return string.Empty;
+
+            return NormalizeDevicePath(sb.ToString());
         }
         catch
         {
-            /* ignore */
+            return string.Empty;
         }
         finally
         {
-            Kernel32.CloseHandle(hProcess);
+            if (hProcess != IntPtr.Zero)
+                Kernel32.CloseHandle(hProcess);
         }
-
-        return path;
     }
-
 
 
 
@@ -352,11 +431,16 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
                 var driveStr = drive + ":";
                 var sb = new StringBuilder(256);
                 var res = Kernel32.QueryDosDevice(driveStr, sb, (uint)sb.Capacity);
-                if (res == 0) continue;
+                if (res == 0)
+                {
+                    continue;
+                }
 
                 var target = sb.ToString().TrimEnd('\0');
                 if (!string.IsNullOrEmpty(target) && devicePath.StartsWith(target, StringComparison.OrdinalIgnoreCase))
+                {
                     return devicePath.Replace(target, driveStr);
+                }
             }
         }
         catch
@@ -371,6 +455,7 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
 
 
+
     private static List<MemoryRegionRecord> DiffSnapshots(
         Dictionary<string, MemoryRegionRecord> oldSnap,
         Dictionary<string, MemoryRegionRecord> newSnap)
@@ -378,16 +463,28 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
         List<MemoryRegionRecord> changes = new();
 
         foreach ((var id, MemoryRegionRecord cur) in newSnap)
+        {
             if (!oldSnap.TryGetValue(id, out MemoryRegionRecord? old))
+            {
                 changes.Add(CloneWithChange(cur, "Added"));
-            else if (HasChanged(old, cur)) changes.Add(CloneWithChange(cur, "Modified"));
+            }
+            else if (HasChanged(old, cur))
+            {
+                changes.Add(CloneWithChange(cur, "Modified"));
+            }
+        }
 
         foreach ((var id, MemoryRegionRecord old) in oldSnap)
+        {
             if (!newSnap.ContainsKey(id))
+            {
                 changes.Add(CloneWithChange(old, "Removed"));
+            }
+        }
 
         return changes;
     }
+
 
 
 
@@ -407,10 +504,12 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
 
 
+
     private static bool StringEquals(string? x, string? y)
     {
         return string.Equals(x ?? string.Empty, y ?? string.Empty, StringComparison.OrdinalIgnoreCase);
     }
+
 
 
 
@@ -444,6 +543,7 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
 
 
+
     private static string StateToString(uint state)
     {
         return state switch
@@ -454,6 +554,7 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
             _ => $"0x{state:X}"
         };
     }
+
 
 
 
@@ -474,21 +575,66 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 
 
 
+
     private static string ProtectionToString(uint protect)
     {
         // Normalize common flag combos
         List<string> sb = new();
-        if ((protect & 0x10) != 0) sb.Add("PAGE_EXECUTE");
-        if ((protect & 0x20) != 0) sb.Add("PAGE_EXECUTE_READ");
-        if ((protect & 0x40) != 0) sb.Add("PAGE_EXECUTE_READWRITE");
-        if ((protect & 0x80) != 0) sb.Add("PAGE_EXECUTE_WRITECOPY");
-        if ((protect & 0x02) != 0) sb.Add("PAGE_READONLY");
-        if ((protect & 0x04) != 0) sb.Add("PAGE_READWRITE");
-        if ((protect & 0x08) != 0) sb.Add("PAGE_WRITECOPY");
-        if ((protect & 0x01) != 0) sb.Add("PAGE_NOACCESS");
-        if ((protect & 0x100) != 0) sb.Add("PAGE_GUARD");
-        if ((protect & 0x200) != 0) sb.Add("PAGE_NOCACHE");
-        if ((protect & 0x400) != 0) sb.Add("PAGE_WRITECOMBINE");
+        if ((protect & 0x10) != 0)
+        {
+            sb.Add("PAGE_EXECUTE");
+        }
+
+        if ((protect & 0x20) != 0)
+        {
+            sb.Add("PAGE_EXECUTE_READ");
+        }
+
+        if ((protect & 0x40) != 0)
+        {
+            sb.Add("PAGE_EXECUTE_READWRITE");
+        }
+
+        if ((protect & 0x80) != 0)
+        {
+            sb.Add("PAGE_EXECUTE_WRITECOPY");
+        }
+
+        if ((protect & 0x02) != 0)
+        {
+            sb.Add("PAGE_READONLY");
+        }
+
+        if ((protect & 0x04) != 0)
+        {
+            sb.Add("PAGE_READWRITE");
+        }
+
+        if ((protect & 0x08) != 0)
+        {
+            sb.Add("PAGE_WRITECOPY");
+        }
+
+        if ((protect & 0x01) != 0)
+        {
+            sb.Add("PAGE_NOACCESS");
+        }
+
+        if ((protect & 0x100) != 0)
+        {
+            sb.Add("PAGE_GUARD");
+        }
+
+        if ((protect & 0x200) != 0)
+        {
+            sb.Add("PAGE_NOCACHE");
+        }
+
+        if ((protect & 0x400) != 0)
+        {
+            sb.Add("PAGE_WRITECOMBINE");
+        }
+
         return sb.Count > 0 ? string.Join("|", sb) : $"0x{protect:X}";
     }
 }
@@ -498,11 +644,6 @@ public sealed class MemoryRegionLoader(MemoryRegionLoaderConfig config, IMemoryR
 // -------------------------
 // DTOs and config
 // -------------------------
-
-
-
-
-
 
 // -------------------------
 // Native interop

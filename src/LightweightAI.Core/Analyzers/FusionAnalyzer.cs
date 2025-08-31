@@ -37,6 +37,7 @@ public sealed class FusionAnalyzer(
 
 
 
+
     public async Task ProcessAsync(
         IReadOnlyList<ProcessRecord> processes,
         IReadOnlyList<ThreadRecord> threads,
@@ -109,6 +110,7 @@ public sealed class FusionAnalyzer(
 
 
 
+
     private FusionIncident BuildIncident(string id, ProcessRecord proc, int pid,
         IEnumerable<ThreadRecord> threads, IEnumerable<NetworkRecord> conns, IEnumerable<MemoryAnomaly> memAnoms)
     {
@@ -142,8 +144,14 @@ public sealed class FusionAnalyzer(
         IEnumerable<MemoryAnomaly> memAnoms,
         CancellationToken ct)
     {
-        await this._timeline.AppendThreadEventsAsync(incident.IncidentId,
-            threads.Where(t => incident.ContributingRecords["Threads"].Cast<ThreadRecord>().Contains(t)), ct);
+        // Ensure thread context extraction avoids Cast() error (already refactored):
+        if (incident.ContributingRecords.TryGetValue("Threads", out var threadObj))
+        {
+            if (threadObj is ThreadRecord[] arr)
+                await _timeline.AppendThreadEventsAsync(incident.IncidentId, threads.Where(t => arr.Contains(t)), ct);
+            else if (threadObj is IEnumerable<ThreadRecord> enumerable)
+                await _timeline.AppendThreadEventsAsync(incident.IncidentId, threads.Where(t => enumerable.Contains(t)), ct);
+        }
         await this._timeline.AppendMemoryAnomalyEventsAsync(incident.IncidentId, memAnoms, ct);
         await this._timeline.AppendHandleEventsAsync(incident.IncidentId, handles, ct);
         await this._timeline.AppendConnectionEventsAsync(incident.IncidentId, conns, ct);
@@ -168,6 +176,5 @@ public interface IFusionSink
 //TODO: Implement these record types properly
 Task EmitIncidentsAsync(List<FusionIncident> NewIncidents, CancellationToken Ct);
 }
-
 
 //TODO: Implement these record types properly

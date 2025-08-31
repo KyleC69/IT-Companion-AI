@@ -9,6 +9,7 @@
 using System.Collections;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.ServiceProcess;
 
 using LightweightAI.Core.Config;
 using LightweightAI.Core.Engine.Compat;

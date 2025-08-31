@@ -6,6 +6,10 @@
 // Do not remove file headers
 
 
+using System.Collections.Immutable;
+
+
+
 namespace LightweightAI.Core.Models;
 
 
@@ -20,5 +24,5 @@ public sealed record MetricDecision(
     DateTimeOffset MetricWindowEnd,
     double Score,
     bool IsAlert,
-    System.Collections.Immutable.ImmutableDictionary<string, double> Payload
+    ImmutableDictionary<string, double> Payload
 );
