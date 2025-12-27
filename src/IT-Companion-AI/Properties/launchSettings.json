@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SKAgent": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "GITHUB_TOKEN": "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"
+      }
+    }
+  }
+}

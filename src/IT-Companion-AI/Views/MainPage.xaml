@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page
-    x:Class="SKAgentOrchestrator.Views.MainPage"
+    x:Class="SkAgentGroup.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:SKAgentOrchestrator.Views"
-    xmlns:vm="using:SKAgentOrchestrator.ViewModels"
-    xmlns:models="using:SKAgentOrchestrator.AgentFramework"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local1="using:SKAgentOrchestrator.Converters"
+    xmlns:local="using:SkAgentGroup.Views"
+    xmlns:vm="using:SkAgentGroup.ViewModels"
+    xmlns:models="using:SkAgentGroup.AgentFramework"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local1="using:SkAgentGroup.Converters"
     mc:Ignorable="d">
     <Page.Resources>
         <local1:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -37,7 +37,7 @@
                 Height="4"
                 Margin="0,0,0,12" />
             <ScrollViewer Grid.Row="0" Margin="0,0,0,12" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding Messages}" ItemTemplate="{StaticResource MessageTemplate}" />
+                <ItemsControl ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" ItemTemplate="{StaticResource MessageTemplate}" />
             </ScrollViewer>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
                 <TextBox

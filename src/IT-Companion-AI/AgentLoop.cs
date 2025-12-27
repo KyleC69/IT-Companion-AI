@@ -1,20 +1,24 @@
-﻿using Microsoft.SemanticKernel.ChatCompletion;
+﻿using SkAgentGroup.AgentFramework;
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SKAgentOrchestrator;
+namespace SkAgentGroup;
 
 public class AgentLoop
 {
+    private readonly GeneralAgent _agent;
 
+    public AgentLoop()
+    {
+        _agent = App.GetService<GeneralAgent>();
+    }
 
-
-
-
-
-
-
-
+    public Task<string> RunAsync(string userInput)
+    {
+        return _agent.HandleTaskAsync(userInput);
+    }
 }
+
+
+
+
+
+

@@ -1,16 +1,49 @@
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.PgVector;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.UI.Xaml.Navigation;
 
-namespace SKAgentOrchestrator;
+using SkAgentGroup.AgentFramework;
+using SkAgentGroup.AgentFramework.Memory;
+
+using PostgresVectorStore = Microsoft.SemanticKernel.Connectors.PgVector.PostgresVectorStore;
+
+namespace SkAgentGroup;
 
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
 public partial class App : Application
 {
+    public IHost? Host
+    {
+        get; set;
+    }
+
+    public static T GetService<T>()
+        where T : class
+    {
+        return (App.Current as App)!.Host!.Services.GetService(typeof(T)) is not T service
+            ? throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.")
+            : service;
+    }
+
+    public static Application AppHost => Application.Current;
+
     private Window window = Window.Current;
 
+    /// <summary>
+    /// Gets the service provider for dependency injection.
+    /// </summary>
+    public static IServiceProvider Services { get; private set; } = null!;
 
     public static Window? AppWindow { get; private set; }
+    public Kernel TheKernel { get; private set; }
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -19,6 +52,26 @@ public partial class App : Application
     public App()
     {
         this.InitializeComponent();
+
+        Host = Microsoft.Extensions.Hosting.Host.
+            CreateDefaultBuilder().
+            UseContentRoot(AppContext.BaseDirectory).
+            ConfigureServices((context, services) =>
+            {
+                services.AddITAIKernel();
+                services.AddTransient<IAgentMemory, PgVectorAgentMemory>();
+            }).Build();
+
+        Services = Host.Services;
+        TheKernel = Services.GetRequiredService<Kernel>();
+
+        Host.Services.GetRequiredService<ILogger<App>>().LogInformation("Application Starting Up");
+
+        App.Current.UnhandledException += (sender, args) =>
+        {
+            var logger = Host.Services.GetRequiredService<ILogger<App>>();
+            logger.LogError(args.Exception, "Unhandled exception occurred");
+        };
     }
 
     /// <summary>
@@ -40,6 +93,8 @@ public partial class App : Application
 
         _ = rootFrame.Navigate(typeof(MainPage), e.Arguments);
         window.Activate();
+
+        base.OnLaunched(e);
     }
 
     /// <summary>
@@ -50,5 +105,58 @@ public partial class App : Application
     void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
     {
         throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
+    }
+}
+
+
+
+
+
+#pragma warning disable SKEXP0001, SKEXP0101, SKEXP0010
+/// <summary>
+/// Provides extension methods for registering ITAI kernel and related AI services with an ASP.NET Core dependency
+/// injection container.
+/// </summary>
+/// <remarks>This static class contains methods to simplify the configuration and registration of AI-related
+/// services, such as the ITAI kernel, vector stores, and agent components, into an application's service collection.
+/// These extensions are intended to be used during application startup to ensure all required AI infrastructure is
+/// available via dependency injection.</remarks>
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddITAIKernel(this IServiceCollection services)
+    {
+        // DO NOT REMOVE THESE LINES BELOW - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
+        // ****************  AI DO NOT REMOVE THESE LINES BELOW    **********************
+        var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN")
+           ?? throw new InvalidOperationException("Missing GitHub API key in configuration.");
+        var postgresConnectionString = """Host=127.0.0.1;Database=postgres;Username=postgres;Password=Agent1234;Persist Security Info=True"""
+            ?? throw new InvalidOperationException("Missing Postgres connection string in environment variable 'POSTGRES_CONNECTIONSTRING'.");
+
+        var phiModel = "Phi-4-mini-instruct";
+        var openAiEndpoint = new Uri("https://models.github.ai/inference");
+
+        var loggingConfiguration = new Action<ILoggingBuilder>(c => c.AddConsole().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace));
+        // ****************  AI DO NOT REMOVE THESE LINES ABOVE    **********************
+        // DO NOT REMOVE THESE LINES ABOVE - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
+
+
+        #pragma warning disable SKEXP0001, SKEXP0101, SKEXP0010
+
+        services.AddSingleton<Kernel>(sp =>
+        {
+            var builder = Kernel.CreateBuilder();
+            builder.AddOpenAIChatCompletion(phiModel, githubToken, openAiEndpoint.ToString());
+            builder.Services.AddLogging(loggingConfiguration);
+            services.ConfigureServices();
+            return builder.Build();
+        });
+
+        // NOTE: Vector-store / embedding wiring is configured elsewhere (see AgentFramework DI helpers).
+
+        services.AddSingleton<GeneralAgent>();
+        services.AddSingleton<AgentLoop>();
+
+
+        return services;
     }
 }

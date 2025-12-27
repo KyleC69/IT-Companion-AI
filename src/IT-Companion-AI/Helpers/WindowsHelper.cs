@@ -1,4 +1,4 @@
-﻿namespace SKAgentOrchestrator.Helpers;
+﻿namespace SkAgentGroup.Helpers;
 
 public static class WindowHelper
 {

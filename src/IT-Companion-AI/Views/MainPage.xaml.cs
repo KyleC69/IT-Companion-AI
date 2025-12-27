@@ -1,4 +1,4 @@
-namespace SKAgentOrchestrator.Views;
+namespace SkAgentGroup.Views;
 
 public sealed partial class MainPage : Page
 {
@@ -16,5 +16,6 @@ public sealed partial class MainPage : Page
     private async void OnWindowActivated(object sender, WindowActivatedEventArgs e)
     {
         await ViewModel.InitializeAsync();
+       
     }
 }

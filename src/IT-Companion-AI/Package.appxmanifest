@@ -16,7 +16,7 @@
 	<mp:PhoneIdentity PhoneProductId="f6f06fdb-76bc-4474-8997-122f6f3e4e35" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
 	<Properties>
-		<DisplayName>SKAgentOrchestrator</DisplayName>
+		<DisplayName>SkAgentGroup</DisplayName>
 		<PublisherDisplayName>User Name</PublisherDisplayName>
 		<Logo>Assets\StoreLogo.png</Logo>
 	</Properties>
@@ -34,8 +34,8 @@
 		  Executable="$targetnametoken$.exe"
 		  EntryPoint="$targetentrypoint$">
 			<uap:VisualElements
-			  DisplayName="SKAgentOrchestrator"
-			  Description="SKAgentOrchestrator"
+			  DisplayName="SkAgentGroup"
+			  Description="SkAgentGroup"
 			  BackgroundColor="transparent"
 			  Square150x150Logo="Assets\Square150x150Logo.png"
 			  Square44x44Logo="Assets\Square44x44Logo.png">

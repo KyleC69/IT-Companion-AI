@@ -1,4 +1,4 @@
-﻿namespace SKAgentOrchestrator.ViewModels;
+﻿namespace SkAgentGroup.ViewModels;
 
 public partial class BaseViewModel : ObservableObject
 {

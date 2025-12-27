@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml.Data;
 
-namespace SKAgentOrchestrator.Converters;
+namespace SkAgentGroup.Converters;
 
 public partial class BooleanToVisibilityConverter : IValueConverter
 {

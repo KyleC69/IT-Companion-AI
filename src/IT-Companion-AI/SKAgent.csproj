@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
         <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
@@ -16,14 +15,15 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>SKAgentOrchestrator</RootNamespace>
+        <RootNamespace>SkAgentGroup</RootNamespace>
 		<AppxOSMinVersionReplaceManifestVersion>false</AppxOSMinVersionReplaceManifestVersion>
 		<AppxOSMaxVersionTestedReplaceManifestVersion>false</AppxOSMaxVersionTestedReplaceManifestVersion>
         <!-- App Options -->
         <UseRidGraph>false</UseRidGraph>
         <Platforms>x86;x64;AnyCPU</Platforms>
         <SupportedOSPlatformVersion>10.0.22621.0</SupportedOSPlatformVersion>
-    </PropertyGroup>
+      <UserSecretsId>ff581d75-4f91-479d-afcf-56453f276c7c</UserSecretsId>
+  </PropertyGroup>
 	
 	
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -45,6 +45,8 @@
       <IsPublishable>False</IsPublishable>
     </PropertyGroup>
     <ItemGroup>
+      <Compile Remove="AgentFramework\AITools.cs" />
+      <Compile Remove="AgentFramework\KernelSetup.cs" />
       <Compile Remove="AgentFramework\RagStore.cs" />
     </ItemGroup>
 
@@ -60,15 +62,26 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
-        <PackageReference Include="Dapper" Version="2.1.66" />
-        <PackageReference Include="HNSW" Version="25.12.63133" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.7.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.68.0-preview" />
+        <PackageReference Include="Npgsql" Version="10.0.1" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+        <PackageReference Include="Pgvector" Version="0.3.2" />
         <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.1" />
         <PackageReference Include="Microsoft.SemanticKernel" Version="1.68.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.68.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Abstractions" Version="1.68.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.AzureAI" Version="1.68.0-preview" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
         <PackageReference Include="Microsoft.SemanticKernel.Agents.Orchestration" Version="1.68.0-preview" />
-        <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.68.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" Version="1.68.0-preview" />
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.68.0-preview" />
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.Onnx" Version="1.68.0-alpha" />
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.68.0-preview" />
+        <PackageReference Include="Microsoft.SemanticKernel.Experimental.Orchestration.Flow" Version="1.68.0-alpha" />
         <PackageReference Include="Microsoft.SemanticKernel.Plugins.Core" Version="1.68.0-preview" />
-        <PackageReference Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.68.0-alpha" />
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.0-experimental3" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1-RTM" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
@@ -78,7 +91,7 @@
 
 
     <ItemGroup>
-      <None Include="AgentFramework\RagStore.cs" />
+      <None Include="AgentFramework\AITools.cs" />
     </ItemGroup>
 
 
