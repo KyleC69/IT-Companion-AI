@@ -1,0 +1,107 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+        <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+        <OutputType>WinExe</OutputType>
+
+        <!-- WinUI 3 -->
+        <UseWinUI>true</UseWinUI>
+        <EnableMsixTooling>false</EnableMsixTooling>
+        <WindowsPackageType>None</WindowsPackageType>
+        <!-- <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion> -->
+
+        <!-- Project Options -->
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>ITCompanionAI</RootNamespace>
+		<AppxOSMinVersionReplaceManifestVersion>false</AppxOSMinVersionReplaceManifestVersion>
+		<AppxOSMaxVersionTestedReplaceManifestVersion>false</AppxOSMaxVersionTestedReplaceManifestVersion>
+        <!-- App Options -->
+        <UseRidGraph>false</UseRidGraph>
+        <Platforms>x86;x64;AnyCPU</Platforms>
+        <SupportedOSPlatformVersion>10.0.22621.0</SupportedOSPlatformVersion>
+      <UserSecretsId>ff581d75-4f91-479d-afcf-56453f276c7c</UserSecretsId>
+		
+  </PropertyGroup>
+
+
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);CA2007;IDE1006;SKEXP0001;SKEXP0110;OPENAI001</NoWarn>
+	</PropertyGroup>
+	
+	
+	
+	
+	
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+      <IsPublishable>False</IsPublishable>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      <IsPublishable>False</IsPublishable>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <IsPublishable>False</IsPublishable>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+      <IsPublishable>False</IsPublishable>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      <IsPublishable>False</IsPublishable>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <IsPublishable>False</IsPublishable>
+    </PropertyGroup>
+    <ItemGroup>
+      <Compile Remove="AgentFramework\AITools.cs" />
+      <Compile Remove="AgentFramework\KernelSetup.cs" />
+      <Compile Remove="AgentFramework\RagStore.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Assets\SplashScreen.scale-200.png" />
+        <Content Include="Assets\LockScreenLogo.scale-200.png" />
+        <Content Include="Assets\Square150x150Logo.scale-200.png" />
+        <Content Include="Assets\Square44x44Logo.scale-200.png" />
+        <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+        <Content Include="Assets\StoreLogo.png" />
+        <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.7.0" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
+        <PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.68.0-preview" />
+        <PackageReference Include="Npgsql" Version="10.0.1" />
+        <PackageReference Include="Pgvector" Version="0.3.2" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="1.68.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Orchestration" Version="1.68.0-preview" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" Version="1.68.0-preview" />
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.68.0-preview" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.0-experimental3" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1-RTM" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+
+        <Manifest Include="$(ApplicationManifest)" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Folder Include="AgentFramework\Memory\" />
+      <Folder Include="AgentFramework\Models\" />
+      <Folder Include="AgentFramework\Tools\" />
+    </ItemGroup>
+
+
+
+
+</Project>

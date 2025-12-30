@@ -1,0 +1,209 @@
+using System.Net.Http;
+
+using ITCompanionAI.Views;
+
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel;
+using Microsoft.UI.Xaml.Navigation;
+
+using SkKnowledgeBase.AgentFramework.Planning;
+using SkKnowledgeBase.Agents.Planning;
+using SkKnowledgeBase.Ingestion;
+using SkKnowledgeBase.Storage;
+
+namespace ITCompanionAI;
+
+/// <summary>
+/// Provides application-specific behavior to supplement the default Application class.
+/// </summary>
+public partial class App : Application
+{
+    public IHost? Host
+    {
+        get; set;
+    }
+
+    public static T GetService<T>()
+        where T : class
+    {
+        return (App.Current as App)!.Host!.Services.GetService(typeof(T)) is not T service
+            ? throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.")
+            : service;
+    }
+
+    public static Application AppHost => Application.Current;
+
+    private Window window = Window.Current;
+    public static Ingester Ingester => new Ingester();
+    /// <summary>
+    /// Gets the service provider for dependency injection.
+    /// </summary>
+    public static IServiceProvider Services { get; private set; } = null!;
+
+    public static Window? AppWindow { get; private set; }
+    public static Kernel TheKernel { get; set; }
+
+    /// <summary>
+    /// Initializes the singleton application object.  This is the first line of authored code
+    /// executed, and as such is the logical equivalent of main() or WinMain().
+    /// </summary>
+    public App()
+    {
+        this.InitializeComponent();
+
+        Host = Microsoft.Extensions.Hosting.Host.
+            CreateDefaultBuilder().
+            UseContentRoot(AppContext.BaseDirectory).
+            ConfigureServices((context, services) =>
+            {
+
+                services.AddSingleton<IIngestionAgent, IngestionAgent>();
+                services.AddSingleton<KnowledgeIngestionOrchestrator>();
+                services.AddSingleton<IPlannerAgent, PlannerAgent>();
+                    var store = new PgVectorStore("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", embeddingDim: 384);
+                //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
+
+                services.AddSingleton<IVectorStore>(sp =>
+                {
+                    return store;
+                });
+
+                Ingester.ConfigureServices(context, services);
+
+
+                services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
+
+                /*
+
+                                services.AddSingleton<Kernel>(sp =>
+                                {
+                                    // Create the kernel with logging support
+                                 //   TheKernel = KernelFactory.CreateDefaultKernel(sp.GetRequiredService<ILoggerFactory>());
+                                    return TheKernel;
+
+                                });
+
+                                services.AddSingleton<IAgentRuntime>();
+
+
+                */
+
+
+
+            }).Build();
+
+        Services = Host.Services;
+      //  TheKernel = Services.GetRequiredService<Kernel>();
+
+        Host.Services.GetRequiredService<ILogger<App>>().LogInformation("Application Starting Up");
+
+        App.Current.UnhandledException += (sender, args) =>
+        {
+            var logger = Host.Services.GetRequiredService<ILogger<App>>();
+            logger.LogError(args.Exception, "Unhandled exception occurred");
+        };
+    }
+
+    /// <summary>
+    /// Invoked when the application is launched normally by the end user.  Other entry points
+    /// will be used such as when the application is launched to open a specific file.
+    /// </summary>
+    /// <param name="e">Details about the launch request and process.</param>
+    protected override void OnLaunched(LaunchActivatedEventArgs e)
+    {
+        window ??= new Window();
+        window.AppWindow.Resize(new Windows.Graphics.SizeInt32(800, 600));
+        AppWindow = window;
+        if (window.Content is not Frame rootFrame)
+        {
+            rootFrame = new Frame();
+            rootFrame.NavigationFailed += OnNavigationFailed;
+            window.Content = rootFrame;
+        }
+
+        _ = rootFrame.Navigate(typeof(MainPage), e.Arguments);
+        window.Activate();
+
+        base.OnLaunched(e);
+    }
+
+    /// <summary>
+    /// Invoked when Navigation to a certain page fails
+    /// </summary>
+    /// <param name="sender">The Frame which failed navigation</param>
+    /// <param name="e">Details about the navigation failure</param>
+    void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
+    {
+        throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
+    }
+}
+
+
+
+
+#pragma warning disable SKEXP0001, SKEXP0101, SKEXP0010
+#pragma warning disable SKEXP0001, SKEXP0101, SKEXP0010
+/// <summary>
+/// Provides extension methods for registering ITAI kernel and related AI services with an ASP.NET Core dependency
+/// injection container.
+/// </summary>
+/// <remarks>This static class contains methods to simplify the configuration and registration of AI-related
+/// services, such as the ITAI kernel, vector stores, and agent components, into an application's service collection.
+/// These extensions are intended to be used during application startup to ensure all required AI infrastructure is
+/// available via dependency injection.</remarks>
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection RegisterKernel(this IServiceCollection services)
+    {
+        // DO NOT REMOVE THESE LINES BELOW - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
+        // ****************  AI DO NOT REMOVE THESE LINES BELOW    **********************
+        var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN")
+           ?? throw new InvalidOperationException("Missing GitHub API key in configuration.");
+        var postgresConnectionString = """Host=127.0.0.1;Database=postgres;Username=postgres;Password=Agent1234;Persist Security Info=True"""
+            ?? throw new InvalidOperationException("Missing Postgres connection string in environment variable 'POSTGRES_CONNECTIONSTRING'.");
+
+        var phiModel = "Phi-4-mini-instruct";
+        var openAiEndpoint = new Uri("https://models.github.ai/inference");
+
+        var loggingConfiguration = new Action<ILoggingBuilder>(c => c.AddConsole().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace));
+        // ****************  AI DO NOT REMOVE THESE LINES ABOVE    **********************
+        // DO NOT REMOVE THESE LINES ABOVE - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
+        //#####################################################################
+        //#####################################################################
+        //#####################################################################
+
+
+
+        //services.AddSingleton<Kernel>(sp =>
+        //{
+        //    var builder = Kernel.CreateBuilder();
+        //    builder.AddOpenAIChatCompletion(phiModel, githubToken, openAiEndpoint.ToString());
+        //    builder.Services.AddLogging(loggingConfiguration);
+        //    return builder.Build();
+        //});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return services;
+    }
+}

@@ -1,0 +1,670 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Globalization;
+    using Microsoft.ML.OnnxRuntime;
+    using Microsoft.ML.OnnxRuntime.Tensors;
+    using Microsoft.ML.Tokenizers;
+
+    using SkKnowledgeBase.Chunking;
+
+// ============================================================================
+// ONNX: Embeddings + LLM
+// ============================================================================
+
+namespace SkKnowledgeBase.Llm
+{
+
+    public interface IEmbeddingClient
+    {
+        Task<float[]> EmbedAsync(string text, CancellationToken cancellationToken = default);
+    }
+
+    public interface ILLMClient
+    {
+        Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default);
+    }
+
+    /// <summary>
+    /// ONNX embedding client for a bge-small-en-like model.
+    /// Assumes the model takes input_ids and attention_mask and outputs a single embedding vector.
+    /// You may need to adjust input/output names to match your specific model.
+    /// </summary>
+    public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
+    {
+        private readonly InferenceSession _session;
+        private readonly Tokenizer _tokenizer;
+        private readonly int _maxTokens;
+        private readonly string _inputIdsName;
+        private readonly string _attentionMaskName;
+        private readonly string _outputName;
+        private readonly int _embeddingDim;
+        private readonly string? _tokenTypeIdsName;
+        private readonly bool _requiresTokenTypeIds;
+
+        public OnnxEmbeddingClient(
+            string modelPath,
+            Tokenizer tokenizer,
+            int maxTokens = 512,
+            string inputIdsName = "input_ids",
+            string attentionMaskName = "attention_mask",
+            string outputName = "last_hidden_state",
+            int embeddingDim = 384,
+            string? tokenTypeIdsName = "token_type_ids")
+        {
+            if (!File.Exists(modelPath)) throw new FileNotFoundException("Embedding model not found", modelPath);
+
+            _session = new InferenceSession(modelPath);
+            _tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
+            _maxTokens = maxTokens;
+            _inputIdsName = inputIdsName;
+            _attentionMaskName = attentionMaskName;
+            _outputName = outputName;
+            _embeddingDim = embeddingDim;
+            _tokenTypeIdsName = string.IsNullOrWhiteSpace(tokenTypeIdsName) ? null : tokenTypeIdsName;
+            _requiresTokenTypeIds = _tokenTypeIdsName is not null && _session.InputMetadata.ContainsKey(_tokenTypeIdsName);
+        }
+
+        public Task<float[]> EmbedAsync(string text, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var ids = _tokenizer.EncodeToIds(text);
+            if (ids.Count > _maxTokens)
+            {
+                ids = ids.Take(_maxTokens).ToList();
+            }
+
+            var sequenceLength = ids.Count;
+            var inputIds = new DenseTensor<long>(new[] { 1, sequenceLength });
+            var attentionMask = new DenseTensor<long>(new[] { 1, sequenceLength });
+            DenseTensor<long>? tokenTypeIds = _requiresTokenTypeIds ? new DenseTensor<long>(new[] { 1, sequenceLength }) : null;
+
+            for (int i = 0; i < sequenceLength; i++)
+            {
+                inputIds[0, i] = ids[i];
+                attentionMask[0, i] = 1;
+                if (tokenTypeIds is not null)
+                {
+                    tokenTypeIds[0, i] = 0;
+                }
+            }
+
+            var inputs = new List<NamedOnnxValue>
+            {
+                NamedOnnxValue.CreateFromTensor(_inputIdsName, inputIds),
+                NamedOnnxValue.CreateFromTensor(_attentionMaskName, attentionMask)
+            };
+
+            if (tokenTypeIds is not null)
+            {
+                inputs.Add(NamedOnnxValue.CreateFromTensor(_tokenTypeIdsName!, tokenTypeIds));
+            }
+
+            using var results = _session.Run(inputs);
+            var output = results.First(r => r.Name == _outputName).AsEnumerable<float>().ToArray();
+
+            // Model may output sequence; we take mean pooling as a simple, stable strategy.
+            if (output.Length % ids.Count == 0 && output.Length != _embeddingDim)
+            {
+                var hiddenSize = output.Length / ids.Count;
+                var pooled = new float[hiddenSize];
+                for (int t = 0; t < ids.Count; t++)
+                {
+                    for (int h = 0; h < hiddenSize; h++)
+                    {
+                        pooled[h] += output[t * hiddenSize + h];
+                    }
+                }
+                for (int h = 0; h < hiddenSize; h++)
+                {
+                    pooled[h] /= ids.Count;
+                }
+                return Task.FromResult(pooled);
+            }
+
+            // Or model directly outputs a single vector
+            if (output.Length == _embeddingDim)
+            {
+                return Task.FromResult(output);
+            }
+
+            throw new InvalidOperationException(
+                $"Unexpected embedding output shape. Length={output.Length}, expected {_embeddingDim} or multiple of token count.");
+        }
+
+        public void Dispose() => _session.Dispose();
+    }
+
+    /// <summary>
+    /// ONNX LLM client for a phi-2-like model with a GPT-style interface.
+    /// Here we assume simple prompt-in / text-out via "input_ids" and "logits" or similar.
+    /// For simplicity, we implement greedy decoding with a max token limit.
+    /// You may need to adjust IO names to match your model.
+    /// </summary>
+    public sealed class OnnxLLMClient : ILLMClient, IDisposable
+    {
+        private readonly InferenceSession _session;
+        private readonly Tokenizer _tokenizer;
+        private readonly int _maxNewTokens;
+        private readonly string _inputIdsName;
+        private readonly string _outputName;
+        private readonly string _positionIdsName;
+        private readonly string _attentionMaskName;
+        private readonly bool _requiresPositionIds;
+        private readonly bool _requiresAttentionMask;
+        private readonly bool _requiresPastKeyValues;
+        private readonly int _numPastLayers;
+        private readonly int _kvHeads;
+        private readonly int _kvDim;
+        private readonly int[]? _kvEmptyShape;
+        private readonly TensorElementType _kvElementType;
+
+        public OnnxLLMClient(
+        string modelPath,
+        Tokenizer tokenizer,
+        int maxNewTokens = 256,
+        string inputIdsName = "input_ids",
+        string outputName = "logits",
+        string positionIdsName = "position_ids",
+        string attentionMaskName = "attention_mask")
+        {
+            if (!File.Exists(modelPath))
+                throw new FileNotFoundException("LLM model not found", modelPath);
+
+            _session = new InferenceSession(modelPath);
+            _tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
+            _maxNewTokens = maxNewTokens;
+            _inputIdsName = inputIdsName;
+            _outputName = outputName;
+            _positionIdsName = positionIdsName;
+            _attentionMaskName = attentionMaskName;
+
+            _requiresPositionIds = _session.InputMetadata.ContainsKey(_positionIdsName);
+            _requiresAttentionMask = _session.InputMetadata.ContainsKey(_attentionMaskName);
+            _requiresPastKeyValues = _session.InputMetadata.Keys
+     .Any(k => k.StartsWith("past_key_values.", StringComparison.Ordinal));
+
+            if (_requiresPastKeyValues)
+            {
+                var kvLayerMetas = _session.InputMetadata
+                    .Where(kvp => kvp.Key.StartsWith("past_key_values.", StringComparison.Ordinal)
+                               && kvp.Key.EndsWith(".key", StringComparison.Ordinal))
+                    .OrderBy(kvp => ParseLayerIndex(kvp.Key))
+                    .ToArray();
+
+                if (kvLayerMetas.Length == 0)
+                    throw new InvalidOperationException("Model expects past_key_values inputs but none were found.");
+
+                _numPastLayers = kvLayerMetas.Length;
+
+                var kvMeta = kvLayerMetas[0].Value;
+                var dims = kvMeta.Dimensions ?? Array.Empty<int>();
+                _kvElementType = kvMeta.ElementDataType;
+
+                if (dims.Length == 5)
+                {
+                    _kvHeads = NormalizeDim(dims[2], 32);
+                    _kvDim = NormalizeDim(dims[4], 64);
+                    _kvEmptyShape = new[]
+                    {
+        NormalizeDim(dims[0], 2),    // 2
+        NormalizeDim(dims[1], 1),    // batch
+        _kvHeads,                    // num_heads
+        0,                           // past_seq_len
+        _kvDim                       // head_dim
+    };
+                }
+                else if (dims.Length == 4)
+                {
+                    _kvHeads = NormalizeDim(dims[1], 32);
+                    _kvDim = NormalizeDim(dims[3], 64);
+                    _kvEmptyShape = new[]
+                    {
+        NormalizeDim(dims[0], 1),    // batch
+        _kvHeads,                    // num_heads
+        0,                           // past_seq_len
+        _kvDim                       // head_dim
+    };
+                }
+                else
+                {
+                    throw new NotSupportedException($"Unsupported past_key_values rank {dims.Length}");
+                }
+            }
+            else
+            {
+                _numPastLayers = 0;
+                _kvHeads = 0;
+                _kvDim = 0;
+                _kvEmptyShape = null;
+                _kvElementType = TensorElementType.Float;
+            }
+        }
+        public Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Encode prompt
+            var tokens = _tokenizer.EncodeToIds(prompt).ToList();
+
+            List<DenseTensor<float>>? pastKeysFloat = null;
+            List<DenseTensor<float>>? pastValuesFloat = null;
+            List<DenseTensor<Half>>? pastKeysHalf = null;
+            List<DenseTensor<Half>>? pastValuesHalf = null;
+
+            if (_requiresPastKeyValues)
+            {
+                if (_kvElementType == TensorElementType.Float)
+                {
+                    pastKeysFloat = new List<DenseTensor<float>>(_numPastLayers);
+                    pastValuesFloat = new List<DenseTensor<float>>(_numPastLayers);
+                }
+                else if (_kvElementType == TensorElementType.Float16)
+                {
+                    pastKeysHalf = new List<DenseTensor<Half>>(_numPastLayers);
+                    pastValuesHalf = new List<DenseTensor<Half>>(_numPastLayers);
+                }
+            }
+
+
+            // Autoregressive loop
+            for (int step = 0; step < _maxNewTokens; step++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var context = new OnnxLLMClientInputContext(
+                    _requiresPastKeyValues,
+                    _requiresPositionIds,
+                    _requiresAttentionMask,
+                    _inputIdsName,
+                    _positionIdsName,
+                    _attentionMaskName,
+                    _numPastLayers,
+                    _kvEmptyShape,
+                    _kvElementType);
+
+                var inputs = BuildInferenceInputs(
+                    tokens,
+                    step,
+                    context,
+                    pastKeysFloat,
+                    pastValuesFloat,
+                    pastKeysHalf,
+                    pastValuesHalf);
+
+                // DEBUG: verify every input has a non-null tensor
+                foreach (var input in inputs)
+                {
+                    if (!_session.InputMetadata.TryGetValue(input.Name, out var meta))
+                    {
+                        throw new InvalidOperationException($"Input '{input.Name}' not found in model metadata.");
+                    }
+
+                    try
+                    {
+                        switch (meta.ElementDataType)
+                        {
+                            case TensorElementType.Int64:
+                                _ = input.AsTensor<long>();
+                                break;
+                            case TensorElementType.Int32:
+                                _ = input.AsTensor<int>();
+                                break;
+                            case TensorElementType.Float:
+                                _ = input.AsTensor<float>();
+                                break;
+                            case TensorElementType.Float16:
+                                _ = input.AsTensor<Half>();
+                                break;
+                            default:
+                                // extend if your model has other types
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException(
+                            $"Input '{input.Name}' has a null or invalid tensor.", ex);
+                    }
+                }
+
+                using var results = _session.Run(inputs);
+                //var results = _session.Run(prompt);
+                // Extract logits
+                int nextId = SelectNextToken(results);
+
+                tokens.Add(nextId);
+                if (nextId == 0) break;
+
+                // Update KV cache
+                UpdateKvCache(results, pastKeysFloat, pastValuesFloat, pastKeysHalf, pastValuesHalf);
+            }
+
+            var fullText = _tokenizer.Decode(tokens);
+            return Task.FromResult(TrimCompletion(fullText, prompt));
+        }
+
+        private List<NamedOnnxValue> BuildInferenceInputs(
+            IList<int> tokens,
+            int step,
+            OnnxLLMClientInputContext context,
+            List<DenseTensor<float>>? pastKeysFloat,
+            List<DenseTensor<float>>? pastValuesFloat,
+            List<DenseTensor<Half>>? pastKeysHalf,
+            List<DenseTensor<Half>>? pastValuesHalf)
+        {
+            return BuildInferenceInputsCore(
+                tokens,
+                step,
+                context,
+                pastKeysFloat,
+                pastValuesFloat,
+                pastKeysHalf,
+                pastValuesHalf);
+        }
+
+        internal static List<NamedOnnxValue> BuildInferenceInputsCore(
+            IList<int> tokens,
+            int step,
+            OnnxLLMClientInputContext context,
+            List<DenseTensor<float>>? pastKeysFloat,
+            List<DenseTensor<float>>? pastValuesFloat,
+            List<DenseTensor<Half>>? pastKeysHalf,
+            List<DenseTensor<Half>>? pastValuesHalf)
+        {
+            if (tokens == null || tokens.Count == 0)
+                throw new ArgumentException("Token list is null or empty.", nameof(tokens));
+
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            static bool HasValidCache<T>(IReadOnlyList<DenseTensor<T>>? keys, IReadOnlyList<DenseTensor<T>>? values, int expectedLayers)
+                where T : struct
+            {
+                if (keys == null || values == null || keys.Count != expectedLayers || values.Count != expectedLayers)
+                {
+                    return false;
+                }
+
+                for (int layer = 0; layer < expectedLayers; layer++)
+                {
+                    if (keys[layer] == null || values[layer] == null || keys[layer].Length == 0 || values[layer].Length == 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            int contextLen = tokens.Count;
+            bool useIncremental = context.RequiresPastKeyValues && step > 0;
+            int currentLen = useIncremental ? 1 : contextLen;
+            int startIndex = contextLen - currentLen;
+
+            // Core inputs
+            var inputTensor = new DenseTensor<long>(new[] { 1, currentLen });
+            DenseTensor<long>? positionIds = context.RequiresPositionIds ? new DenseTensor<long>(new[] { 1, currentLen }) : null;
+            DenseTensor<long>? attentionMask = context.RequiresAttentionMask ? new DenseTensor<long>(new[] { 1, contextLen }) : null;
+
+            for (int i = 0; i < currentLen; i++)
+            {
+                int tokenIndex = startIndex + i;
+                inputTensor[0, i] = tokens[tokenIndex];
+                if (positionIds != null)
+                    positionIds[0, i] = tokenIndex;
+            }
+
+            if (attentionMask != null)
+            {
+                for (int i = 0; i < contextLen; i++)
+                    attentionMask[0, i] = 1;
+            }
+
+            var inputs = new List<NamedOnnxValue>
+    {
+        NamedOnnxValue.CreateFromTensor(context.InputIdsName, inputTensor)
+    };
+
+            if (positionIds != null)
+                inputs.Add(NamedOnnxValue.CreateFromTensor(context.PositionIdsName, positionIds));
+
+            if (attentionMask != null)
+                inputs.Add(NamedOnnxValue.CreateFromTensor(context.AttentionMaskName, attentionMask));
+
+            // --- KV CACHE HANDLING ---
+
+            if (context.RequiresPastKeyValues)
+            {
+                if (context.KvEmptyShape == null || context.KvEmptyShape.Length == 0)
+                    throw new InvalidOperationException("KV cache shape (context.KvEmptyShape) is not initialized.");
+
+                if (context.KvElementType == TensorElementType.Float16)
+                {
+                    if (HasValidCache(pastKeysHalf, pastValuesHalf, context.NumPastLayers))
+                    {
+                        AddCachedKvInputs(inputs, pastKeysHalf!, pastValuesHalf!);
+                    }
+                    else
+                    {
+                        if (step != 0)
+                            throw new InvalidOperationException("Half KV cache is missing after initial decoding.");
+
+                        AddEmptyKvInputs<Half>(inputs, context.NumPastLayers, context.KvEmptyShape);
+                    }
+                }
+                else if (context.KvElementType == TensorElementType.Float)
+                {
+                    if (HasValidCache(pastKeysFloat, pastValuesFloat, context.NumPastLayers))
+                    {
+                        AddCachedKvInputs(inputs, pastKeysFloat!, pastValuesFloat!);
+                    }
+                    else
+                    {
+                        if (step != 0)
+                            throw new InvalidOperationException("Float KV cache is missing after initial decoding.");
+
+                        AddEmptyKvInputs<float>(inputs, context.NumPastLayers, context.KvEmptyShape);
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException($"Unsupported KV element type: {context.KvElementType}");
+                }
+            }
+
+            // Final guard: ensure required KV inputs are present if model expects them
+            if (context.RequiresPastKeyValues && step > 0)
+            {
+                bool hasKv0Key = inputs.Any(i => i.Name == "past_key_values.0.key");
+                if (!hasKv0Key)
+                {
+                    var names = string.Join(", ", inputs.Select(i => i.Name));
+                    throw new InvalidOperationException(
+                        $"Model requires past_key_values but inputs do not contain 'past_key_values.0.key'. " +
+                        $"Inputs: {names}");
+                }
+            }
+
+            return inputs;
+        }
+
+
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="results"></param>
+        /// <returns></returns>
+        private int SelectNextToken(IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results)
+        {
+            var logitsTensor = results.First(r => r.Name == _outputName).AsTensor<float>();
+            int vocabSize = logitsTensor.Dimensions[^1];
+            var logits = logitsTensor.ToArray();
+            var lastLogits = new ArraySegment<float>(logits, logits.Length - vocabSize, vocabSize);
+            return ArgMax(lastLogits);
+        }
+
+        private void UpdateKvCache(
+            IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results,
+            List<DenseTensor<float>>? pastKeysFloat,
+            List<DenseTensor<float>>? pastValuesFloat,
+            List<DenseTensor<Half>>? pastKeysHalf,
+            List<DenseTensor<Half>>? pastValuesHalf)
+        {
+            if (!_requiresPastKeyValues)
+            {
+                return;
+            }
+
+            if (_kvElementType == TensorElementType.Float)
+            {
+                RefreshCache(results, pastKeysFloat!, pastValuesFloat!);
+            }
+            else
+            {
+                RefreshCache(results, pastKeysHalf!, pastValuesHalf!);
+            }
+        }
+
+        private void RefreshCache<T>(
+            IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results,
+            List<DenseTensor<T>> pastKeys,
+            List<DenseTensor<T>> pastValues)
+            where T : struct
+        {
+            pastKeys.Clear();
+            pastValues.Clear();
+
+            for (int layer = 0; layer < _numPastLayers; layer++)
+            {
+                pastKeys.Add(CloneTensor(results.First(r => r.Name == $"present.{layer}.key").AsTensor<T>()));
+                pastValues.Add(CloneTensor(results.First(r => r.Name == $"present.{layer}.value").AsTensor<T>()));
+            }
+        }
+
+        private static DenseTensor<T> CloneTensor<T>(Tensor<T> tensor)
+            where T : struct
+        {
+            var dims = tensor.Dimensions.ToArray();
+            var data = tensor.ToArray();
+            return new DenseTensor<T>(data, dims);
+        }
+
+        internal static int ArgMax(ArraySegment<float> logits)
+        {
+            int bestIndex = 0;
+            float bestValue = logits[0];
+            for (int i = 1; i < logits.Count; i++)
+            {
+                if (logits[i] > bestValue)
+                {
+                    bestValue = logits[i];
+                    bestIndex = i;
+                }
+            }
+            return bestIndex;
+        }
+
+        internal static string TrimCompletion(string full, string prompt)
+        {
+            if (full.StartsWith(prompt, StringComparison.Ordinal))
+            {
+                return full.Substring(prompt.Length).Trim();
+            }
+            return full.Trim();
+        }
+
+        private static int NormalizeDim(int metaDim, int fallback)
+        {
+            return metaDim > 0 ? metaDim : fallback;
+        }
+
+        internal static int ParseLayerIndex(string inputName)
+        {
+            const string prefix = "past_key_values.";
+            var start = prefix.Length;
+            var end = inputName.IndexOf('.', start);
+            if (start >= inputName.Length || end <= start)
+            {
+                return 0;
+            }
+
+            var slice = inputName.Substring(start, end - start);
+            return int.TryParse(slice, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+                ? value
+                : 0;
+        }
+
+        /// <summary>
+        /// Creates an empty KV tensor of the specified shape and type.
+        /// </summary>
+        /// <typeparam name="T">The value type (float or Half).</typeparam>
+        /// <param name="shape">The shape of the tensor.</param>
+        /// <returns>A DenseTensor of the specified type and shape, filled with default values.</returns>
+        private static DenseTensor<T> CreateEmptyKv<T>(int[] shape) where T : struct
+        {
+            if (shape == null || shape.Length == 0)
+                throw new ArgumentException("Shape must be a non-empty array.", nameof(shape));
+            return new DenseTensor<T>(shape);
+        }
+
+        private static void AddEmptyKvInputs<T>(List<NamedOnnxValue> inputs, int numLayers, int[] shape)
+            where T : struct
+        {
+            if (shape == null)
+            {
+                throw new ArgumentNullException(nameof(shape));
+            }
+
+            // ONNX Runtime cannot marshal Half tensors if any dimension is zero-length.
+            // Some models advertise a dynamic past_seq_len as 0 for the empty cache, so coerce it to 1.
+            var safeShape = (int[])shape.Clone();
+            if (safeShape.Length >= 3 && safeShape[2] == 0)
+            {
+                safeShape[2] = 1;
+            }
+
+            for (int layer = 0; layer < numLayers; layer++)
+            {
+                inputs.Add(NamedOnnxValue.CreateFromTensor($"past_key_values.{layer}.key", CreateEmptyKv<T>(safeShape)));
+                inputs.Add(NamedOnnxValue.CreateFromTensor($"past_key_values.{layer}.value", CreateEmptyKv<T>(safeShape)));
+            }
+        }
+
+        private static void AddCachedKvInputs<T>(List<NamedOnnxValue> inputs, IReadOnlyList<DenseTensor<T>> keys, IReadOnlyList<DenseTensor<T>> values)
+            where T : struct
+        {
+            if (keys.Count != values.Count)
+            {
+                throw new InvalidOperationException("KV cache keys and values counts do not match.");
+            }
+
+            for (int layer = 0; layer < keys.Count; layer++)
+            {
+                inputs.Add(NamedOnnxValue.CreateFromTensor($"past_key_values.{layer}.key", keys[layer]));
+                inputs.Add(NamedOnnxValue.CreateFromTensor($"past_key_values.{layer}.value", values[layer]));
+            }
+        }
+
+        public void Dispose() => _session.Dispose();
+
+
+    }
+
+    internal sealed record OnnxLLMClientInputContext(
+        bool RequiresPastKeyValues,
+        bool RequiresPositionIds,
+        bool RequiresAttentionMask,
+        string InputIdsName,
+        string PositionIdsName,
+        string AttentionMaskName,
+        int NumPastLayers,
+        int[]? KvEmptyShape,
+        TensorElementType KvElementType);
+}
+
