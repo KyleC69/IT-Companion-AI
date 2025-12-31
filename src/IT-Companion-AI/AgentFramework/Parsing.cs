@@ -1,57 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+    using HtmlAgilityPack;
 
 // ============================================================================
 // HTML / MARKDOWN PARSING
 // ============================================================================
 
-namespace SkKnowledgeBase.Parsing
-{
-    using HtmlAgilityPack;
+namespace SkKnowledgeBase.Parsing;
 
-    public interface IContentParser
+
+public interface IContentParser
+{
+    string ParseHtml(string html);
+    string ParseMarkdown(string markdown);
+}
+
+public sealed class HtmlMarkdownContentParser : IContentParser
+{
+    public string ParseHtml(string html)
     {
-        string ParseHtml(string html);
-        string ParseMarkdown(string markdown);
+        if (string.IsNullOrWhiteSpace(html))
+        {
+            return string.Empty;
+        }
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        var sb = new StringBuilder();
+        var body = doc.DocumentNode.SelectSingleNode("//body") ?? doc.DocumentNode;
+        ExtractText(body, sb);
+        return sb.ToString();
     }
 
-    public sealed class HtmlMarkdownContentParser : IContentParser
+    private static void ExtractText(HtmlNode node, StringBuilder sb)
     {
-        public string ParseHtml(string html)
+        if (node.NodeType == HtmlNodeType.Text)
         {
-            if (string.IsNullOrWhiteSpace(html)) return string.Empty;
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            var sb = new StringBuilder();
-            var body = doc.DocumentNode.SelectSingleNode("//body") ?? doc.DocumentNode;
-            ExtractText(body, sb);
-            return sb.ToString();
-        }
-
-        private static void ExtractText(HtmlNode node, StringBuilder sb)
-        {
-            if (node.NodeType == HtmlNodeType.Text)
+            var text = node.InnerText;
+            if (!string.IsNullOrWhiteSpace(text))
             {
-                var text = node.InnerText;
-                if (!string.IsNullOrWhiteSpace(text))
-                {
-                    sb.AppendLine(text.Trim());
-                }
-            }
-
-            foreach (var child in node.ChildNodes)
-            {
-                ExtractText(child, sb);
+                sb.AppendLine(text.Trim());
             }
         }
 
-        public string ParseMarkdown(string markdown)
+        foreach (var child in node.ChildNodes)
         {
-            // Simple pass-through for now; you can wire a real Markdown parser later if desired.
-            return markdown ?? string.Empty;
+            ExtractText(child, sb);
         }
+    }
+
+    public string ParseMarkdown(string markdown)
+    {
+        // Simple pass-through for now; you can wire a real Markdown parser later if desired.
+        return markdown ?? string.Empty;
     }
 }

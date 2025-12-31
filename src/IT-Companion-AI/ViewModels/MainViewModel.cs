@@ -96,6 +96,7 @@ public partial class MainViewModel : BaseViewModel
     /// <returns>A <see cref="Task"/> representing the asynchronous initialization operation.</returns>
     public async Task InitializeAsync()
     {
+        /*
         if (_loop is not null)
         {
             return;
@@ -110,6 +111,8 @@ public partial class MainViewModel : BaseViewModel
         {
             IsBusy = false;
         }
+
+        */
     }
 
 
@@ -139,13 +142,13 @@ public partial class MainViewModel : BaseViewModel
 
 
         IsBusy = true;
-        
+        OnIsBusyChanged(true);
         try
         {
 
 
             var plan = await orchestrator.BuildOrUpdateKnowledgeBaseAsync(
-         goal: "Ingest the Microsoft Semantic Kernel documentation to build a knowledge base about Semantic Kernel capabilities and usage.");
+         goal: "Ingest the Microsoft Semantic Kernel documentation to build a knowledge base about Semantic Kernel capabilities and usage.",_cts.Token);
 
 
 

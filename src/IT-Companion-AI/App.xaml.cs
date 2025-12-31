@@ -39,14 +39,14 @@ public partial class App : Application
     public static Application AppHost => Application.Current;
 
     private Window window = Window.Current;
-    public static Ingester Ingester => new Ingester();
+    public static Ingester Ingester => new();
     /// <summary>
     /// Gets the service provider for dependency injection.
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
 
     public static Window? AppWindow { get; private set; }
-    public static Kernel TheKernel { get; set; }
+    public static Kernel? TheKernel { get; set; }
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code

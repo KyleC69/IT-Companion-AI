@@ -483,3 +483,5 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+/src/IT-Companion-AI/AIModels/bge-small
+/src/IT-Companion-AI/AIModels/Phi3
