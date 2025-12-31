@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
-    using Microsoft.ML.Tokenizers;
+using Microsoft.ML.Tokenizers;
+
+using Tokenizers.HuggingFace.Tokenizer;
+
+using Tokenizer = Tokenizers.HuggingFace.Tokenizer.Tokenizer;
 
 // ============================================================================
 // CHUNKING (Microsoft.ML.Tokenizers-based)
 // ============================================================================
 
 namespace SkKnowledgeBase.Chunking;
-
 
 public sealed record Chunk(
     int Index,
@@ -35,7 +39,8 @@ public sealed class TokenizerChunker : IChunker
 
     public TokenizerChunker(Tokenizer tokenizer, int maxTokens = 512)
     {
-        _tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
+        _tokenizer = tokenizer;
+        if (maxTokens <= 0) throw new ArgumentOutOfRangeException(nameof(maxTokens));
         _maxTokens = maxTokens;
     }
 
@@ -46,65 +51,38 @@ public sealed class TokenizerChunker : IChunker
             return Array.Empty<Chunk>();
         }
 
-        // Encode to token IDs (no out parameter)
-        IReadOnlyList<int> ids = _tokenizer.EncodeToIds(text);
-
+        IReadOnlyList<int> ids = (IReadOnlyList<int>)_tokenizer.Encode(text,false);
         if (ids.Count == 0)
         {
             return Array.Empty<Chunk>();
         }
 
-        var chunks = new List<Chunk>();
-        int index = 0;
+        int total = ids.Count;
+        int chunkCount = (total + _maxTokens - 1) / _maxTokens;
+        var chunks = new List<Chunk>(chunkCount);
 
-        for (int start = 0; start < ids.Count; start += _maxTokens)
+        for (int index = 0, start = 0; start < total; index++, start += _maxTokens)
         {
-            int count = Math.Min(_maxTokens, ids.Count - start);
+            int count = Math.Min(_maxTokens, total - start);
 
-            // Slice the token ID range
-            var subIds = ids.Skip(start).Take(count).ToList();
+            var subIds = new List<uint>(count);
+            for (int i = 0; i < count; i++)
+            {
+                subIds.Add((uint)ids[start + i]);
+            }
 
-            // Decode IDs back into text
-            string subText = _tokenizer.Decode(subIds);
+            string subText = _tokenizer.Decode(subIds,true);
 
             chunks.Add(new Chunk(
-                Index: index++,
+                Index: index,
                 Text: subText,
-                TokenCount: subIds.Count,
+                TokenCount: count,
                 Section: section
             ));
         }
 
         return chunks;
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="vocabPath"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    /// <exception cref="FileNotFoundException"></exception>
-    internal static Func<IServiceProvider, Tokenizer> CreateTokenizer(string vocabPath,string mergesPath)
-    {
-        return _ =>
-        {
-            if (vocabPath is not string vocabFile)
-            {
-                throw new ArgumentException("vocabPath and mergesPath must be strings.");
-            }
-
-            if (!File.Exists(vocabFile))
-            {
-                throw new FileNotFoundException("Tokenizer vocab file not found", vocabFile);
-            }
-
-            return BpeTokenizer.Create(vocabFile, mergesPath);
-        }
-        ;
-    }
-
-
 
 
 }

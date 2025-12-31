@@ -133,22 +133,24 @@ public partial class MainViewModel : BaseViewModel
     [RelayCommand]
     private async Task SendAsync()
     {
+        _cts = new CancellationTokenSource();
 
         // Example usage (e.g., from a hosted service or controller):
-         var orchestrator   = App.GetService<KnowledgeIngestionOrchestrator>();
-     
+        var orchestrator = App.GetService<KnowledgeIngestionOrchestrator>();
 
 
 
 
         IsBusy = true;
         OnIsBusyChanged(true);
+        OnPropertyChanged(nameof(CanCancel));
+
         try
         {
 
 
             var plan = await orchestrator.BuildOrUpdateKnowledgeBaseAsync(
-         goal: "Ingest the Microsoft Semantic Kernel documentation to build a knowledge base about Semantic Kernel capabilities and usage.",_cts.Token);
+         goal: "Ingest the Microsoft Semantic Kernel documentation focussing on orchestration capabilities and usage.",_cts.Token);
 
 
 
@@ -157,6 +159,8 @@ public partial class MainViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
+            OnPropertyChanged(nameof(CanSend));
+            OnPropertyChanged(nameof(CanCancel));
         }
 
 

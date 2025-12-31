@@ -27,6 +27,7 @@ using SkKnowledgeBase.Chunking;
 using SkKnowledgeBase.Llm;
 using SkKnowledgeBase.Models;
 using SkKnowledgeBase.Parsing;
+using HFTokenizer=Tokenizers.HuggingFace.Tokenizer;
 
 
 using Microsoft.ML.Tokenizers;
@@ -92,38 +93,43 @@ public class Ingester
 {
     public IServiceCollection ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
-        var connectionString = "(localdb)\\MSSqlLocalDB;Database=AIAgentRag";
+       // var connectionString = "(localdb)\\MSSqlLocalDB;Database=AIAgentRag";
         var embeddingModelPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\model.onnx""";
         var vocabPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\tokenizer.json""";
-        var mergesPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\merges.txt""";
+        //var mergesPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\merges.txt""";
 
-        var llmModelPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\phi3\\model.onnx""";
-        var llmTokenizer = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\phi3\\tokenizer.json""";
-
-        var tokenizer = TokenizerChunker.CreateTokenizer(vocabPath, string.Empty);
-
-        services.AddSingleton<Tokenizer>( tokenizer);
-
-     
-
-        services.AddSingleton<IChunker>(sp => new TokenizerChunker(sp.GetRequiredService<Tokenizer>(), maxTokens: 512));
+        var llmModelPath = """D:\\cpu-int4-rtn-block-32\\phi3-mini-4k-instruct-cpu-int4-rtn-block-32.onnx""";
+        var llmTokenizerJson = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\Phi3\\tokenizer.json""";
 
 
 
+  
 
-        services.AddKeyedSingleton<Tokenizer>("llm", (sp, _) =>
+        services.AddKeyedSingleton<HFTokenizer.Tokenizer>("embedding", (sp, _) =>
         {
-            // Fix CS8625 by passing an empty string for mergesPath (if null is not allowed)
-            return TokenizerChunker.CreateTokenizer(llmTokenizer, string.Empty)(sp);
+            return HFTokenizer.Tokenizer.FromFile(vocabPath);
         });
 
+        services.AddSingleton<IChunker>(sp =>
+            new TokenizerChunker(sp.GetRequiredKeyedService<HFTokenizer.Tokenizer>("embedding"), maxTokens: 512));
+
+            services.AddKeyedSingleton<Tokenizer>("llm", (sp, _) =>
+        {
+            using (var modelStream = File.OpenRead(@"d:\cpu-int4-rtn-block-32\tokenizer.model"))
+            {
+                return LlamaTokenizer.Create(modelStream);
+            }
+        });
 
         services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
+
+
+
 
         services.AddSingleton<IEmbeddingClient>(sp =>
             new OnnxEmbeddingClient(
                 modelPath: embeddingModelPath,
-                tokenizer: sp.GetRequiredService<Tokenizer>(),
+                tokenizer: sp.GetRequiredKeyedService<HFTokenizer.Tokenizer>("embedding"),
                 maxTokens: 512,
                 inputIdsName: "input_ids",
                 attentionMaskName: "attention_mask",

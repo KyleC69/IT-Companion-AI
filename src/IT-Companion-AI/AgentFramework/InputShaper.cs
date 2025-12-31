@@ -334,7 +334,7 @@ public sealed class InputShaper
         // Otherwise, metadata is the source of truth.
         var type = _config.KvElementType != default ? _config.KvElementType : elementTypeFromMeta;
 
-        if (_config.KvElementType != null && _config.KvElementType != elementTypeFromMeta)
+        if (_config.KvElementType != default && _config.KvElementType != elementTypeFromMeta)
         {
             throw new InvalidOperationException(
                 $"KV input '{name}' element type mismatch. " +
@@ -399,8 +399,8 @@ public sealed class InputShaper
         {
             if (!dict.ContainsKey(required))
             {
-                throw new InvalidOperationException($"Missing required input '{required}'.")
-;            }
+                throw new InvalidOperationException($"Missing required input '{required}'.");
+            }
         }
 
         // Validate only what we provide.

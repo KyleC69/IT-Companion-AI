@@ -132,7 +132,7 @@ public sealed class IngestionAgent : IIngestionAgent
             externalId: uri.ToString(),
             source: request.SourceLabel ?? "Web",
             title: uri.ToString(),
-            category: request.Category,
+            category: request.Category ?? string.Empty,
             version: request.Version
         );
 
@@ -172,7 +172,7 @@ public sealed class IngestionAgent : IIngestionAgent
             externalId: Path.GetFullPath(path),
             source: request.SourceLabel ?? "File",
             title: Path.GetFileName(path),
-            category: request.Category,
+            category: request.Category ?? string.Empty,
             version: request.Version
         );
 

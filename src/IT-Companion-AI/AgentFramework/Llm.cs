@@ -9,6 +9,8 @@ using System.Globalization;
 
     using SkKnowledgeBase.Chunking;
 
+using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;
+
 // ============================================================================
 // ONNX: Embeddings + LLM
 // ============================================================================
@@ -34,7 +36,7 @@ public interface ILLMClient
 public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
 {
     private readonly InferenceSession _session;
-    private readonly Tokenizer _tokenizer;
+    private readonly HFTokenizer.Tokenizer _tokenizer;
     private readonly int _maxTokens;
     private readonly string _inputIdsName;
     private readonly string _attentionMaskName;
@@ -45,7 +47,7 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
 
     public OnnxEmbeddingClient(
         string modelPath,
-        Tokenizer tokenizer,
+        HFTokenizer.Tokenizer tokenizer,
         int maxTokens = 512,
         string inputIdsName = "input_ids",
         string attentionMaskName = "attention_mask",
@@ -69,24 +71,49 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
         _requiresTokenTypeIds = _tokenTypeIdsName is not null && _session.InputMetadata.ContainsKey(_tokenTypeIdsName);
     }
 
+
+
+
+
+
+
+    /// <summary>
+    /// Generates an embedding vector for the specified input text using the underlying ONNX model.
+    /// </summary>
+    /// <remarks>If the model outputs a sequence of vectors, mean pooling is applied to produce a single
+    /// embedding vector. The length of the returned array corresponds to the embedding dimension expected by the
+    /// model.</remarks>
+    /// <param name="text">The input text to be embedded. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a single-precision floating point
+    /// array representing the embedding vector for the input text.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the tokenizer produces no encoding for the given text, or if the model output shape does not match the
+    /// expected embedding dimension.</exception>
     public Task<float[]> EmbedAsync(string text, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var ids = _tokenizer.EncodeToIds(text);
-        if (ids.Count > _maxTokens)
+        // HuggingFace tokenizers return an Encoding (or sequence). We need the token IDs as an indexable list.
+        var encoding = _tokenizer.Encode(text, addSpecialTokens: false).FirstOrDefault();
+        if (encoding is null)
         {
-            ids = ids.Take(_maxTokens).ToList();
+            throw new InvalidOperationException("Tokenizer produced no encoding for the given text.");
         }
 
-        var sequenceLength = ids.Count;
+        var tokenIds = encoding.Ids.Select(id => (long)id).ToList();
+        if (tokenIds.Count > _maxTokens)
+        {
+            tokenIds = tokenIds.Take(_maxTokens).ToList();
+        }
+
+        var sequenceLength = tokenIds.Count;
         var inputIds = new DenseTensor<long>(new[] { 1, sequenceLength });
         var attentionMask = new DenseTensor<long>(new[] { 1, sequenceLength });
         DenseTensor<long>? tokenTypeIds = _requiresTokenTypeIds ? new DenseTensor<long>(new[] { 1, sequenceLength }) : null;
 
         for (int i = 0; i < sequenceLength; i++)
         {
-            inputIds[0, i] = ids[i];
+            inputIds[0, i] = tokenIds[i];
             attentionMask[0, i] = 1;
             if (tokenTypeIds is not null)
             {
@@ -109,11 +136,11 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
         var output = results.First(r => r.Name == _outputName).AsEnumerable<float>().ToArray();
 
         // Model may output sequence; we take mean pooling as a simple, stable strategy.
-        if (output.Length % ids.Count == 0 && output.Length != _embeddingDim)
+        if (sequenceLength != 0 && output.Length % sequenceLength == 0 && output.Length != _embeddingDim)
         {
-            var hiddenSize = output.Length / ids.Count;
+            var hiddenSize = output.Length / sequenceLength;
             var pooled = new float[hiddenSize];
-            for (int t = 0; t < ids.Count; t++)
+            for (int t = 0; t < sequenceLength; t++)
             {
                 for (int h = 0; h < hiddenSize; h++)
                 {
@@ -122,7 +149,7 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
             }
             for (int h = 0; h < hiddenSize; h++)
             {
-                pooled[h] /= ids.Count;
+                pooled[h] /= sequenceLength;
             }
             return Task.FromResult(pooled);
         }
@@ -249,6 +276,16 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             _kvElementType = TensorElementType.Float;
         }
     }
+
+
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="prompt"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -301,42 +338,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
                 pastKeysHalf,
                 pastValuesHalf);
 
-            // DEBUG: verify every input has a non-null tensor
-            foreach (var input in inputs)
-            {
-                if (!_session.InputMetadata.TryGetValue(input.Name, out var meta))
-                {
-                    throw new InvalidOperationException($"Input '{input.Name}' not found in model metadata.");
-                }
-
-                try
-                {
-                    switch (meta.ElementDataType)
-                    {
-                        case TensorElementType.Int64:
-                            _ = input.AsTensor<long>();
-                            break;
-                        case TensorElementType.Int32:
-                            _ = input.AsTensor<int>();
-                            break;
-                        case TensorElementType.Float:
-                            _ = input.AsTensor<float>();
-                            break;
-                        case TensorElementType.Float16:
-                            _ = input.AsTensor<Half>();
-                            break;
-                        default:
-                            // extend if your model has other types
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new InvalidOperationException(
-                        $"Input '{input.Name}' has a null or invalid tensor.", ex);
-                }
-            }
-
+    
             using var results = _session.Run(inputs);
             //var results = _session.Run(prompt);
             // Extract logits

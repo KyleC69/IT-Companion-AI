@@ -18,11 +18,7 @@ public sealed class KnowledgeIngestionOrchestrator
     private readonly IContentParser _parser;
     private readonly IIngestionAgent _ingester;
 
-    public KnowledgeIngestionOrchestrator(
-        IPlannerAgent planner,
-        IWebFetcher fetcher,
-        IContentParser parser,
-        IIngestionAgent ingester)
+    public KnowledgeIngestionOrchestrator(IPlannerAgent planner, IWebFetcher fetcher, IContentParser parser, IIngestionAgent ingester)
     {
         _planner = planner;
         _fetcher = fetcher;
@@ -30,9 +26,7 @@ public sealed class KnowledgeIngestionOrchestrator
         _ingester = ingester;
     }
 
-    public async Task<IngestionPlan> BuildOrUpdateKnowledgeBaseAsync(
-        string goal,
-        CancellationToken cancellationToken = default)
+    public async Task<IngestionPlan> BuildOrUpdateKnowledgeBaseAsync(string goal, CancellationToken cancellationToken = default)
     {
         var plan = await _planner.CreatePlanAsync(goal, cancellationToken)
             .ConfigureAwait(false);

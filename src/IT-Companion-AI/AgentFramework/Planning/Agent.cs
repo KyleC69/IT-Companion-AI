@@ -16,9 +16,7 @@ namespace SkKnowledgeBase.Agents.Planning;
 
 public interface IPlannerAgent
 {
-    Task<IngestionPlan> CreatePlanAsync(
-        string goal,
-        CancellationToken cancellationToken = default);
+    Task<IngestionPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default);
 }
 
 public sealed class PlannerAgent : IPlannerAgent
@@ -30,9 +28,7 @@ public sealed class PlannerAgent : IPlannerAgent
         _llmClient = llmClient;
     }
 
-    public async Task<IngestionPlan> CreatePlanAsync(
-        string goal,
-        CancellationToken cancellationToken = default)
+    public async Task<IngestionPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         var prompt = BuildPlannerPrompt(goal);
 
@@ -43,6 +39,52 @@ public sealed class PlannerAgent : IPlannerAgent
         var plan = ParsePlan(goal, rawResponse);
 
         return plan;
+    }
+
+    internal static IngestionPlan ParsePlanForTests(string goal, string rawResponse) => ParsePlan(goal, rawResponse);
+
+    private static IngestionPlan ParsePlan(string goal, string rawResponse)
+    {
+        // Very small helper DTO for JSON parsing
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        var json = ExtractFirstJsonObject(rawResponse);
+
+        PlannerResponse? parsed;
+        try
+        {
+            parsed = JsonSerializer.Deserialize<PlannerResponse>(json, options);
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException(
+                $"Planner returned invalid JSON. Raw response:\n{rawResponse}", ex);
+        }
+
+        if (parsed?.Targets is null || parsed.Targets.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"Planner returned no targets. Raw response:\n{rawResponse}");
+        }
+
+        var targets = parsed.Targets
+            .Where(t => !string.IsNullOrWhiteSpace(t.Uri))
+            .Select(t => new IngestionTarget(
+                Uri: new Uri(t.Uri, UriKind.Absolute),
+                SourceLabel: string.IsNullOrWhiteSpace(t.SourceLabel) ? "Web" : t.SourceLabel,
+                Category: t.Category,
+                Version: t.Version
+            ))
+            .ToList()
+            .AsReadOnly();
+
+        return new IngestionPlan(
+            Goal: goal,
+            Targets: targets
+        );
     }
 
     private static string BuildPlannerPrompt(string goal)
@@ -77,46 +119,70 @@ public sealed class PlannerAgent : IPlannerAgent
         return sb.ToString();
     }
 
-    private static IngestionPlan ParsePlan(string goal, string rawResponse)
+    private static string ExtractFirstJsonObject(string rawResponse)
     {
-        // Very small helper DTO for JSON parsing
-        var options = new JsonSerializerOptions
+        if (string.IsNullOrWhiteSpace(rawResponse))
         {
-            PropertyNameCaseInsensitive = true
-        };
-
-        PlannerResponse? parsed;
-        try
-        {
-            parsed = JsonSerializer.Deserialize<PlannerResponse>(rawResponse, options);
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException(
-                $"Planner returned invalid JSON. Raw response:\n{rawResponse}", ex);
+            return rawResponse;
         }
 
-        if (parsed?.Targets is null || parsed.Targets.Count == 0)
+        int start = rawResponse.IndexOf('{');
+        if (start < 0)
         {
-            throw new InvalidOperationException(
-                $"Planner returned no targets. Raw response:\n{rawResponse}");
+            return rawResponse.Trim();
         }
 
-        var targets = parsed.Targets
-            .Where(t => !string.IsNullOrWhiteSpace(t.Uri))
-            .Select(t => new IngestionTarget(
-                Uri: new Uri(t.Uri, UriKind.Absolute),
-                SourceLabel: string.IsNullOrWhiteSpace(t.SourceLabel) ? "Web" : t.SourceLabel,
-                Category: t.Category,
-                Version: t.Version
-            ))
-            .ToList()
-            .AsReadOnly();
+        bool inString = false;
+        bool escape = false;
+        int depth = 0;
 
-        return new IngestionPlan(
-            Goal: goal,
-            Targets: targets
-        );
+        for (int i = start; i < rawResponse.Length; i++)
+        {
+            char c = rawResponse[i];
+
+            if (inString)
+            {
+                if (escape)
+                {
+                    escape = false;
+                    continue;
+                }
+
+                if (c == '\\')
+                {
+                    escape = true;
+                    continue;
+                }
+
+                if (c == '"')
+                {
+                    inString = false;
+                }
+
+                continue;
+            }
+
+            if (c == '"')
+            {
+                inString = true;
+                continue;
+            }
+
+            if (c == '{')
+            {
+                depth++;
+            }
+            else if (c == '}')
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    return rawResponse.Substring(start, i - start + 1);
+                }
+            }
+        }
+
+        return rawResponse.Substring(start).Trim();
     }
 
     private sealed class PlannerResponse
