@@ -1,18 +1,21 @@
 using System.Net.Http;
 
 using ITCompanionAI.AgentFramework;
+using ITCompanionAI.AgentFramework.Agents;
 using ITCompanionAI.AgentFramework.Ingestion;
 using ITCompanionAI.AgentFramework.Planning;
 using ITCompanionAI.AgentFramework.Storage;
 using ITCompanionAI.Views;
 
-using Microsoft.Extensions.AI;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
+
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace ITCompanionAI;
@@ -67,7 +70,7 @@ public partial class App : Application
                 services.AddSingleton<IPlannerAgent, PlannerAgent>();
                 services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
 
-                var store = new PgVectorStore("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", embeddingDim: 384);
+                var store = new PgVectorStore("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", embeddingDim: 1536);
                 //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
 
                 services.AddSingleton<IVectorStore>(sp =>
@@ -77,7 +80,7 @@ public partial class App : Application
 
                 Ingester.ConfigureServices(context, services);
 
-
+             
 
 
             }).Build();
@@ -145,6 +148,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection RegisterKernel(this IServiceCollection services)
     {
+
+  
         // DO NOT REMOVE THESE LINES BELOW - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
         // ****************  AI DO NOT REMOVE THESE LINES BELOW    **********************
         var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN")
@@ -154,6 +159,8 @@ public static class ServiceCollectionExtensions
 
         var phiModel = "Phi-4-mini-instruct";
         var openAiEndpoint = new Uri("https://models.github.ai/inference");
+
+        _ = phiModel;
 
         var loggingConfiguration = new Action<ILoggingBuilder>(c => c.AddConsole().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace));
         // ****************  AI DO NOT REMOVE THESE LINES ABOVE    **********************

@@ -31,22 +31,21 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ProgressBar Grid.Row="2"
-                IsIndeterminate="True"
-                Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
+
+            <ProgressBar Grid.Row="2" IsIndeterminate="True" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
                 Height="4"
                 Margin="0,0,0,12" />
             <ScrollViewer Grid.Row="0" Margin="0,0,0,12" VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" ItemTemplate="{StaticResource MessageTemplate}" />
             </ScrollViewer>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
-                <TextBox
-                    Text="{Binding UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    AcceptsReturn="True"
-                    Height="80"
-                    VerticalAlignment="Center"
-                    PlaceholderText="Type a message..."
-                    MinWidth="500" />
+
+                <TextBox Text="{Binding UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True"
+                         Height="80"
+                         VerticalAlignment="Center"
+                         PlaceholderText="Type a message..."
+                         MinWidth="500" />
                 <StackPanel Orientation="Vertical">
                 <Button Width="150" 
                     Content="Send" Margin="5"
@@ -58,6 +57,12 @@
                     IsEnabled="{Binding CanCancel}" />
                 </StackPanel>
             </StackPanel>
+
+            <local:ButtonOverlay Grid.Row="0"
+                                Grid.RowSpan="3"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                Canvas.ZIndex="1000" />
         </Grid>
     </Page.Content>
 </Page>

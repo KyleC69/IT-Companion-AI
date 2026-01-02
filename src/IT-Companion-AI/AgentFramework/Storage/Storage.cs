@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlTypes;
 
 using ITCompanionAI.AgentFramework;
+using ITCompanionAI.AgentFramework.Agents;
 
 
 // ============================================================================
@@ -211,7 +212,7 @@ OUTPUT inserted.id, inserted.external_id, inserted.source, inserted.title, inser
                 CreatedAt = reader.GetFieldValue<DateTimeOffset>(6),
                 UpdatedAt = reader.GetFieldValue<DateTimeOffset>(7),
                 LastError = reader.IsDBNull(8) ? null : reader.GetString(8),
-                Category = reader.IsDBNull(9) ? null : reader.GetString(9)
+                Category = reader.IsDBNull(9) ? string.Empty : reader.GetString(9)
             }
             : throw new DataException("Failed to upsert document.");
     }

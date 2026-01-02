@@ -9,9 +9,6 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 
-using SkKnowledgeBase.Ingestion;
-using SkKnowledgeBase.Agents;
-using SkKnowledgeBase.Parsing;
 using ITCompanionAI.AgentFramework.Planning;
 
 
@@ -41,7 +38,7 @@ public partial class MainViewModel : BaseViewModel
     public ObservableCollection<ChatMessageViewModel> Messages { get; } = new();
 
     private bool _isBusy;
-    private object _loop;
+    private object? _loop;
 
     public bool IsBusy
     {

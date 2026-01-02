@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 
 using System;
+#pragma warning disable SKEXP0110
 
 
 

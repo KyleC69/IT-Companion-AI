@@ -13,7 +13,9 @@ public static class ModelCatalog
 
     
 
+#pragma warning disable SKEXP0110
     public static ModelDefinition Conversationalist  => new() { Api="gpt-4o", Id="conversationalist" };
+#pragma warning restore SKEXP0110
 
 
 
@@ -79,7 +81,9 @@ public static ModelDefinition InfraSpecialistModel => new(
     /// <summary>
     /// All model definitions used across the agent system.
     /// </summary>
+#pragma warning disable SKEXP0110
     public static IReadOnlyList<ModelDefinition> AllModels => new[]
+#pragma warning restore SKEXP0110
     {
         Conversationalist
     };

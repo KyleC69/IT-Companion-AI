@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+#pragma warning disable SKEXP0110
 using ITCompanionAI;
 using ITCompanionAI.AgentFramework;
+using ITCompanionAI.AgentFramework.Agents;
 using ITCompanionAI.AgentFramework.Ingestion;
 
 using Microsoft.SemanticKernel.Agents;
@@ -77,6 +78,7 @@ public sealed class KnowledgeIngestionOrchestrator : IKnowledgeIngestionOrchestr
             UpdatedAt = now
         };
     }
+
 
     private AgentGroupChat BuildChatGroup()
     {

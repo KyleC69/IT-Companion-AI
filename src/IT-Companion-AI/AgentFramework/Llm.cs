@@ -8,7 +8,6 @@ using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.Tokenizers;
 
-using SkKnowledgeBase.Chunking;
 
 using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;
 

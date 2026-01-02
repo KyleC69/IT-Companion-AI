@@ -1,6 +1,10 @@
-﻿using System;
+﻿#pragma warning restore SKEXP0110
+
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.CompilerServices;
+using System.Linq;
 
 
 
@@ -14,7 +18,6 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-using SkKnowledgeBase.Query; // for ILLMClient
 
 namespace ITCompanionAI.AgentFramework.Planning;
 
@@ -44,7 +47,7 @@ public sealed class PlannerAgent : Agent,IPlannerAgent
         
     }
 
-    internal static IngestionPlan ParsePlanForTests(string goal, string rawResponse) => ParsePlan(goal, rawResponse);
+    public static IngestionPlan ParsePlanForTests(string goal, string rawResponse) => ParsePlan(goal, rawResponse);
 
     private static IngestionPlan ParsePlan(string goal, string rawResponse)
     {
@@ -195,7 +198,11 @@ public sealed class PlannerAgent : Agent,IPlannerAgent
         return rawResponse.Substring(start).Trim();
     }
 
-    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         messagehistory.AddSystemMessage(BuildPlannerPrompt("Produce a list of links to the API Definition web pages for the Microsoft Semantic Kernel."));
        
@@ -204,7 +211,15 @@ public sealed class PlannerAgent : Agent,IPlannerAgent
 
         var plan = ParsePlan(msg, rawResponse);
 
-        yield return default;
+        var responseText = JsonSerializer.Serialize(plan);
+        if (thread is null)
+        {
+            throw new ArgumentNullException(nameof(thread));
+        }
+
+        yield return new AgentResponseItem<ChatMessageContent>(
+            new ChatMessageContent(AuthorRole.Assistant, responseText),
+            thread);
     }
 
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
@@ -216,6 +231,7 @@ public sealed class PlannerAgent : Agent,IPlannerAgent
     {
         throw new NotImplementedException();
     }
+#pragma warning disable SKEXP0110
 
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {

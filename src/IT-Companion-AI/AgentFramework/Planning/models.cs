@@ -12,8 +12,8 @@ public sealed record IngestionTarget(
         string? Version = null
     );
 
-    public sealed record IngestionPlan(
-        string Goal,
-        IReadOnlyList<IngestionTarget> Targets
-    );
+public sealed record IngestionPlan(
+    string Goal,
+    IReadOnlyList<IngestionTarget> Targets
+);
 

@@ -4,13 +4,13 @@ using Microsoft.SemanticKernel.Agents.Chat;
 
 namespace ITCompanionAI.AgentFramework.Planning;
 
+#pragma warning disable SKEXP0110
 internal class ApprovalTerminationStrategy : TerminationStrategy
+#pragma warning restore SKEXP0110
 {
-    public object Agents { get; set; }
-    public int MaximumIterations { get; set; }
-
     protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(false);
     }
 }

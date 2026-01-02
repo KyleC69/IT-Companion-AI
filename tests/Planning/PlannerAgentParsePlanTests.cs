@@ -52,11 +52,16 @@ public sealed class PlannerAgentParsePlanTests
     {
         var raw = "Not JSON at all";
 
-        var ex = Assert.ThrowsException<InvalidOperationException>(() =>
-            _ = PlannerAgent.ParsePlanForTests("goal", raw));
-
-        StringAssert.Contains(ex.Message, "Planner returned invalid JSON");
-        StringAssert.Contains(ex.Message, raw);
+        try
+        {
+            _ = PlannerAgent.ParsePlanForTests("goal", raw);
+            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("Expected InvalidOperationException.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            StringAssert.Contains(ex.Message, "Planner returned invalid JSON");
+            StringAssert.Contains(ex.Message, raw);
+        }
     }
 
     [TestMethod]
@@ -64,9 +69,14 @@ public sealed class PlannerAgentParsePlanTests
     {
         var raw = "{\"targets\":[]}";
 
-        var ex = Assert.ThrowsException<InvalidOperationException>(() =>
-            _ = PlannerAgent.ParsePlanForTests("goal", raw));
-
-        StringAssert.Contains(ex.Message, "Planner returned no targets");
+        try
+        {
+            _ = PlannerAgent.ParsePlanForTests("goal", raw);
+            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("Expected InvalidOperationException.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            StringAssert.Contains(ex.Message, "Planner returned no targets");
+        }
     }
 }

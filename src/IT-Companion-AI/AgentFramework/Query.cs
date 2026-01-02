@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using ITCompanionAI.AgentFramework.Agents;
 using ITCompanionAI.AgentFramework.Storage;
 
 

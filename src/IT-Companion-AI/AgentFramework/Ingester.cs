@@ -4,18 +4,6 @@
 // Only configuration: paths to ONNX models and tokenizer files, and DB string.
 // ============================================================================
 //
-// NuGet packages you will need:
-//
-// - Npgsql
-// - NpgsqlVector
-// - HtmlAgilityPack
-// - Microsoft.ML.OnnxRuntime
-// - Microsoft.ML.Tokenizers
-// - System.Text.Json
-//
-// Postgres extension:
-//
-//   CREATE EXTENSION IF NOT EXISTS vector;
 //
 // ============================================================================
 // MODELS
@@ -50,7 +38,7 @@ namespace ITCompanionAI.AgentFramework.Agents;
         public DateTimeOffset CreatedAt { get; init; }
         public DateTimeOffset UpdatedAt { get; set; }
         public string? LastError { get; set; }
-        public string Category { get; internal set; }
+        public string Category { get; internal set; } = string.Empty;
     }
 
     public sealed class ChunkRecord
@@ -81,7 +69,7 @@ namespace ITCompanionAI.AgentFramework.Agents;
         public double Confidence { get; init; }
         public int SourceCount { get; init; }
     }
-}
+
 
 
 
@@ -90,17 +78,16 @@ public class Ingester
 {
     public IServiceCollection ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
-       // var connectionString = "(localdb)\\MSSqlLocalDB;Database=AIAgentRag";
+        // var connectionString = "(localdb)\\MSSqlLocalDB;Database=AIAgentRag";
         var embeddingModelPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\model.onnx""";
         var vocabPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\tokenizer.json""";
         //var mergesPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\merges.txt""";
 
         var llmModelPath = """D:\\cpu-int4-rtn-block-32\\phi3-mini-4k-instruct-cpu-int4-rtn-block-32.onnx""";
-        var llmTokenizerJson = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\Phi3\\tokenizer.json""";
 
 
 
-  
+
 
         services.AddKeyedSingleton<HFTokenizer.Tokenizer>("embedding", (sp, _) =>
         {
@@ -110,13 +97,13 @@ public class Ingester
         services.AddSingleton<IChunker>(sp =>
             new TokenizerChunker(sp.GetRequiredKeyedService<HFTokenizer.Tokenizer>("embedding"), maxTokens: 512));
 
-            services.AddKeyedSingleton<Tokenizer>("llm", (sp, _) =>
+        services.AddKeyedSingleton<Tokenizer>("llm", (sp, _) =>
+    {
+        using (var modelStream = File.OpenRead(@"d:\cpu-int4-rtn-block-32\tokenizer.model"))
         {
-            using (var modelStream = File.OpenRead(@"d:\cpu-int4-rtn-block-32\tokenizer.model"))
-            {
-                return LlamaTokenizer.Create(modelStream);
-            }
-        });
+            return LlamaTokenizer.Create(modelStream);
+        }
+    });
 
         services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
 
@@ -157,7 +144,7 @@ public class Ingester
         return services;
     }
 
-
+}
 
 
 
