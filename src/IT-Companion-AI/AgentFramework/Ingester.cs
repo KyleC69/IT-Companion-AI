@@ -23,25 +23,22 @@
 
 
 
-using SkKnowledgeBase.Chunking;
-using SkKnowledgeBase.Llm;
-using SkKnowledgeBase.Models;
-using SkKnowledgeBase.Parsing;
-using HFTokenizer=Tokenizers.HuggingFace.Tokenizer;
+using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;
 
 
 using Microsoft.ML.Tokenizers;
 
 using Microsoft.Extensions.DependencyInjection;
-using SkKnowledgeBase.Ingestion;
-using SkKnowledgeBase.Agents;
-using SkKnowledgeBase.Query;
 
 using Microsoft.Extensions.Hosting;
 
+using ITCompanionAI.AgentFramework;
+using ITCompanionAI.AgentFramework.Ingestion;
+using ITCompanionAI.AgentFramework.Agents;
 
-namespace SkKnowledgeBase.Models
-{
+
+namespace ITCompanionAI.AgentFramework.Agents;
+
     public sealed class DocumentRecord
     {
         public Guid Id { get; init; }
@@ -159,7 +156,7 @@ public class Ingester
 
         return services;
     }
-}
+
 
 
 

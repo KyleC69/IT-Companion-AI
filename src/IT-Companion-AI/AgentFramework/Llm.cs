@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Globalization;
-    using Microsoft.ML.OnnxRuntime;
-    using Microsoft.ML.OnnxRuntime.Tensors;
-    using Microsoft.ML.Tokenizers;
 
-    using SkKnowledgeBase.Chunking;
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
+using Microsoft.ML.Tokenizers;
+
+using SkKnowledgeBase.Chunking;
 
 using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;
 
@@ -15,7 +16,7 @@ using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;
 // ONNX: Embeddings + LLM
 // ============================================================================
 
-namespace SkKnowledgeBase.Llm;
+namespace ITCompanionAI.AgentFramework;
 
 
 public interface IEmbeddingClient
@@ -155,12 +156,9 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
         }
 
         // Or model directly outputs a single vector
-        if (output.Length == _embeddingDim)
-        {
-            return Task.FromResult(output);
-        }
-
-        throw new InvalidOperationException(
+        return output.Length == _embeddingDim
+            ? Task.FromResult(output)
+            : throw new InvalidOperationException(
             $"Unexpected embedding output shape. Length={output.Length}, expected {_embeddingDim} or multiple of token count.");
     }
 
@@ -291,29 +289,19 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         // Encode prompt
-        var tokens = _tokenizer.EncodeToIds(prompt).ToList();
+        var promptTokenIds = _tokenizer.EncodeToIds(prompt).ToList();
+        var tokens = new List<int>(capacity: promptTokenIds.Count + _maxNewTokens);
+        tokens.AddRange(promptTokenIds);
 
-        List<DenseTensor<float>>? pastKeysFloat = null;
-        List<DenseTensor<float>>? pastValuesFloat = null;
-        List<DenseTensor<Half>>? pastKeysHalf = null;
-        List<DenseTensor<Half>>? pastValuesHalf = null;
+        // Build completion separately to avoid TrimCompletion/tokenizer round-trip issues
+        var completionTokenIds = new List<int>(capacity: _maxNewTokens);
 
-        if (_requiresPastKeyValues)
-        {
-            if (_kvElementType == TensorElementType.Float)
-            {
-                pastKeysFloat = new List<DenseTensor<float>>(_numPastLayers);
-                pastValuesFloat = new List<DenseTensor<float>>(_numPastLayers);
-            }
-            else if (_kvElementType == TensorElementType.Float16)
-            {
-                pastKeysHalf = new List<DenseTensor<Half>>(_numPastLayers);
-                pastValuesHalf = new List<DenseTensor<Half>>(_numPastLayers);
-            }
-        }
+        // Persist KV cache across steps
+        var pastKeysFloat = new List<DenseTensor<float>>();
+        var pastValuesFloat = new List<DenseTensor<float>>();
+        var pastKeysHalf = new List<DenseTensor<Half>>();
+        var pastValuesHalf = new List<DenseTensor<Half>>();
 
-
-        // Autoregressive loop
         for (int step = 0; step < _maxNewTokens; step++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -338,24 +326,25 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
                 pastKeysHalf,
                 pastValuesHalf);
 
-    
             using var results = _session.Run(inputs);
-            //var results = _session.Run(prompt);
-            // Extract logits
+
             int nextId = SelectNextToken(results);
 
             tokens.Add(nextId);
+            completionTokenIds.Add(nextId);
+
+            UpdateKvCache(results, pastKeysFloat, pastValuesFloat, pastKeysHalf, pastValuesHalf);
+
+            // NOTE: '0' is not universally EOS. Prefer tokenizer/model-configured EOS IDs.
+            // If your tokenizer exposes EOS token id(s), check those here instead.
             if (nextId == 0)
             {
                 break;
             }
-
-            // Update KV cache
-            UpdateKvCache(results, pastKeysFloat, pastValuesFloat, pastKeysHalf, pastValuesHalf);
         }
 
-        var fullText = _tokenizer.Decode(tokens);
-        return Task.FromResult(TrimCompletion(fullText, prompt));
+        var completionText = _tokenizer.Decode(completionTokenIds);
+        return Task.FromResult(completionText.Trim());
     }
 
     private List<NamedOnnxValue> BuildInferenceInputs(
@@ -602,11 +591,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
     internal static string TrimCompletion(string full, string prompt)
     {
-        if (full.StartsWith(prompt, StringComparison.Ordinal))
-        {
-            return full.Substring(prompt.Length).Trim();
-        }
-        return full.Trim();
+        return full.StartsWith(prompt, StringComparison.Ordinal) ? full.Substring(prompt.Length).Trim() : full.Trim();
     }
 
     private static int NormalizeDim(int metaDim, int fallback)
@@ -638,12 +623,9 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
     /// <returns>A DenseTensor of the specified type and shape, filled with default values.</returns>
     private static DenseTensor<T> CreateEmptyKv<T>(int[] shape) where T : struct
     {
-        if (shape == null || shape.Length == 0)
-        {
-            throw new ArgumentException("Shape must be a non-empty array.", nameof(shape));
-        }
-
-        return new DenseTensor<T>(shape);
+        return shape == null || shape.Length == 0
+            ? throw new ArgumentException("Shape must be a non-empty array.", nameof(shape))
+            : new DenseTensor<T>(shape);
     }
 
     private static void AddEmptyKvInputs<T>(List<NamedOnnxValue> inputs, int numLayers, int[] shape)

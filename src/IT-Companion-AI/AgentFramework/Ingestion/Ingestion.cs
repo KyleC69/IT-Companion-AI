@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-using SkKnowledgeBase.Chunking;
-using SkKnowledgeBase.Llm;
-using SkKnowledgeBase.Models;
-using SkKnowledgeBase.Parsing;
-using SkKnowledgeBase.Storage;
+using ITCompanionAI.AgentFramework.Storage;
+
 
 // ============================================================================
 // INGESTION: deterministic tools (URL/file/directory)
 // ============================================================================
 
-namespace SkKnowledgeBase.Ingestion;
+namespace ITCompanionAI.AgentFramework.Ingestion;
 
 
 
@@ -41,12 +38,7 @@ public sealed class HttpWebFetcher : IWebFetcher
 
     public Task<string> GetStringAsync(Uri uri, CancellationToken cancellationToken = default)
     {
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        return _httpClient.GetStringAsync(uri, cancellationToken);
+        return uri is null ? throw new ArgumentNullException(nameof(uri)) : _httpClient.GetStringAsync(uri, cancellationToken);
     }
 }
 

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-    using SkKnowledgeBase.Llm;
-    using SkKnowledgeBase.Models;
-    using SkKnowledgeBase.Storage;
+
+using ITCompanionAI.AgentFramework.Storage;
+
 
 
 
@@ -11,7 +11,7 @@ using System.Text;
 // QUERY SERVICE (for your web chat)
 // ============================================================================
 
-namespace SkKnowledgeBase.Query;
+namespace ITCompanionAI.AgentFramework;
 
 
 public sealed record QueryResult(

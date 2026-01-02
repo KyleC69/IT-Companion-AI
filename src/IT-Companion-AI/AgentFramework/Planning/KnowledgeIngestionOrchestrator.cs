@@ -3,15 +3,20 @@ using System.Collections.Generic;
 using System.Text;
 
 using ITCompanionAI;
+using ITCompanionAI.AgentFramework;
+using ITCompanionAI.AgentFramework.Ingestion;
 
-using SkKnowledgeBase.Agents.Planning;
-using SkKnowledgeBase.Ingestion;
-using SkKnowledgeBase.Models;
-using SkKnowledgeBase.Parsing;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Chat;
 
-namespace SkKnowledgeBase.AgentFramework.Planning;
+namespace ITCompanionAI.AgentFramework.Planning;
 
-public sealed class KnowledgeIngestionOrchestrator
+public interface IKnowledgeIngestionOrchestrator
+{
+    Task<IngestionPlan> BuildOrUpdateKnowledgeBaseAsync(string goal, CancellationToken cancellationToken = default);
+}
+
+public sealed class KnowledgeIngestionOrchestrator : IKnowledgeIngestionOrchestrator
 {
     private readonly IPlannerAgent _planner;
     private readonly IWebFetcher _fetcher;
@@ -31,16 +36,18 @@ public sealed class KnowledgeIngestionOrchestrator
         var plan = await _planner.CreatePlanAsync(goal, cancellationToken)
             .ConfigureAwait(false);
         var ingestion = App.GetService<IngestionAgent>();
+      
+        
         foreach (var target in plan.Targets)
         {
-            await ingestion.IngestAsync(new IngestionRequest(target.Uri.ToString(),SourceLabel: target.SourceLabel,Version: target.Version,Category: target.Category), cancellationToken);
-            var html = await _fetcher.GetStringAsync (target.Uri, cancellationToken)
+            await ingestion.IngestAsync(new IngestionRequest(target.Uri.ToString(), SourceLabel: target.SourceLabel, Version: target.Version, Category: target.Category), cancellationToken);
+            var html = await _fetcher.GetStringAsync(target.Uri, cancellationToken)
                 .ConfigureAwait(false);
 
             // For now, use your existing “skeleton” parser
             var text = _parser.ParseHtml(html);
 
-            var doc =  CreateDocumentRecord(
+            var doc = CreateDocumentRecord(
                 externalId: target.Uri.ToString(),
                 source: target.SourceLabel,
                 title: target.Uri.ToString(),
@@ -70,4 +77,68 @@ public sealed class KnowledgeIngestionOrchestrator
             UpdatedAt = now
         };
     }
+
+    private AgentGroupChat BuildChatGroup()
+    {
+        // Define agents
+        AgentDefinition agentReviewer = new()
+        {
+            Name = "Art-Director",
+            Description = "An experienced art director who reviews and approves content plans.",
+            Type= "",
+        };
+
+        // Create a chat for agent interaction.
+        AgentGroupChat chat =
+            new(new PlannerAgent(App.GetService<OnnxLLMClient>()))
+            {
+                ExecutionSettings =
+                    new()
+                    {
+                        // Here a TerminationStrategy subclass is used that will terminate when
+                        // an assistant message contains the term "approve".
+                        TerminationStrategy =  new ApprovalTerminationStrategy()
+
+                    }
+            };
+
+        return chat;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

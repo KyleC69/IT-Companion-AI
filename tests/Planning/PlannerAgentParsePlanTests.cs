@@ -1,6 +1,8 @@
 using System;
+
+using ITCompanionAI.AgentFramework.Planning;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SkKnowledgeBase.Agents.Planning;
 
 namespace CompanionTests.Planning;
 

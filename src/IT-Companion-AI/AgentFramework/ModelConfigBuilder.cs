@@ -13,7 +13,7 @@ using System.Text.Json;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 
-namespace SkKnowledgeBase.Llm;
+namespace ITCompanionAI.AgentFramework;
 
 public sealed class ModelConfig
 {
@@ -173,28 +173,15 @@ public sealed class ModelConfigBuilder
 
     private static int GetInt(JsonElement root, string name)
     {
-        if (!root.TryGetProperty(name, out var prop))
-        {
-            throw new InvalidOperationException($"Missing required config field '{name}'.");
-        }
-
-        if (!prop.TryGetInt32(out int value))
-        {
-            throw new InvalidOperationException($"Config field '{name}' is not an integer.");
-        }
-
-        return value;
+        return !root.TryGetProperty(name, out var prop)
+            ? throw new InvalidOperationException($"Missing required config field '{name}'.")
+            : !prop.TryGetInt32(out int value) ? throw new InvalidOperationException($"Config field '{name}' is not an integer.") : value;
     }
 
     private static string FindInputName(IReadOnlyDictionary<string, NodeMetadata> inputs, string expected)
     {
         var match = inputs.Keys.FirstOrDefault(k => k.Equals(expected, StringComparison.OrdinalIgnoreCase));
-        if (match == null)
-        {
-            throw new InvalidOperationException($"ONNX model does not expose required input '{expected}'.");
-        }
-
-        return match;
+        return match == null ? throw new InvalidOperationException($"ONNX model does not expose required input '{expected}'.") : match;
     }
 
     private static string DetectFormat(IEnumerable<string> names, string suffix)

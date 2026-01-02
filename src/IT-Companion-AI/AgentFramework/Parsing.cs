@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-    using HtmlAgilityPack;
+
+using HtmlAgilityPack;
 
 // ============================================================================
 // HTML / MARKDOWN PARSING
 // ============================================================================
 
-namespace SkKnowledgeBase.Parsing;
+namespace ITCompanionAI.AgentFramework;
 
 
 public interface IContentParser

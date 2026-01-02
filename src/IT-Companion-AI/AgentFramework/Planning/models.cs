@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SkKnowledgeBase.Agents.Planning;
+namespace ITCompanionAI.AgentFramework.Planning;
 
 
 public sealed record IngestionTarget(

@@ -58,6 +58,9 @@
       <Compile Remove="AgentFramework\KernelSetup.cs" />
       <Compile Remove="AgentFramework\RagStore.cs" />
     </ItemGroup>
+    <ItemGroup>
+      <Compile Include="JsonSchema\Difschema.json" />
+    </ItemGroup>
 
     <ItemGroup>
         <Content Include="Assets\SplashScreen.scale-200.png" />

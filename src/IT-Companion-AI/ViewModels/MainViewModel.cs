@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 
 using SkKnowledgeBase.Ingestion;
 using SkKnowledgeBase.Agents;
-using SkKnowledgeBase.Agents.Planning;
-using SkKnowledgeBase.AgentFramework.Planning;
+using SkKnowledgeBase.Parsing;
+using ITCompanionAI.AgentFramework.Planning;
 
 
 namespace ITCompanionAI.ViewModels;
@@ -136,22 +136,29 @@ public partial class MainViewModel : BaseViewModel
         _cts = new CancellationTokenSource();
 
         // Example usage (e.g., from a hosted service or controller):
-        var orchestrator = App.GetService<KnowledgeIngestionOrchestrator>();
+       // var orchestrator = App.GetService<KnowledgeIngestionOrchestrator>();
 
 
 
 
         IsBusy = true;
-        OnIsBusyChanged(true);
-        OnPropertyChanged(nameof(CanCancel));
+
 
         try
         {
 
+            var orchestrator = App.GetService<IKnowledgeIngestionOrchestrator>();
 
-            var plan = await orchestrator.BuildOrUpdateKnowledgeBaseAsync(
-         goal: "Ingest the Microsoft Semantic Kernel documentation focussing on orchestration capabilities and usage.",_cts.Token);
+            var planner = App.GetService<IPlannerAgent>();
 
+            var plan = await planner.CreatePlanAsync("Ingest the Semantic Kernel API signatures and usage documentation.",_cts.Token);
+
+
+            //var ingestion = App.GetService<IngestionAgent>();
+          //  var plans = await orchestrator.BuildOrUpdateKnowledgeBaseAsync("Ingest the Semantic Kernel API signatures and usage documentation.", _cts.Token);
+
+
+   
 
 
             await Task.CompletedTask;

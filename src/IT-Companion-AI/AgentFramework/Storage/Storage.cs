@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-    using System.Data;
+using System.Data;
 
-    using Microsoft.Data.SqlClient;
-    using Microsoft.Data.SqlTypes;
+using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
 
-    using SkKnowledgeBase.Models;
+using ITCompanionAI.AgentFramework;
 
 
 // ============================================================================
@@ -14,7 +14,7 @@ using System.Text;
 // ============================================================================
 // NOTE: Implementation now targets a local SQL Server instance.
 
-namespace SkKnowledgeBase.Storage;
+namespace ITCompanionAI.AgentFramework.Storage;
 
 
 public interface IVectorStore
@@ -199,9 +199,8 @@ OUTPUT inserted.id, inserted.external_id, inserted.source, inserted.title, inser
         cmd.Parameters.Add("@category", SqlDbType.NVarChar, 128).Value = (object?)document.Category ?? DBNull.Value;
 
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            return new DocumentRecord
+        return await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+            ? new DocumentRecord
             {
                 Id = reader.GetGuid(0),
                 ExternalId = reader.GetString(1),
@@ -213,10 +212,8 @@ OUTPUT inserted.id, inserted.external_id, inserted.source, inserted.title, inser
                 UpdatedAt = reader.GetFieldValue<DateTimeOffset>(7),
                 LastError = reader.IsDBNull(8) ? null : reader.GetString(8),
                 Category = reader.IsDBNull(9) ? null : reader.GetString(9)
-            };
-        }
-
-        throw new DataException("Failed to upsert document.");
+            }
+            : throw new DataException("Failed to upsert document.");
     }
 
     public async Task UpsertChunksAsync(
@@ -429,27 +426,18 @@ FROM dbo.chunks;";
 
     private SqlVector<float> ToSqlVector(float[] embedding)
     {
-        if (embedding.Length != _embeddingDim)
-        {
-            throw new InvalidOperationException($"Embedding dimension mismatch. Expected {_embeddingDim}, received {embedding.Length}.");
-        }
-
-        return new SqlVector<float>(embedding);
+        return embedding.Length != _embeddingDim
+            ? throw new InvalidOperationException($"Embedding dimension mismatch. Expected {_embeddingDim}, received {embedding.Length}.")
+            : new SqlVector<float>(embedding);
     }
 
     private float[] FromSqlVector(SqlVector<float> vector)
     {
-        if (vector.IsNull)
-        {
-            throw new InvalidOperationException("Invalid embedding payload.");
-        }
-
-        if (vector.Length != _embeddingDim)
-        {
-            throw new InvalidOperationException($"Embedding dimension mismatch. Expected {_embeddingDim}, received {vector.Length}.");
-        }
-
-        return vector.Memory.ToArray();
+        return vector.IsNull
+            ? throw new InvalidOperationException("Invalid embedding payload.")
+            : vector.Length != _embeddingDim
+            ? throw new InvalidOperationException($"Embedding dimension mismatch. Expected {_embeddingDim}, received {vector.Length}.")
+            : vector.Memory.ToArray();
     }
 
     private static double CosineSimilarity(float[] a, float[] b)
@@ -471,11 +459,6 @@ FROM dbo.chunks;";
             normB += b[i] * b[i];
         }
 
-        if (normA == 0 || normB == 0)
-        {
-            return 0;
-        }
-
-        return dot / (Math.Sqrt(normA) * Math.Sqrt(normB));
+        return normA == 0 || normB == 0 ? 0 : dot / (Math.Sqrt(normA) * Math.Sqrt(normB));
     }
 }

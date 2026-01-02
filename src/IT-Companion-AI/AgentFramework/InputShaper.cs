@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using ITCompanionAI.AgentFramework;
+
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.Tokenizers;
-
-using SkKnowledgeBase.Llm;
 
 public sealed class InputShaper
 {
@@ -104,12 +104,7 @@ public sealed class InputShaper
             }
 
             // For token-like tensors, assume [batch, seq, ...]
-            if (i == 0)
-                resolved[i] = batchSize;
-            else if (i == 1)
-                resolved[i] = seqLen;
-            else
-                resolved[i] = 1;
+            resolved[i] = i == 0 ? batchSize : i == 1 ? seqLen : 1;
         }
         return resolved;
     }
@@ -202,12 +197,7 @@ public sealed class InputShaper
                 continue;
             }
 
-            if (i == 0)
-                resolved[i] = batchSize;
-            else if (i == 1)
-                resolved[i] = seqLen;
-            else
-                resolved[i] = 1;
+            resolved[i] = i == 0 ? batchSize : i == 1 ? seqLen : 1;
         }
         return resolved;
     }

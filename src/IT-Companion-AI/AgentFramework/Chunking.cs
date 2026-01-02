@@ -13,7 +13,7 @@ using Tokenizer = Tokenizers.HuggingFace.Tokenizer.Tokenizer;
 // CHUNKING (Microsoft.ML.Tokenizers-based)
 // ============================================================================
 
-namespace SkKnowledgeBase.Chunking;
+namespace ITCompanionAI.AgentFramework;
 
 public sealed record Chunk(
     int Index,

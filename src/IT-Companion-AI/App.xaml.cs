@@ -1,5 +1,9 @@
 using System.Net.Http;
 
+using ITCompanionAI.AgentFramework;
+using ITCompanionAI.AgentFramework.Ingestion;
+using ITCompanionAI.AgentFramework.Planning;
+using ITCompanionAI.AgentFramework.Storage;
 using ITCompanionAI.Views;
 
 using Microsoft.Extensions.AI;
@@ -10,11 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.UI.Xaml.Navigation;
-
-using SkKnowledgeBase.AgentFramework.Planning;
-using SkKnowledgeBase.Agents.Planning;
-using SkKnowledgeBase.Ingestion;
-using SkKnowledgeBase.Storage;
 
 namespace ITCompanionAI;
 
@@ -63,9 +62,12 @@ public partial class App : Application
             {
 
                 services.AddSingleton<IIngestionAgent, IngestionAgent>();
-                services.AddSingleton<KnowledgeIngestionOrchestrator>();
+                services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
+                services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
                 services.AddSingleton<IPlannerAgent, PlannerAgent>();
-                    var store = new PgVectorStore("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", embeddingDim: 384);
+                services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
+
+                var store = new PgVectorStore("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", embeddingDim: 384);
                 //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
 
                 services.AddSingleton<IVectorStore>(sp =>
@@ -75,23 +77,6 @@ public partial class App : Application
 
                 Ingester.ConfigureServices(context, services);
 
-
-                services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
-
-                /*
-
-                                services.AddSingleton<Kernel>(sp =>
-                                {
-                                    // Create the kernel with logging support
-                                 //   TheKernel = KernelFactory.CreateDefaultKernel(sp.GetRequiredService<ILoggerFactory>());
-                                    return TheKernel;
-
-                                });
-
-                                services.AddSingleton<IAgentRuntime>();
-
-
-                */
 
 
 

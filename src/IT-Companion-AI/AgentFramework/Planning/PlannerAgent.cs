@@ -7,22 +7,28 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using SkKnowledgeBase.Llm;
+using ITCompanionAI.AgentFramework;
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Orchestration;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 using SkKnowledgeBase.Query; // for ILLMClient
 
-namespace SkKnowledgeBase.Agents.Planning;
-
+namespace ITCompanionAI.AgentFramework.Planning;
 
 public interface IPlannerAgent
 {
     Task<IngestionPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default);
 }
 
-public sealed class PlannerAgent : IPlannerAgent
+public sealed class PlannerAgent : Agent,IPlannerAgent
 {
     private readonly ILLMClient _llmClient;
-
+    private ChatHistory messagehistory = new ChatHistory();
     public PlannerAgent(ILLMClient llmClient)
     {
         _llmClient = llmClient;
@@ -30,15 +36,12 @@ public sealed class PlannerAgent : IPlannerAgent
 
     public async Task<IngestionPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        var prompt = BuildPlannerPrompt(goal);
 
-        var rawResponse = await _llmClient
-            .CompleteAsync(prompt, cancellationToken)
-            .ConfigureAwait(false);
-
-        var plan = ParsePlan(goal, rawResponse);
-
-        return plan;
+            var prompt = BuildPlannerPrompt(goal);
+            var rawResponse = await _llmClient.CompleteAsync(prompt, cancellationToken).ConfigureAwait(false);
+            var plan = ParsePlan(goal, rawResponse);
+            return plan;
+        
     }
 
     internal static IngestionPlan ParsePlanForTests(string goal, string rawResponse) => ParsePlan(goal, rawResponse);
@@ -92,7 +95,7 @@ public sealed class PlannerAgent : IPlannerAgent
         var sb = new StringBuilder();
 
         sb.AppendLine("You are a planning assistant for building a Semantic Kernel knowledge base.");
-        sb.AppendLine("Your job is to select the most relevant online documentation URLs to ingest.");
+        sb.AppendLine("Your job is to select the most relevant online documentation URLs that are specific to your goal.");
         sb.AppendLine();
         sb.AppendLine("Goal:");
         sb.AppendLine(goal);
@@ -114,11 +117,18 @@ public sealed class PlannerAgent : IPlannerAgent
         sb.AppendLine("  ]");
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine("Do not include explanations or any text outside the JSON.");
+        sb.AppendLine("Do NOT include explanations or any text outside the JSON.");
 
         return sb.ToString();
     }
 
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="rawResponse"></param>
+    /// <returns></returns>
     private static string ExtractFirstJsonObject(string rawResponse)
     {
         if (string.IsNullOrWhiteSpace(rawResponse))
@@ -185,12 +195,50 @@ public sealed class PlannerAgent : IPlannerAgent
         return rawResponse.Substring(start).Trim();
     }
 
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        messagehistory.AddSystemMessage(BuildPlannerPrompt("Produce a list of links to the API Definition web pages for the Microsoft Semantic Kernel."));
+       
+        var msg = BuildPlannerPrompt("Produce a list of links to the API Definition web pages for the Microsoft Semantic Kernel.");
+        var rawResponse = await _llmClient.CompleteAsync(msg, cancellationToken).ConfigureAwait(false);
+
+        var plan = ParsePlan(msg, rawResponse);
+
+        yield return default;
+    }
+
+    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override IEnumerable<string> GetChannelKeys()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
     private sealed class PlannerResponse
     {
         [JsonPropertyName("targets")]
         public List<PlannerTarget> Targets { get; set; } = new();
     }
 
+
+
+
+    /// <summary>
+    /// 
+    /// </summary>
     private sealed class PlannerTarget
     {
         [JsonPropertyName("uri")]
