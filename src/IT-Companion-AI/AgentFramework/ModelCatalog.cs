@@ -1,22 +1,26 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
+﻿// Project Name: SKAgent
+// File Name: ModelCatalog.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
 
 using Microsoft.SemanticKernel.Agents;
 
+
+#pragma warning disable SKEXP0110
+
+
 namespace ITCompanionAI.AgentFramework;
 
+
 /// <summary>
-/// Provides model definitions used by the multi-agent chat orchestration layer.
+///     Provides model definitions used by the multi-agent chat orchestration layer.
 /// </summary>
 public static class ModelCatalog
 {
-
-    
-
-#pragma warning disable SKEXP0110
-    public static ModelDefinition Conversationalist  => new() { Api="gpt-4o", Id="conversationalist" };
-#pragma warning restore SKEXP0110
-
+    public static ModelDefinition Conversationalist => new() { Api = "gpt-4o", Id = "conversationalist" };
 
 
     /*/// <summary>
@@ -79,14 +83,10 @@ public static ModelDefinition InfraSpecialistModel => new(
         });
     */
     /// <summary>
-    /// All model definitions used across the agent system.
+    ///     All model definitions used across the agent system.
     /// </summary>
-#pragma warning disable SKEXP0110
     public static IReadOnlyList<ModelDefinition> AllModels => new[]
-#pragma warning restore SKEXP0110
     {
         Conversationalist
     };
-
-    
 }

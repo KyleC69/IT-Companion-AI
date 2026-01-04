@@ -1,6 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Project Name: SKAgent
+// File Name: InputShaper.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
 
 using ITCompanionAI.AgentFramework;
 
@@ -8,11 +12,17 @@ using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.Tokenizers;
 
+
+
 public sealed class InputShaper
 {
-    private readonly InferenceSession _session;
     private readonly ModelConfig _config;
+    private readonly InferenceSession _session;
     private readonly Tokenizer _tokenizer;
+
+
+
+
 
     public InputShaper(InferenceSession session, ModelConfig config, Tokenizer tokenizer)
     {
@@ -21,28 +31,37 @@ public sealed class InputShaper
         _tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
     }
 
+
+
+
+
     /// <summary>
-    /// Build inputs for the initial forward pass (no prior KV cache).
+    ///     Build inputs for the initial forward pass (no prior KV cache).
     /// </summary>
     public IReadOnlyList<NamedOnnxValue> BuildInitialInputs(string prompt)
     {
-        if (prompt is null) throw new ArgumentNullException(nameof(prompt));
+        if (prompt is null)
+        {
+            throw new ArgumentNullException(nameof(prompt));
+        }
 
-        var tokenIds = _tokenizer.EncodeToIds(prompt).ToList();
+        List<int> tokenIds = _tokenizer.EncodeToIds(prompt).ToList();
         if (tokenIds.Count == 0)
+        {
             throw new InvalidOperationException("Tokenizer produced no tokens for the given prompt.");
+        }
 
         const int batchSize = 1;
-        int seqLen = tokenIds.Count;
+        var seqLen = tokenIds.Count;
 
-        var meta = _session.InputMetadata;
-        var inputs = new List<NamedOnnxValue>(meta.Count);
+        IReadOnlyDictionary<string, NodeMetadata> meta = _session.InputMetadata;
+        List<NamedOnnxValue> inputs = new(meta.Count);
 
-        foreach (var kvp in meta)
+        foreach (KeyValuePair<string, NodeMetadata> kvp in meta)
         {
             var name = kvp.Key;
-            var nodeMeta = kvp.Value;
-            var elementType = nodeMeta.ElementDataType;
+            NodeMetadata nodeMeta = kvp.Value;
+            TensorElementType elementType = nodeMeta.ElementDataType;
             var dims = nodeMeta.Dimensions ?? Array.Empty<int>();
 
             if (name.Equals(_config.InputIdsName, StringComparison.Ordinal))
@@ -86,17 +105,27 @@ public sealed class InputShaper
         return inputs;
     }
 
+
+
+
+
     // ===================== DIM RESOLUTION =====================
+
+
+
+
 
     private static int[] ResolveTokenDims(string name, IReadOnlyList<int> dims, int batchSize, int seqLen)
     {
         if (dims.Count == 0)
+        {
             return new[] { batchSize, seqLen }; // conservative fallback
+        }
 
         var resolved = new int[dims.Count];
-        for (int i = 0; i < dims.Count; i++)
+        for (var i = 0; i < dims.Count; i++)
         {
-            int d = dims[i];
+            var d = dims[i];
             if (d != -1)
             {
                 resolved[i] = d;
@@ -106,26 +135,33 @@ public sealed class InputShaper
             // For token-like tensors, assume [batch, seq, ...]
             resolved[i] = i == 0 ? batchSize : i == 1 ? seqLen : 1;
         }
+
         return resolved;
     }
 
+
+
+
+
     /// <summary>
-    /// Resolve KV cache dims using model config first, then metadata.
+    ///     Resolve KV cache dims using model config first, then metadata.
     /// </summary>
     private int[] ResolveKvDims(string name, IReadOnlyList<int> dims, int batchSize)
     {
         if (dims.Count == 0 && _config.KvEmptyShape.Length == 0)
+        {
             throw new InvalidOperationException(
                 $"KV input '{name}' has no dims in metadata and KvEmptyShape is not configured.");
+        }
 
         // Prefer explicit KvEmptyShape if rank matches.
         if (_config.KvEmptyShape.Length == dims.Count && _config.KvEmptyShape.Length > 0)
         {
             var resolved = new int[dims.Count];
-            for (int i = 0; i < dims.Count; i++)
+            for (var i = 0; i < dims.Count; i++)
             {
-                int metaDim = dims[i];
-                int cfgDim = _config.KvEmptyShape[i];
+                var metaDim = dims[i];
+                var cfgDim = _config.KvEmptyShape[i];
 
                 if (metaDim != -1 && metaDim != cfgDim)
                 {
@@ -135,9 +171,12 @@ public sealed class InputShaper
 
                 resolved[i] = cfgDim;
             }
+
             // Normalize batch dim to requested batchSize if needed.
             if (resolved[0] != batchSize && resolved[0] != -1)
+            {
                 resolved[0] = batchSize;
+            }
 
             return resolved;
         }
@@ -145,52 +184,45 @@ public sealed class InputShaper
         // Fallback: infer from metadata + config.
         // Expected pattern (common): [batch, num_kv_heads, past_seq_len, head_dim]
         var r = new int[dims.Count];
-        for (int i = 0; i < dims.Count; i++)
+        for (var i = 0; i < dims.Count; i++)
         {
-            int d = dims[i];
+            var d = dims[i];
             if (d != -1)
             {
                 r[i] = d;
                 continue;
             }
 
-            switch (i)
+            r[i] = i switch
             {
-                case 0:
-                    r[i] = batchSize;
-                    break;
-                case 1:
-                    // number of heads: prefer NumKeyValueHeads if non-zero
-                    r[i] = _config.NumKeyValueHeads > 0
-                        ? _config.NumKeyValueHeads
-                        : Math.Max(_config.NumAttentionHeads, 1);
-                    break;
-                case 2:
-                    // initial past sequence length is zero
-                    r[i] = 0;
-                    break;
-                case 3:
-                    // head dim from config
-                    r[i] = _config.HeadDim > 0 ? _config.HeadDim : 1;
-                    break;
-                default:
-                    r[i] = 1;
-                    break;
-            }
+                0 => batchSize,
+                1 => _config.NumKeyValueHeads > 0
+                    ? _config.NumKeyValueHeads
+                    : Math.Max(_config.NumAttentionHeads, 1), // number of heads: prefer NumKeyValueHeads if non-zero
+                2 => 0, // initial past sequence length is zero
+                3 => _config.HeadDim > 0 ? _config.HeadDim : 1, // head dim from config
+                _ => 1
+            };
         }
 
         return r;
     }
 
+
+
+
+
     private static int[] ResolveGenericDims(string name, IReadOnlyList<int> dims, int batchSize, int seqLen)
     {
         if (dims.Count == 0)
+        {
             return Array.Empty<int>();
+        }
 
         var resolved = new int[dims.Count];
-        for (int i = 0; i < dims.Count; i++)
+        for (var i = 0; i < dims.Count; i++)
         {
-            int d = dims[i];
+            var d = dims[i];
             if (d != -1)
             {
                 resolved[i] = d;
@@ -199,40 +231,67 @@ public sealed class InputShaper
 
             resolved[i] = i == 0 ? batchSize : i == 1 ? seqLen : 1;
         }
+
         return resolved;
     }
+
+
+
+
 
     private bool IsPastKeyName(string name)
     {
         if (string.IsNullOrEmpty(_config.PastKeyFormat))
+        {
             return false;
+        }
 
         // PastKeyFormat expected like "past_key_values.{0}.key"
         // We simply check if the formatted pattern with any valid layer matches.
-        for (int layer = 0; layer < _config.NumLayers; layer++)
+        for (var layer = 0; layer < _config.NumLayers; layer++)
         {
             var expected = string.Format(_config.PastKeyFormat, layer);
             if (name.Equals(expected, StringComparison.Ordinal))
+            {
                 return true;
+            }
         }
+
         return false;
     }
+
+
+
+
 
     private bool IsPastValueName(string name)
     {
         if (string.IsNullOrEmpty(_config.PastValueFormat))
+        {
             return false;
+        }
 
-        for (int layer = 0; layer < _config.NumLayers; layer++)
+        for (var layer = 0; layer < _config.NumLayers; layer++)
         {
             var expected = string.Format(_config.PastValueFormat, layer);
             if (name.Equals(expected, StringComparison.Ordinal))
+            {
                 return true;
+            }
         }
+
         return false;
     }
 
+
+
+
+
     // ===================== SEMANTIC TENSORS =====================
+
+
+
+
 
     private static NamedOnnxValue CreateInputIds(
         string name,
@@ -240,24 +299,26 @@ public sealed class InputShaper
         int[] dims,
         IReadOnlyList<int> tokenIds)
     {
-        int seqLen = tokenIds.Count;
+        var seqLen = tokenIds.Count;
 
         return elementType switch
         {
             TensorElementType.Int64 => CreateTensor(name, dims, (DenseTensor<long> t) =>
             {
-                for (int i = 0; i < seqLen; i++)
-                    t[0, i] = tokenIds[i];
+                for (var i = 0; i < seqLen; i++) t[0, i] = tokenIds[i];
             }),
             TensorElementType.Int32 => CreateTensor(name, dims, (DenseTensor<int> t) =>
             {
-                for (int i = 0; i < seqLen; i++)
-                    t[0, i] = tokenIds[i];
+                for (var i = 0; i < seqLen; i++) t[0, i] = tokenIds[i];
             }),
             _ => throw new NotSupportedException(
                 $"Input '{name}' (input_ids) has element type {elementType}. Only Int32/Int64 are supported.")
         };
     }
+
+
+
+
 
     private static NamedOnnxValue CreateAttentionMask(
         string name,
@@ -269,23 +330,24 @@ public sealed class InputShaper
         {
             TensorElementType.Int64 => CreateTensor(name, dims, (DenseTensor<long> t) =>
             {
-                for (int i = 0; i < seqLen; i++)
-                    t[0, i] = 1L;
+                for (var i = 0; i < seqLen; i++) t[0, i] = 1L;
             }),
             TensorElementType.Int32 => CreateTensor(name, dims, (DenseTensor<int> t) =>
             {
-                for (int i = 0; i < seqLen; i++)
-                    t[0, i] = 1;
+                for (var i = 0; i < seqLen; i++) t[0, i] = 1;
             }),
             TensorElementType.Bool => CreateTensor(name, dims, (DenseTensor<bool> t) =>
             {
-                for (int i = 0; i < seqLen; i++)
-                    t[0, i] = true;
+                for (var i = 0; i < seqLen; i++) t[0, i] = true;
             }),
             _ => throw new NotSupportedException(
                 $"Input '{name}' (attention_mask) has element type {elementType}. Only Int32/Int64/Bool are supported.")
         };
     }
+
+
+
+
 
     private static NamedOnnxValue CreatePositionIds(
         string name,
@@ -297,18 +359,20 @@ public sealed class InputShaper
         {
             TensorElementType.Int64 => CreateTensor(name, dims, (DenseTensor<long> t) =>
             {
-                for (int i = 0; i < seqLen; i++)
-                    t[0, i] = i;
+                for (var i = 0; i < seqLen; i++) t[0, i] = i;
             }),
             TensorElementType.Int32 => CreateTensor(name, dims, (DenseTensor<int> t) =>
             {
-                for (int i = 0; i < seqLen; i++)
-                    t[0, i] = i;
+                for (var i = 0; i < seqLen; i++) t[0, i] = i;
             }),
             _ => throw new NotSupportedException(
                 $"Input '{name}' (position_ids) has element type {elementType}. Only Int32/Int64 are supported.")
         };
     }
+
+
+
+
 
     private NamedOnnxValue CreateInitialKvTensor(
         string name,
@@ -322,7 +386,7 @@ public sealed class InputShaper
 
         // If config declares a KV type, validate it matches metadata.
         // Otherwise, metadata is the source of truth.
-        var type = _config.KvElementType != default ? _config.KvElementType : elementTypeFromMeta;
+        TensorElementType type = _config.KvElementType != default ? _config.KvElementType : elementTypeFromMeta;
 
         if (_config.KvElementType != default && _config.KvElementType != elementTypeFromMeta)
         {
@@ -335,19 +399,25 @@ public sealed class InputShaper
         var safeDims = (int[])dims.Clone();
         if (type == TensorElementType.Float16)
         {
-            for (int i = 0; i < safeDims.Length; i++)
-            {
+            for (var i = 0; i < safeDims.Length; i++)
                 if (safeDims[i] == 0)
                 {
                     safeDims[i] = 1;
                 }
-            }
         }
 
         return CreateZeroTensor(name, type, safeDims);
     }
 
+
+
+
+
     // ===================== GENERIC TENSORS =====================
+
+
+
+
 
     private static NamedOnnxValue CreateZeroTensor(
         string name,
@@ -366,37 +436,47 @@ public sealed class InputShaper
         };
     }
 
+
+
+
+
     private static NamedOnnxValue CreateTensor<T>(
         string name,
         int[] dims,
         Action<DenseTensor<T>> fill)
     {
-        var tensor = new DenseTensor<T>(dims);
+        DenseTensor<T> tensor = new(dims);
         fill(tensor);
         return NamedOnnxValue.CreateFromTensor(name, tensor);
     }
 
+
+
+
+
     // ===================== VALIDATION =====================
+
+
+
+
 
     private static void ValidateProvidedInputsAgainstMetadata(
         IReadOnlyCollection<NamedOnnxValue> inputs,
         IReadOnlyDictionary<string, NodeMetadata> meta)
     {
-        var dict = inputs.ToDictionary(i => i.Name, StringComparer.Ordinal);
+        Dictionary<string, NamedOnnxValue> dict = inputs.ToDictionary(i => i.Name, StringComparer.Ordinal);
 
         // Require core inputs.
         foreach (var required in new[] { "input_ids", "attention_mask" })
-        {
             if (!dict.ContainsKey(required))
             {
                 throw new InvalidOperationException($"Missing required input '{required}'.");
             }
-        }
 
         // Validate only what we provide.
-        foreach (var input in inputs)
+        foreach (NamedOnnxValue input in inputs)
         {
-            if (!meta.TryGetValue(input.Name, out var nodeMeta))
+            if (!meta.TryGetValue(input.Name, out NodeMetadata? nodeMeta))
             {
                 throw new InvalidOperationException($"Input '{input.Name}' is not present in model input metadata.");
             }
@@ -410,13 +490,15 @@ public sealed class InputShaper
                     $"Rank mismatch for '{input.Name}'. Expected {expectedDims.Length}, actual {actualDims.Length}.");
             }
 
-            for (int i = 0; i < expectedDims.Length; i++)
+            for (var i = 0; i < expectedDims.Length; i++)
             {
-                int expected = expectedDims[i];
-                int actual = actualDims[i];
+                var expected = expectedDims[i];
+                var actual = actualDims[i];
 
                 if (expected == -1)
+                {
                     continue;
+                }
 
                 if (expected != actual)
                 {
@@ -426,6 +508,10 @@ public sealed class InputShaper
             }
         }
     }
+
+
+
+
 
     private static int[] GetShape(NamedOnnxValue value, TensorElementType elementType)
     {

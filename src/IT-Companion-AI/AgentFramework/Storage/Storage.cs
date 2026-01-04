@@ -1,19 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Project Name: SKAgent
+// File Name: Storage.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
 using System.Data;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlTypes;
-
-using ITCompanionAI.AgentFramework;
-using ITCompanionAI.AgentFramework.Agents;
 
 
 // ============================================================================
 // STORAGE: SqlServer + vector storage
 // ============================================================================
 // NOTE: Implementation now targets a local SQL Server instance.
+
 
 namespace ITCompanionAI.AgentFramework.Storage;
 
@@ -22,27 +25,51 @@ public interface IVectorStore
 {
     Task EnsureSchemaAsync(CancellationToken cancellationToken = default);
 
+
+
+
+
     Task<DocumentRecord> UpsertDocumentAsync(
         DocumentRecord document,
         CancellationToken cancellationToken = default);
+
+
+
+
 
     Task UpsertChunksAsync(
         Guid documentId,
         IReadOnlyList<ChunkRecord> chunks,
         CancellationToken cancellationToken = default);
 
+
+
+
+
     Task<IReadOnlyList<ChunkRecord>> GetChunksBySymbolAsync(
         string symbol,
         CancellationToken cancellationToken = default);
+
+
+
+
 
     Task UpsertReconciledChunkAsync(
         ReconciledChunkRecord chunk,
         CancellationToken cancellationToken = default);
 
+
+
+
+
     Task<IReadOnlyList<ReconciledChunkRecord>> SearchReconciledAsync(
         float[] embedding,
         int topK,
         CancellationToken cancellationToken = default);
+
+
+
+
 
     Task<IReadOnlyList<ChunkRecord>> SearchRawChunksAsync(
         float[] embedding,
@@ -52,15 +79,16 @@ public interface IVectorStore
 
 
 
-
-
 /// <summary>
-/// 
 /// </summary>
 public sealed class PgVectorStore : IVectorStore
 {
     private readonly string _connectionString;
     private readonly int _embeddingDim;
+
+
+
+
 
     public PgVectorStore(string connectionString, int embeddingDim)
     {
@@ -68,17 +96,12 @@ public sealed class PgVectorStore : IVectorStore
         _embeddingDim = embeddingDim;
     }
 
-    private async Task<SqlConnection> OpenConnectionAsync(CancellationToken ct)
-    {
-        var conn = new SqlConnection(_connectionString);
-        await conn.OpenAsync(ct).ConfigureAwait(false);
-        return conn;
-    }
+
 
 
 
     /// <summary>
-    /// Ensures that the necessary database schema (tables and indexes) exists.
+    ///     Ensures that the necessary database schema (tables and indexes) exists.
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -154,13 +177,18 @@ BEGIN
     CREATE INDEX IX_reconciled_symbol ON dbo.reconciled_chunks(symbol);
 END";
 
-        await using var conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        foreach (var statement in new[] { documentsSql, chunksSql, chunksSymbolIndex, reconciledSql, reconciledSymbolIndex })
+        await using SqlConnection conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var statement in new[]
+                     { documentsSql, chunksSql, chunksSymbolIndex, reconciledSql, reconciledSymbolIndex })
         {
-            await using var cmd = new SqlCommand(statement, conn);
+            await using SqlCommand cmd = new(statement, conn);
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
     }
+
+
+
+
 
     public async Task<DocumentRecord> UpsertDocumentAsync(
         DocumentRecord document,
@@ -185,8 +213,8 @@ WHEN NOT MATCHED THEN
     VALUES (src.id, src.external_id, src.source_value, src.title, src.version, src.status, src.created_at, src.updated_at, src.last_error, src.category)
 OUTPUT inserted.id, inserted.external_id, inserted.source, inserted.title, inserted.version, inserted.status, inserted.created_at, inserted.updated_at, inserted.last_error, inserted.category;";
 
-        await using var conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var cmd = new SqlCommand(sql, conn);
+        await using SqlConnection conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlCommand cmd = new(sql, conn);
 
         cmd.Parameters.Add("@id", SqlDbType.UniqueIdentifier).Value = document.Id;
         cmd.Parameters.Add("@external_id", SqlDbType.NVarChar, 512).Value = document.ExternalId;
@@ -199,7 +227,7 @@ OUTPUT inserted.id, inserted.external_id, inserted.source, inserted.title, inser
         cmd.Parameters.Add("@last_error", SqlDbType.NVarChar, -1).Value = (object?)document.LastError ?? DBNull.Value;
         cmd.Parameters.Add("@category", SqlDbType.NVarChar, 128).Value = (object?)document.Category ?? DBNull.Value;
 
-        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         return await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
             ? new DocumentRecord
             {
@@ -216,6 +244,10 @@ OUTPUT inserted.id, inserted.external_id, inserted.source, inserted.title, inser
             }
             : throw new DataException("Failed to upsert document.");
     }
+
+
+
+
 
     public async Task UpsertChunksAsync(
         Guid documentId,
@@ -248,14 +280,14 @@ WHEN NOT MATCHED THEN
     INSERT (id, document_id, chunk_index, text, token_count, embedding, section, symbol, kind, verified, confidence, deprecated, category)
     VALUES (src.id, src.document_id, src.chunk_index, src.text, src.token_count, src.embedding, src.section, src.symbol, src.kind, src.verified, src.confidence, src.deprecated, src.category);";
 
-        await using var conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        using var tx = conn.BeginTransaction();
+        await using SqlConnection conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using SqlTransaction tx = conn.BeginTransaction();
 
-        foreach (var chunk in chunks)
+        foreach (ChunkRecord chunk in chunks)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await using var cmd = new SqlCommand(sql, conn, tx);
+            await using SqlCommand cmd = new(sql, conn, tx);
             cmd.Parameters.Add("@id", SqlDbType.UniqueIdentifier).Value = chunk.Id;
             cmd.Parameters.Add("@document_id", SqlDbType.UniqueIdentifier).Value = documentId;
             cmd.Parameters.Add("@chunk_index", SqlDbType.Int).Value = chunk.ChunkIndex;
@@ -276,6 +308,10 @@ WHEN NOT MATCHED THEN
         await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
     }
 
+
+
+
+
     public async Task<IReadOnlyList<ChunkRecord>> GetChunksBySymbolAsync(
         string symbol,
         CancellationToken cancellationToken = default)
@@ -285,15 +321,14 @@ SELECT id, document_id, chunk_index, text, token_count, embedding, section, symb
 FROM dbo.chunks
 WHERE symbol = @symbol;";
 
-        var result = new List<ChunkRecord>();
+        List<ChunkRecord> result = [];
 
-        await using var conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var cmd = new SqlCommand(sql, conn);
+        await using SqlConnection conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlCommand cmd = new(sql, conn);
         cmd.Parameters.Add("@symbol", SqlDbType.NVarChar, 256).Value = symbol;
 
-        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
             result.Add(new ChunkRecord
             {
                 Id = reader.GetGuid(0),
@@ -310,10 +345,13 @@ WHERE symbol = @symbol;";
                 Deprecated = reader.GetBoolean(11),
                 Category = reader.IsDBNull(12) ? null : reader.GetString(12)
             });
-        }
 
         return result;
     }
+
+
+
+
 
     public async Task UpsertReconciledChunkAsync(
         ReconciledChunkRecord chunk,
@@ -337,8 +375,8 @@ WHEN NOT MATCHED THEN
     INSERT (id, symbol, namespace, version, summary, embedding, confidence, source_count)
     VALUES (src.id, src.symbol, src.namespace, src.version, src.summary, src.embedding, src.confidence, src.source_count);";
 
-        await using var conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var cmd = new SqlCommand(sql, conn);
+        await using SqlConnection conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlCommand cmd = new(sql, conn);
         cmd.Parameters.Add("@id", SqlDbType.UniqueIdentifier).Value = chunk.Id;
         cmd.Parameters.Add("@symbol", SqlDbType.NVarChar, 256).Value = chunk.Symbol;
         cmd.Parameters.Add("@namespace", SqlDbType.NVarChar, 256).Value = (object?)chunk.Namespace ?? DBNull.Value;
@@ -351,6 +389,10 @@ WHEN NOT MATCHED THEN
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
+
+
+
+
     public async Task<IReadOnlyList<ReconciledChunkRecord>> SearchReconciledAsync(
         float[] embedding,
         int topK,
@@ -360,13 +402,12 @@ WHEN NOT MATCHED THEN
 SELECT id, symbol, namespace, version, summary, embedding, confidence, source_count
 FROM dbo.reconciled_chunks;";
 
-        var allChunks = new List<ReconciledChunkRecord>();
+        List<ReconciledChunkRecord> allChunks = [];
 
-        await using var conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var cmd = new SqlCommand(sql, conn);
-        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlConnection conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlCommand cmd = new(sql, conn);
+        await using SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
             allChunks.Add(new ReconciledChunkRecord
             {
                 Id = reader.GetGuid(0),
@@ -378,13 +419,16 @@ FROM dbo.reconciled_chunks;";
                 Confidence = reader.GetDouble(6),
                 SourceCount = reader.GetInt32(7)
             });
-        }
 
         return allChunks
             .OrderByDescending(c => CosineSimilarity(embedding, c.Embedding))
             .Take(topK <= 0 ? 0 : topK)
             .ToList();
     }
+
+
+
+
 
     public async Task<IReadOnlyList<ChunkRecord>> SearchRawChunksAsync(
         float[] embedding,
@@ -395,13 +439,12 @@ FROM dbo.reconciled_chunks;";
 SELECT id, document_id, chunk_index, text, token_count, embedding, section, symbol, kind, verified, confidence, deprecated
 FROM dbo.chunks;";
 
-        var chunks = new List<ChunkRecord>();
+        List<ChunkRecord> chunks = [];
 
-        await using var conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var cmd = new SqlCommand(sql, conn);
-        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlConnection conn = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlCommand cmd = new(sql, conn);
+        await using SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
             chunks.Add(new ChunkRecord
             {
                 Id = reader.GetGuid(0),
@@ -417,7 +460,6 @@ FROM dbo.chunks;";
                 Confidence = reader.GetDouble(10),
                 Deprecated = reader.GetBoolean(11)
             });
-        }
 
         return chunks
             .OrderByDescending(c => CosineSimilarity(embedding, c.Embedding))
@@ -425,21 +467,46 @@ FROM dbo.chunks;";
             .ToList();
     }
 
+
+
+
+
+    private async Task<SqlConnection> OpenConnectionAsync(CancellationToken ct)
+    {
+        SqlConnection conn = new(_connectionString);
+        await conn.OpenAsync(ct).ConfigureAwait(false);
+        return conn;
+    }
+
+
+
+
+
     private SqlVector<float> ToSqlVector(float[] embedding)
     {
         return embedding.Length != _embeddingDim
-            ? throw new InvalidOperationException($"Embedding dimension mismatch. Expected {_embeddingDim}, received {embedding.Length}.")
+            ? throw new InvalidOperationException(
+                $"Embedding dimension mismatch. Expected {_embeddingDim}, received {embedding.Length}.")
             : new SqlVector<float>(embedding);
     }
+
+
+
+
 
     private float[] FromSqlVector(SqlVector<float> vector)
     {
         return vector.IsNull
             ? throw new InvalidOperationException("Invalid embedding payload.")
             : vector.Length != _embeddingDim
-            ? throw new InvalidOperationException($"Embedding dimension mismatch. Expected {_embeddingDim}, received {vector.Length}.")
-            : vector.Memory.ToArray();
+                ? throw new InvalidOperationException(
+                    $"Embedding dimension mismatch. Expected {_embeddingDim}, received {vector.Length}.")
+                : vector.Memory.ToArray();
     }
+
+
+
+
 
     private static double CosineSimilarity(float[] a, float[] b)
     {

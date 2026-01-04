@@ -1,14 +1,26 @@
-﻿using Microsoft.SemanticKernel;
+﻿// Project Name: SKAgent
+// File Name: ApprovalTerminationStrategy.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 
-namespace ITCompanionAI.AgentFramework.Planning;
 
 #pragma warning disable SKEXP0110
+
+
+namespace ITCompanionAI.AgentFramework.Planning;
+
+
 internal class ApprovalTerminationStrategy : TerminationStrategy
-#pragma warning restore SKEXP0110
 {
-    protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(false);

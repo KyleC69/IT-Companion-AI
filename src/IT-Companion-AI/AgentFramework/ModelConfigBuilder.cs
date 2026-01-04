@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Project Name: SKAgent
+// File Name: ModelConfigBuilder.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
 
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
 
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 
+
 namespace ITCompanionAI.AgentFramework;
+
 
 public sealed class ModelConfig
 {
@@ -38,10 +38,16 @@ public sealed class ModelConfig
     public TensorElementType KvElementType { get; init; }
 }
 
+
+
 public sealed class ModelConfigBuilder
 {
     private readonly string _configPath;
     private readonly InferenceSession _session;
+
+
+
+
 
     public ModelConfigBuilder(string configPath, InferenceSession session)
     {
@@ -59,47 +65,51 @@ public sealed class ModelConfigBuilder
         _session = session ?? throw new ArgumentNullException(nameof(session));
     }
 
+
+
+
+
     public ModelConfig Build()
     {
         var json = File.ReadAllText(_configPath);
         using var doc = JsonDocument.Parse(json);
 
-        var root = doc.RootElement;
+        JsonElement root = doc.RootElement;
 
         // -------------------------------
         // 1. Extract config.json values
         // -------------------------------
-        int numLayers = GetInt(root, "num_hidden_layers");
-        int numHeads = GetInt(root, "num_attention_heads");
-        int numKvHeads = GetInt(root, "num_key_value_heads");
-        int hiddenSize = GetInt(root, "hidden_size");
-        int vocabSize = GetInt(root, "vocab_size");
-        int maxPos = GetInt(root, "max_position_embeddings");
+        var numLayers = GetInt(root, "num_hidden_layers");
+        var numHeads = GetInt(root, "num_attention_heads");
+        var numKvHeads = GetInt(root, "num_key_value_heads");
+        var hiddenSize = GetInt(root, "hidden_size");
+        var vocabSize = GetInt(root, "vocab_size");
+        var maxPos = GetInt(root, "max_position_embeddings");
 
         // head_dim = hidden_size / num_attention_heads
-        int headDim = hiddenSize / numHeads;
+        var headDim = hiddenSize / numHeads;
 
         // -------------------------------
         // 2. Extract ONNX metadata
         // -------------------------------
-        var inputs = _session.InputMetadata;
+        IReadOnlyDictionary<string, NodeMetadata>? inputs = _session.InputMetadata;
 
-        string inputIdsName = FindInputName(inputs, "input_ids");
-        string attentionMaskName = FindInputName(inputs, "attention_mask");
-        string positionIdsName = FindInputName(inputs, "position_ids");
+        var inputIdsName = FindInputName(inputs, "input_ids");
+        var attentionMaskName = FindInputName(inputs, "attention_mask");
+        var positionIdsName = FindInputName(inputs, "position_ids");
 
         // KV naming formats
-        string pastKeyFormat = DetectFormat(inputs.Keys, ".key");
-        string pastValueFormat = DetectFormat(inputs.Keys, ".value");
+        var pastKeyFormat = DetectFormat(inputs.Keys, ".key");
+        var pastValueFormat = DetectFormat(inputs.Keys, ".value");
 
         // Present outputs
-        string presentKeyFormat = DetectFormat(_session.OutputMetadata.Keys, ".key");
-        string presentValueFormat = DetectFormat(_session.OutputMetadata.Keys, ".value");
+        var presentKeyFormat = DetectFormat(_session.OutputMetadata.Keys, ".key");
+        var presentValueFormat = DetectFormat(_session.OutputMetadata.Keys, ".value");
 
         // -------------------------------
         // 3. Determine KV layer count
         // -------------------------------
-        int[] kvLayers = inputs.Keys
+        var kvLayers = inputs.Keys
             .Where(k => k.Contains(".key") && k.Contains("past_key_values"))
             .Select(k => int.Parse(k.Split('.')[1]))
             .Distinct()
@@ -111,7 +121,7 @@ public sealed class ModelConfigBuilder
             throw new InvalidOperationException("ONNX model exposes no past_key_values.* inputs.");
         }
 
-        int onnxLayerCount = kvLayers.Length;
+        var onnxLayerCount = kvLayers.Length;
 
         if (onnxLayerCount != numLayers)
         {
@@ -122,15 +132,16 @@ public sealed class ModelConfigBuilder
         // -------------------------------
         // 4. Determine KV element type
         // -------------------------------
-        var firstKv = inputs[pastKeyFormat.Replace("%d", "0")];
-        var kvElementType = firstKv.ElementDataType as TensorElementType? ?? throw new InvalidOperationException("Unable to determine KV element type.");
+        NodeMetadata firstKv = inputs[pastKeyFormat.Replace("%d", "0")];
+        TensorElementType kvElementType = firstKv.ElementDataType as TensorElementType? ??
+                                          throw new InvalidOperationException("Unable to determine KV element type.");
 
-  
+
 
         // -------------------------------
         // 5. Determine KV empty shape
         // -------------------------------
-        int[] kvShape = firstKv.Dimensions.ToArray();
+        var kvShape = firstKv.Dimensions.ToArray();
 
         // Replace past_seq_len with 0
         if (kvShape.Length < 4)
@@ -138,7 +149,7 @@ public sealed class ModelConfigBuilder
             throw new InvalidOperationException("KV tensor shape is invalid.");
         }
 
-        kvShape[kvShape.Length - 2] = 0; // past_seq_len dimension
+        kvShape[^2] = 0; // past_seq_len dimension
 
         // -------------------------------
         // 6. Build definitive config
@@ -167,22 +178,40 @@ public sealed class ModelConfigBuilder
         };
     }
 
+
+
+
+
     // -------------------------------
     // Helpers
     // -------------------------------
 
+
+
+
+
     private static int GetInt(JsonElement root, string name)
     {
-        return !root.TryGetProperty(name, out var prop)
+        return !root.TryGetProperty(name, out JsonElement prop)
             ? throw new InvalidOperationException($"Missing required config field '{name}'.")
-            : !prop.TryGetInt32(out int value) ? throw new InvalidOperationException($"Config field '{name}' is not an integer.") : value;
+            : !prop.TryGetInt32(out var value)
+                ? throw new InvalidOperationException($"Config field '{name}' is not an integer.")
+                : value;
     }
+
+
+
+
 
     private static string FindInputName(IReadOnlyDictionary<string, NodeMetadata> inputs, string expected)
     {
         var match = inputs.Keys.FirstOrDefault(k => k.Equals(expected, StringComparison.OrdinalIgnoreCase));
-        return match == null ? throw new InvalidOperationException($"ONNX model does not expose required input '{expected}'.") : match;
+        return match ?? throw new InvalidOperationException($"ONNX model does not expose required input '{expected}'.");
     }
+
+
+
+
 
     private static string DetectFormat(IEnumerable<string> names, string suffix)
     {

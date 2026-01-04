@@ -1,8 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Project Name: SKAgent
+// File Name: Ingestion.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
-using ITCompanionAI.AgentFramework.Agents;
+
 using ITCompanionAI.AgentFramework.Storage;
 
 
@@ -10,8 +13,8 @@ using ITCompanionAI.AgentFramework.Storage;
 // INGESTION: deterministic tools (URL/file/directory)
 // ============================================================================
 
-namespace ITCompanionAI.AgentFramework.Ingestion;
 
+namespace ITCompanionAI.AgentFramework.Ingestion;
 
 
 public sealed record IngestionRequest(
@@ -19,33 +22,53 @@ public sealed record IngestionRequest(
     string? FilePath = null,
     string? DirectoryPath = null,
     string? SourceLabel = null,
-    string?  Category = null,
+    string? Category = null,
     string? Version = null
 );
+
+
 
 public interface IWebFetcher
 {
     Task<string> GetStringAsync(Uri uri, CancellationToken cancellationToken = default);
 }
 
+
+
 public sealed class HttpWebFetcher : IWebFetcher
 {
     private readonly HttpClient _httpClient;
+
+
+
+
 
     public HttpWebFetcher(HttpClient httpClient)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
+
+
+
+
     public Task<string> GetStringAsync(Uri uri, CancellationToken cancellationToken = default)
     {
-        return uri is null ? throw new ArgumentNullException(nameof(uri)) : _httpClient.GetStringAsync(uri, cancellationToken);
+        return uri is null
+            ? throw new ArgumentNullException(nameof(uri))
+            : _httpClient.GetStringAsync(uri, cancellationToken);
     }
 }
+
+
 
 public interface IIngestionAgent
 {
     Task IngestAsync(IngestionRequest request, CancellationToken cancellationToken = default);
+
+
+
+
 
     Task IngestTextIntoDocumentAsync(
         DocumentRecord document,
@@ -53,13 +76,19 @@ public interface IIngestionAgent
         CancellationToken cancellationToken);
 }
 
+
+
 public sealed class IngestionAgent : IIngestionAgent
 {
-    private readonly IWebFetcher _webFetcher;
-    private readonly IContentParser _parser;
     private readonly IChunker _chunker;
     private readonly IEmbeddingClient _embeddingClient;
+    private readonly IContentParser _parser;
     private readonly IVectorStore _vectorStore;
+    private readonly IWebFetcher _webFetcher;
+
+
+
+
 
     public IngestionAgent(
         IWebFetcher webFetcher,
@@ -78,8 +107,8 @@ public sealed class IngestionAgent : IIngestionAgent
 
 
 
+
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
@@ -109,121 +138,6 @@ public sealed class IngestionAgent : IIngestionAgent
 
 
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task IngestUrlAsync(IngestionRequest request, CancellationToken cancellationToken)
-    {
-        var uri = new Uri(request.Url!, UriKind.Absolute);
-        var html = await _webFetcher.GetStringAsync(uri, cancellationToken).ConfigureAwait(false);
-        var text = _parser.ParseHtml(html);
-
-        var doc = CreateDocumentRecord(
-            externalId: uri.ToString(),
-            source: request.SourceLabel ?? "Web",
-            title: uri.ToString(),
-            category: request.Category ?? string.Empty,
-            version: request.Version
-        );
-
-        await IngestTextIntoDocumentAsync(doc, text, cancellationToken).ConfigureAwait(false);
-    }
-
-
-
-
-    /// <summary>
-    ///  Asynchronously ingests a single text or markup file specified in the <paramref name="request"/>.
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="FileNotFoundException"></exception>
-    private async Task IngestFileAsync(IngestionRequest request, CancellationToken cancellationToken)
-    {
-        var path = request.FilePath!;
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException("File not found", path);
-        }
-
-        var text = File.ReadAllText(path);
-        if (path.EndsWith(".html", StringComparison.OrdinalIgnoreCase) ||
-            path.EndsWith(".htm", StringComparison.OrdinalIgnoreCase))
-        {
-            text = _parser.ParseHtml(text);
-        }
-        else if (path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
-        {
-            text = _parser.ParseMarkdown(text);
-        }
-
-        var doc = CreateDocumentRecord(
-            externalId: Path.GetFullPath(path),
-            source: request.SourceLabel ?? "File",
-            title: Path.GetFileName(path),
-            category: request.Category ?? string.Empty,
-            version: request.Version
-        );
-
-        await IngestTextIntoDocumentAsync(doc, text, cancellationToken).ConfigureAwait(false);
-    }
-
-
-    /// <summary>
-    /// Asynchronously ingests all supported text and markup files from the specified directory and its
-    /// subdirectories.
-    /// </summary>
-    /// <remarks>Only files with the extensions .html, .htm, .md, or .txt are ingested. The operation
-    /// processes files recursively in all subdirectories. The method supports cancellation via the provided
-    /// <paramref name="cancellationToken"/>.</remarks>
-    /// <param name="request">An object containing the ingestion parameters, including the path of the directory to process.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous ingestion operation.</returns>
-    /// <exception cref="DirectoryNotFoundException">Thrown if the directory specified in <paramref name="request"/> does not exist.</exception>
-    private async Task IngestDirectoryAsync(IngestionRequest request, CancellationToken cancellationToken)
-    {
-        var dir = request.DirectoryPath!;
-        if (!Directory.Exists(dir))
-        {
-            throw new DirectoryNotFoundException(dir);
-        }
-
-        var files = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories)
-            .Where(f => f.EndsWith(".html", StringComparison.OrdinalIgnoreCase)
-                     || f.EndsWith(".htm", StringComparison.OrdinalIgnoreCase)
-                     || f.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
-                     || f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        foreach (var file in files)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            await IngestFileAsync(request with { FilePath = file, DirectoryPath = null }, cancellationToken)
-                .ConfigureAwait(false);
-        }
-    }
-
-    private DocumentRecord CreateDocumentRecord(string externalId, string source, string title, string category,string? version)
-    {
-        var now = DateTimeOffset.UtcNow;
-        return new DocumentRecord
-        {
-            Id = Guid.NewGuid(),
-            ExternalId = externalId,
-            Source = source,
-            Title = title,
-            Category = category,
-            Version = version,
-            Status = "Processing",
-            CreatedAt = now,
-            UpdatedAt = now
-        };
-    }
-
     public async Task IngestTextIntoDocumentAsync(
         DocumentRecord document,
         string text,
@@ -233,10 +147,10 @@ public sealed class IngestionAgent : IIngestionAgent
         {
             document = await _vectorStore.UpsertDocumentAsync(document, cancellationToken).ConfigureAwait(false);
 
-            var chunks = _chunker.Chunk(text);
-            var records = new List<ChunkRecord>(chunks.Count);
+            IReadOnlyList<Chunk> chunks = _chunker.Chunk(text);
+            List<ChunkRecord> records = new(chunks.Count);
 
-            foreach (var chunk in chunks)
+            foreach (Chunk chunk in chunks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var embedding = await _embeddingClient.EmbedAsync(chunk.Text, cancellationToken).ConfigureAwait(false);
@@ -274,6 +188,136 @@ public sealed class IngestionAgent : IIngestionAgent
             throw;
         }
     }
+
+
+
+
+
+    /// <summary>
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task IngestUrlAsync(IngestionRequest request, CancellationToken cancellationToken)
+    {
+        Uri uri = new(request.Url!, UriKind.Absolute);
+        var html = await _webFetcher.GetStringAsync(uri, cancellationToken).ConfigureAwait(false);
+        var text = _parser.ParseHtml(html);
+
+        DocumentRecord doc = CreateDocumentRecord(
+            uri.ToString(),
+            request.SourceLabel ?? "Web",
+            uri.ToString(),
+            request.Category ?? string.Empty,
+            request.Version
+        );
+
+        await IngestTextIntoDocumentAsync(doc, text, cancellationToken).ConfigureAwait(false);
+    }
+
+
+
+
+
+    /// <summary>
+    ///     Asynchronously ingests a single text or markup file specified in the <paramref name="request" />.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="FileNotFoundException"></exception>
+    private async Task IngestFileAsync(IngestionRequest request, CancellationToken cancellationToken)
+    {
+        var path = request.FilePath!;
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException("File not found", path);
+        }
+
+        var text = File.ReadAllText(path);
+        if (path.EndsWith(".html", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(".htm", StringComparison.OrdinalIgnoreCase))
+        {
+            text = _parser.ParseHtml(text);
+        }
+        else if (path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+        {
+            text = _parser.ParseMarkdown(text);
+        }
+
+        DocumentRecord doc = CreateDocumentRecord(
+            Path.GetFullPath(path),
+            request.SourceLabel ?? "File",
+            Path.GetFileName(path),
+            request.Category ?? string.Empty,
+            request.Version
+        );
+
+        await IngestTextIntoDocumentAsync(doc, text, cancellationToken).ConfigureAwait(false);
+    }
+
+
+
+
+
+    /// <summary>
+    ///     Asynchronously ingests all supported text and markup files from the specified directory and its
+    ///     subdirectories.
+    /// </summary>
+    /// <remarks>
+    ///     Only files with the extensions .html, .htm, .md, or .txt are ingested. The operation
+    ///     processes files recursively in all subdirectories. The method supports cancellation via the provided
+    ///     <paramref name="cancellationToken" />.
+    /// </remarks>
+    /// <param name="request">An object containing the ingestion parameters, including the path of the directory to process.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous ingestion operation.</returns>
+    /// <exception cref="DirectoryNotFoundException">
+    ///     Thrown if the directory specified in <paramref name="request" /> does not
+    ///     exist.
+    /// </exception>
+    private async Task IngestDirectoryAsync(IngestionRequest request, CancellationToken cancellationToken)
+    {
+        var dir = request.DirectoryPath!;
+        if (!Directory.Exists(dir))
+        {
+            throw new DirectoryNotFoundException(dir);
+        }
+
+        List<string> files = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories)
+            .Where(f => f.EndsWith(".html", StringComparison.OrdinalIgnoreCase)
+                        || f.EndsWith(".htm", StringComparison.OrdinalIgnoreCase)
+                        || f.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+                        || f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var file in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await IngestFileAsync(request with { FilePath = file, DirectoryPath = null }, cancellationToken)
+                .ConfigureAwait(false);
+        }
+    }
+
+
+
+
+
+    private DocumentRecord CreateDocumentRecord(string externalId, string source, string title, string category,
+        string? version)
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        return new DocumentRecord
+        {
+            Id = Guid.NewGuid(),
+            ExternalId = externalId,
+            Source = source,
+            Title = title,
+            Category = category,
+            Version = version,
+            Status = "Processing",
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+    }
 }
-
-

@@ -1,76 +1,70 @@
-﻿// ============================================================================
-// COMPLETE, SELF-CONTAINED C# LIBRARY
-// Deterministic ingestion + ONNX embeddings + ONNX LLM + pgvector + tokenizers
-// Only configuration: paths to ONNX models and tokenizer files, and DB string.
-// ============================================================================
-//
-//
-// ============================================================================
-// MODELS
-// ============================================================================
+﻿// Project Name: SKAgent
+// File Name: Ingester.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
 
+using ITCompanionAI.AgentFramework.Agents;
+using ITCompanionAI.AgentFramework.Ingestion;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.ML.Tokenizers;
 
 using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;
 
 
-using Microsoft.ML.Tokenizers;
-
-using Microsoft.Extensions.DependencyInjection;
-
-using Microsoft.Extensions.Hosting;
-
-using ITCompanionAI.AgentFramework;
-using ITCompanionAI.AgentFramework.Ingestion;
-using ITCompanionAI.AgentFramework.Agents;
+namespace ITCompanionAI.AgentFramework;
 
 
-namespace ITCompanionAI.AgentFramework.Agents;
-
-    public sealed class DocumentRecord
-    {
-        public Guid Id { get; init; }
-        public string ExternalId { get; init; } = default!;
-        public string Source { get; init; } = default!;
-        public string Title { get; init; } = default!;
-        public string? Version { get; init; }
-        public string Status { get; set; } = "Pending"; // Pending, Processing, Complete, Failed
-        public DateTimeOffset CreatedAt { get; init; }
-        public DateTimeOffset UpdatedAt { get; set; }
-        public string? LastError { get; set; }
-        public string Category { get; internal set; } = string.Empty;
-    }
-
-    public sealed class ChunkRecord
-    {
-        public Guid Id { get; init; }
-        public Guid DocumentId { get; init; }
-        public int ChunkIndex { get; init; }
-        public string Text { get; init; } = default!;
-        public int TokenCount { get; init; }
-        public float[] Embedding { get; init; } = default!;
-        public string? Section { get; init; }
-        public string? Symbol { get; init; }
-        public string? Kind { get; init; }
-        public bool Verified { get; set; }
-        public double Confidence { get; set; }
-        public bool Deprecated { get; set; }
-        public string? Category { get; internal set; }
-    }
-
-    public sealed class ReconciledChunkRecord
-    {
-        public Guid Id { get; init; }
-        public string Symbol { get; init; } = default!;
-        public string? Namespace { get; init; }
-        public string? Version { get; init; }
-        public string Summary { get; init; } = default!;
-        public float[] Embedding { get; init; } = default!;
-        public double Confidence { get; init; }
-        public int SourceCount { get; init; }
-    }
+public sealed class DocumentRecord
+{
+    public Guid Id { get; init; }
+    public string ExternalId { get; init; } = default!;
+    public string Source { get; init; } = default!;
+    public string Title { get; init; } = default!;
+    public string? Version { get; init; }
+    public string Status { get; set; } = "Pending"; // Pending, Processing, Complete, Failed
+    public DateTimeOffset CreatedAt { get; init; }
+    public DateTimeOffset UpdatedAt { get; set; }
+    public string? LastError { get; set; }
+    public string Category { get; internal set; } = string.Empty;
+}
 
 
+
+public sealed class ChunkRecord
+{
+    public Guid Id { get; init; }
+    public Guid DocumentId { get; init; }
+    public int ChunkIndex { get; init; }
+    public string Text { get; init; } = default!;
+    public int TokenCount { get; init; }
+    public float[] Embedding { get; init; } = default!;
+    public string? Section { get; init; }
+    public string? Symbol { get; init; }
+    public string? Kind { get; init; }
+    public bool Verified { get; set; }
+    public double Confidence { get; set; }
+    public bool Deprecated { get; set; }
+    public string? Category { get; internal set; }
+}
+
+
+
+public sealed class ReconciledChunkRecord
+{
+    public Guid Id { get; init; }
+    public string Symbol { get; init; } = default!;
+    public string? Namespace { get; init; }
+    public string? Version { get; init; }
+    public string Summary { get; init; } = default!;
+    public float[] Embedding { get; init; } = default!;
+    public double Confidence { get; init; }
+    public int SourceCount { get; init; }
+}
 
 
 
@@ -79,8 +73,10 @@ public class Ingester
     public IServiceCollection ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
         // var connectionString = "(localdb)\\MSSqlLocalDB;Database=AIAgentRag";
-        var embeddingModelPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\model.onnx""";
-        var vocabPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\tokenizer.json""";
+        var embeddingModelPath =
+            """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\model.onnx""";
+        var vocabPath =
+            """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\tokenizer.json""";
         //var mergesPath = """D:\\Solutions\\SolHack\\RepoRoot\\src\\IT-Companion-AI\\AIModels\\bge-small\\merges.txt""";
 
         var llmModelPath = """D:\\cpu-int4-rtn-block-32\\phi3-mini-4k-instruct-cpu-int4-rtn-block-32.onnx""";
@@ -89,21 +85,19 @@ public class Ingester
 
 
 
-        services.AddKeyedSingleton<HFTokenizer.Tokenizer>("embedding", (sp, _) =>
-        {
-            return HFTokenizer.Tokenizer.FromFile(vocabPath);
-        });
+        services.AddKeyedSingleton<HFTokenizer.Tokenizer>("embedding",
+            (sp, _) => { return HFTokenizer.Tokenizer.FromFile(vocabPath); });
 
         services.AddSingleton<IChunker>(sp =>
-            new TokenizerChunker(sp.GetRequiredKeyedService<HFTokenizer.Tokenizer>("embedding"), maxTokens: 512));
+            new TokenizerChunker(sp.GetRequiredKeyedService<HFTokenizer.Tokenizer>("embedding")));
 
         services.AddKeyedSingleton<Tokenizer>("llm", (sp, _) =>
-    {
-        using (var modelStream = File.OpenRead(@"d:\cpu-int4-rtn-block-32\tokenizer.model"))
         {
-            return LlamaTokenizer.Create(modelStream);
-        }
-    });
+            using (FileStream modelStream = File.OpenRead(@"d:\cpu-int4-rtn-block-32\tokenizer.model"))
+            {
+                return LlamaTokenizer.Create(modelStream);
+            }
+        });
 
         services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
 
@@ -112,21 +106,13 @@ public class Ingester
 
         services.AddSingleton<IEmbeddingClient>(sp =>
             new OnnxEmbeddingClient(
-                modelPath: embeddingModelPath,
-                tokenizer: sp.GetRequiredKeyedService<HFTokenizer.Tokenizer>("embedding"),
-                maxTokens: 512,
-                inputIdsName: "input_ids",
-                attentionMaskName: "attention_mask",
-                outputName: "last_hidden_state",
-                embeddingDim: 384));
+                embeddingModelPath,
+                sp.GetRequiredKeyedService<HFTokenizer.Tokenizer>("embedding")));
 
         services.AddSingleton<ILLMClient>(sp =>
             new OnnxLLMClient(
-                modelPath: llmModelPath,
-                tokenizer: sp.GetRequiredKeyedService<Tokenizer>("llm"),
-                maxNewTokens: 256,
-                inputIdsName: "input_ids",
-                outputName: "logits"));
+                llmModelPath,
+                sp.GetRequiredKeyedService<Tokenizer>("llm")));
 
         /*
         services.AddSingleton<IVectorStore>(sp =>
@@ -143,9 +129,7 @@ public class Ingester
 
         return services;
     }
-
 }
-
 
 
 /*
@@ -163,7 +147,6 @@ var host = builder.Build();
 // Console.WriteLine(result.Answer);
 
 await host.RunAsync();
-*/// var queryService = host.Services.GetRequiredService<KnowledgeQueryService>();
+*/ // var queryService = host.Services.GetRequiredService<KnowledgeQueryService>();
 // var result = await queryService.QueryAsync("How do SK agents work?");
 // Console.WriteLine(result.Answer);
-

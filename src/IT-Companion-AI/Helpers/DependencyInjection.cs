@@ -1,25 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text;
-using ITCompanionAI;
+﻿// Project Name: SKAgent
+// File Name: DependencyInjection.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
-using ITCompanionAI.AgentFramework.Ingestion;
 
-namespace ITCompanionAI;
+namespace ITCompanionAI.Helpers;
+
 
 public class DependencyInjection
 {
-
-
-    public void RegisterServices() 
+    public void RegisterServices()
     {
-        var path=Path.Combine(@"d:\skApiRepo\semantic-kernel\dotnet","src");
+        var path = Path.Combine(@"d:\skApiRepo\semantic-kernel\dotnet", "src");
 
-    //    var orchestrator = new IngestionOrchestrator(new AiagentRagContext(), new ApiHarvester(path), new XmlDocExtractor(), new MarkdownDocParser());
+        //    var orchestrator = new IngestionOrchestrator(new AiagentRagContext(), new ApiHarvester(path), new XmlDocExtractor(), new MarkdownDocParser());
 
 
 
     }
-
 }

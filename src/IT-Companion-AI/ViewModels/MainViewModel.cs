@@ -1,65 +1,31 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿// Project Name: SKAgent
+// File Name: MainViewModel.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
-using ITCompanionAI.AgentFramework;
 
-using System;
 using System.Collections.ObjectModel;
-using System.Threading;
-using System.Threading.Tasks;
 
 using ITCompanionAI.AgentFramework.Planning;
+
+using Microsoft.Extensions.Logging;
 
 
 namespace ITCompanionAI.ViewModels;
 
+
 public partial class MainViewModel : BaseViewModel
 {
-    private CancellationTokenSource? _cts;
     private readonly ILoggerFactory _loggerFactory;
-    private string _userInput = string.Empty;
-    public string UserInput
-    {
-        get => _userInput;
-        set
-        {
-            if (_userInput != value)
-            {
-                _userInput = value;
-                OnPropertyChanged(nameof(UserInput));
-                OnPropertyChanged(nameof(CanSend));
-                OnUserInputChanged(value);
-            }
-        }
-    }
-
-
-    public ObservableCollection<ChatMessageViewModel> Messages { get; } = new();
+    private CancellationTokenSource? _cts;
 
     private bool _isBusy;
-    private object? _loop;
+    private string _userInput = string.Empty;
 
-    public bool IsBusy
-    {
-        get => _isBusy;
-        set
-        {
-            if (_isBusy != value)
-            {
-                _isBusy = value;
-                OnPropertyChanged(nameof(IsBusy));
-                OnPropertyChanged(nameof(CanSend));
-                OnPropertyChanged(nameof(CanCancel));
-                OnIsBusyChanged(value);
-            }
-        }
-    }
 
-    public bool CanSend => !IsBusy && !string.IsNullOrWhiteSpace(UserInput);
 
-    public bool CanCancel => IsBusy && _cts is { IsCancellationRequested: false };
-  
 
 
     public MainViewModel()
@@ -79,18 +45,55 @@ public partial class MainViewModel : BaseViewModel
 
 
 
+    public string UserInput
+    {
+        get => _userInput;
+        set
+        {
+            if (_userInput == value)
+            {
+                return;
+            }
+
+            _userInput = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CanSend));
+            OnUserInputChanged(value);
+        }
+    }
 
 
+    public ObservableCollection<ChatMessageViewModel> Messages { get; } = [];
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set
+        {
+            if (_isBusy != value)
+            {
+                _isBusy = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanSend));
+                OnPropertyChanged(nameof(CanCancel));
+                OnIsBusyChanged(value);
+            }
+        }
+    }
+
+    public bool CanSend => !IsBusy && !string.IsNullOrWhiteSpace(UserInput);
+
+    public bool CanCancel => IsBusy && _cts is { IsCancellationRequested: false };
 
 
 
 
 
     /// <summary>
-    /// Initializes the agent orchestrator and restores any persisted chat history,
-    /// guarding against repeated initialization while updating the busy state.
+    ///     Initializes the agent orchestrator and restores any persisted chat history,
+    ///     guarding against repeated initialization while updating the busy state.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous initialization operation.</returns>
+    /// <returns>A <see cref="Task" /> representing the asynchronous initialization operation.</returns>
     public async Task InitializeAsync()
     {
         /*
@@ -116,15 +119,7 @@ public partial class MainViewModel : BaseViewModel
 
 
 
-
-
-
-
-
-
-
     /// <summary>
-    /// 
     /// </summary>
     /// <returns></returns>
     [RelayCommand]
@@ -133,7 +128,7 @@ public partial class MainViewModel : BaseViewModel
         _cts = new CancellationTokenSource();
 
         // Example usage (e.g., from a hosted service or controller):
-       // var orchestrator = App.GetService<KnowledgeIngestionOrchestrator>();
+        // var orchestrator = App.GetService<KnowledgeIngestionOrchestrator>();
 
 
 
@@ -144,18 +139,20 @@ public partial class MainViewModel : BaseViewModel
         try
         {
 
-            var orchestrator = App.GetService<IKnowledgeIngestionOrchestrator>();
+            IKnowledgeIngestionOrchestrator orchestrator = App.GetService<IKnowledgeIngestionOrchestrator>();
 
-            var planner = App.GetService<IPlannerAgent>();
+            IPlannerAgent planner = App.GetService<IPlannerAgent>();
 
-            var plan = await planner.CreatePlanAsync("Ingest the Semantic Kernel API signatures and usage documentation.",_cts.Token);
+            IngestionPlan plan =
+                await planner.CreatePlanAsync("Ingest the Semantic Kernel API signatures and usage documentation.",
+                    _cts.Token);
 
 
             //var ingestion = App.GetService<IngestionAgent>();
-          //  var plans = await orchestrator.BuildOrUpdateKnowledgeBaseAsync("Ingest the Semantic Kernel API signatures and usage documentation.", _cts.Token);
+            //  var plans = await orchestrator.BuildOrUpdateKnowledgeBaseAsync("Ingest the Semantic Kernel API signatures and usage documentation.", _cts.Token);
 
 
-   
+
 
 
             await Task.CompletedTask;
@@ -166,7 +163,6 @@ public partial class MainViewModel : BaseViewModel
             OnPropertyChanged(nameof(CanSend));
             OnPropertyChanged(nameof(CanCancel));
         }
-
 
 
 
@@ -225,8 +221,11 @@ public partial class MainViewModel : BaseViewModel
         */
     }
 
+
+
+
+
     /// <summary>
-    /// 
     /// </summary>
     /// <returns></returns>
     [RelayCommand]
@@ -245,11 +244,11 @@ public partial class MainViewModel : BaseViewModel
 
     partial void OnUserInputChanged(string value);
     partial void OnIsBusyChanged(bool value);
-
-
 }
 
+
+
 /// <summary>
-//// Represents a chat message shown in the UI.
-//// </summary>
+///     Represents a chat message in the application, encapsulating the author and the content of the message.
+/// </summary>
 public sealed record ChatMessageViewModel(string Author, string Content);

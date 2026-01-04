@@ -1,19 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿// Project Name: SKAgent
+// File Name: Chunking.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
-using Microsoft.ML.Tokenizers;
 
 using Tokenizers.HuggingFace.Tokenizer;
 
-using Tokenizer = Tokenizers.HuggingFace.Tokenizer.Tokenizer;
 
 // ============================================================================
 // CHUNKING (Microsoft.ML.Tokenizers-based)
 // ============================================================================
 
+
 namespace ITCompanionAI.AgentFramework;
+
 
 public sealed record Chunk(
     int Index,
@@ -24,25 +26,41 @@ public sealed record Chunk(
     string? Kind = null
 );
 
+
+
 public interface IChunker
 {
     IReadOnlyList<Chunk> Chunk(string text, string? section = null);
 }
 
+
+
 /// <summary>
-/// Tokenizer-aware chunker using a BPE tokenizer compatible with bge-small-en and phi-2 style models.
+///     Tokenizer-aware chunker using a BPE tokenizer compatible with bge-small-en and phi-2 style models.
 /// </summary>
 public sealed class TokenizerChunker : IChunker
 {
-    private readonly Tokenizer _tokenizer;
     private readonly int _maxTokens;
+    private readonly Tokenizer _tokenizer;
+
+
+
+
 
     public TokenizerChunker(Tokenizer tokenizer, int maxTokens = 512)
     {
         _tokenizer = tokenizer;
-        if (maxTokens <= 0) throw new ArgumentOutOfRangeException(nameof(maxTokens));
+        if (maxTokens <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxTokens));
+        }
+
         _maxTokens = maxTokens;
     }
+
+
+
+
 
     public IReadOnlyList<Chunk> Chunk(string text, string? section = null)
     {
@@ -51,40 +69,33 @@ public sealed class TokenizerChunker : IChunker
             return Array.Empty<Chunk>();
         }
 
-        IReadOnlyList<int> ids = (IReadOnlyList<int>)_tokenizer.Encode(text,false);
+        // Encode the text using the tokenizer
+        IReadOnlyList<int> ids = _tokenizer.Encode(text, false) as IReadOnlyList<int> ?? Array.Empty<int>();
+        // If no tokens are generated, return an empty list
         if (ids.Count == 0)
         {
             return Array.Empty<Chunk>();
         }
 
-        int total = ids.Count;
-        int chunkCount = (total + _maxTokens - 1) / _maxTokens;
-        var chunks = new List<Chunk>(chunkCount);
-
+        var total = ids.Count;
+        var chunkCount = (total + _maxTokens - 1) / _maxTokens;
+        List<Chunk> chunks = new(chunkCount);
         for (int index = 0, start = 0; start < total; index++, start += _maxTokens)
         {
-            int count = Math.Min(_maxTokens, total - start);
-
-            var subIds = new List<uint>(count);
-            for (int i = 0; i < count; i++)
-            {
-                subIds.Add((uint)ids[start + i]);
-            }
-
-            string subText = _tokenizer.Decode(subIds,true);
-
+            var count = Math.Min(_maxTokens, total - start);
+            // Extract the subset of token IDs for the current chunk
+            List<uint> subIds = ids.Skip(start).Take(count).Select(id => (uint)id).ToList();
+            // Decode the subset of token IDs back into text
+            var subText = _tokenizer.Decode(subIds, true);
+            // Add the chunk to the list
             chunks.Add(new Chunk(
-                Index: index,
-                Text: subText,
-                TokenCount: count,
-                Section: section
+                index,
+                subText,
+                count,
+                section
             ));
         }
 
         return chunks;
     }
-
-
 }
-
-

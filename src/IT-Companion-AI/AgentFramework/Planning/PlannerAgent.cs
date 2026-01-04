@@ -1,53 +1,130 @@
-﻿#pragma warning restore SKEXP0110
+﻿// Project Name: SKAgent
+// File Name: PlannerAgent.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
-using System.Linq;
-
-
-
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using ITCompanionAI.AgentFramework;
+using JetBrains.Annotations;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.ChatCompletion;
+
+
+#pragma warning disable SKEXP0110
 
 
 namespace ITCompanionAI.AgentFramework.Planning;
 
+
 public interface IPlannerAgent
 {
     Task<IngestionPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default);
-    IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default);
-    IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default);
+
+
+
+
+
+    IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default);
+
+
+
+
+
+    IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default);
 }
 
-public sealed class PlannerAgent : Agent,IPlannerAgent
+
+
+public sealed class PlannerAgent : Agent, IPlannerAgent
 {
     private readonly ILLMClient _llmClient;
-    private ChatHistory messagehistory = new ChatHistory();
+    private readonly ChatHistory messagehistory = [];
+
+
+
+
+
     public PlannerAgent(ILLMClient llmClient)
     {
         _llmClient = llmClient;
     }
 
+
+
+
+
     public async Task<IngestionPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
 
-            var prompt = BuildPlannerPrompt(goal);
-            var rawResponse = await _llmClient.CompleteAsync(prompt, cancellationToken).ConfigureAwait(false);
-            var plan = ParsePlan(goal, rawResponse);
-            return plan;
-        
+        var prompt = BuildPlannerPrompt(goal);
+        var rawResponse = await _llmClient.CompleteAsync(prompt, cancellationToken).ConfigureAwait(false);
+        IngestionPlan plan = ParsePlan(goal, rawResponse);
+        return plan;
+
     }
 
-    public static IngestionPlan ParsePlanForTests(string goal, string rawResponse) => ParsePlan(goal, rawResponse);
+
+
+
+
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        messagehistory.AddSystemMessage(BuildPlannerPrompt(
+            "Produce a list of links to the API Definition web pages for the Microsoft Semantic Kernel."));
+
+        var msg = BuildPlannerPrompt(
+            "Produce a list of links to the API Definition web pages for the Microsoft Semantic Kernel.");
+        var rawResponse = await _llmClient.CompleteAsync(msg, cancellationToken).ConfigureAwait(false);
+
+        IngestionPlan plan = ParsePlan(msg, rawResponse);
+
+        var responseText = JsonSerializer.Serialize(plan);
+        yield return thread is null
+            ? throw new ArgumentNullException(nameof(thread))
+            : new AgentResponseItem<ChatMessageContent>(
+                new ChatMessageContent(AuthorRole.Assistant, responseText),
+                thread);
+    }
+
+
+
+
+
+    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+
+
+
+
+    public static IngestionPlan ParsePlanForTests(string goal, string rawResponse)
+    {
+        return ParsePlan(goal, rawResponse);
+    }
+
+
+
+
 
     private static IngestionPlan ParsePlan(string goal, string rawResponse)
     {
@@ -76,29 +153,34 @@ public sealed class PlannerAgent : Agent,IPlannerAgent
                 $"Planner returned no targets. Raw response:\n{rawResponse}");
         }
 
-        var targets = parsed.Targets
+        ReadOnlyCollection<IngestionTarget> targets = parsed.Targets
             .Where(t => !string.IsNullOrWhiteSpace(t.Uri))
             .Select(t => new IngestionTarget(
-                Uri: new Uri(t.Uri, UriKind.Absolute),
-                SourceLabel: string.IsNullOrWhiteSpace(t.SourceLabel) ? "Web" : t.SourceLabel,
-                Category: t.Category,
-                Version: t.Version
+                new Uri(t.Uri, UriKind.Absolute),
+                string.IsNullOrWhiteSpace(t.SourceLabel) ? "Web" : t.SourceLabel,
+                t.Category,
+                t.Version
             ))
             .ToList()
             .AsReadOnly();
 
         return new IngestionPlan(
-            Goal: goal,
-            Targets: targets
+            goal,
+            targets
         );
     }
+
+
+
+
 
     private static string BuildPlannerPrompt(string goal)
     {
         var sb = new StringBuilder();
 
         sb.AppendLine("You are a planning assistant for building a Semantic Kernel knowledge base.");
-        sb.AppendLine("Your job is to select the most relevant online documentation URLs that are specific to your goal.");
+        sb.AppendLine(
+            "Your job is to select the most relevant online documentation URLs that are specific to your goal.");
         sb.AppendLine();
         sb.AppendLine("Goal:");
         sb.AppendLine(goal);
@@ -127,8 +209,9 @@ public sealed class PlannerAgent : Agent,IPlannerAgent
 
 
 
+
+
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="rawResponse"></param>
     /// <returns></returns>
@@ -139,19 +222,19 @@ public sealed class PlannerAgent : Agent,IPlannerAgent
             return rawResponse;
         }
 
-        int start = rawResponse.IndexOf('{');
+        var start = rawResponse.IndexOf('{');
         if (start < 0)
         {
             return rawResponse.Trim();
         }
 
-        bool inString = false;
-        bool escape = false;
-        int depth = 0;
+        var inString = false;
+        var escape = false;
+        var depth = 0;
 
-        for (int i = start; i < rawResponse.Length; i++)
+        for (var i = start; i < rawResponse.Length; i++)
         {
-            char c = rawResponse[i];
+            var c = rawResponse[i];
 
             if (inString)
             {
@@ -198,75 +281,54 @@ public sealed class PlannerAgent : Agent,IPlannerAgent
         return rawResponse.Substring(start).Trim();
     }
 
-    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
-        ICollection<ChatMessageContent> messages,
-        AgentThread? thread = null,
-        AgentInvokeOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        messagehistory.AddSystemMessage(BuildPlannerPrompt("Produce a list of links to the API Definition web pages for the Microsoft Semantic Kernel."));
-       
-        var msg = BuildPlannerPrompt("Produce a list of links to the API Definition web pages for the Microsoft Semantic Kernel.");
-        var rawResponse = await _llmClient.CompleteAsync(msg, cancellationToken).ConfigureAwait(false);
 
-        var plan = ParsePlan(msg, rawResponse);
 
-        var responseText = JsonSerializer.Serialize(plan);
-        if (thread is null)
-        {
-            throw new ArgumentNullException(nameof(thread));
-        }
 
-        yield return new AgentResponseItem<ChatMessageContent>(
-            new ChatMessageContent(AuthorRole.Assistant, responseText),
-            thread);
-    }
-
-    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
 
     protected override IEnumerable<string> GetChannelKeys()
     {
         throw new NotImplementedException();
     }
-#pragma warning disable SKEXP0110
+
+
+
+
 
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
+
+
+
+
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
+
+
+
+
     private sealed class PlannerResponse
     {
-        [JsonPropertyName("targets")]
-        public List<PlannerTarget> Targets { get; set; } = new();
+        [JsonPropertyName("targets")] public List<PlannerTarget> Targets { get; set; } = [];
     }
 
 
 
-
     /// <summary>
-    /// 
     /// </summary>
     private sealed class PlannerTarget
     {
-        [JsonPropertyName("uri")]
-        public string Uri { get; set; } = string.Empty;
+        [JsonPropertyName("uri")] public string Uri { get; } = string.Empty;
 
-        [JsonPropertyName("sourceLabel")]
-        public string? SourceLabel { get; set; }
+        [JsonPropertyName("sourceLabel")] public string? SourceLabel { get; [UsedImplicitly] set; }
 
-        [JsonPropertyName("category")]
-        public string? Category { get; set; }
+        [JsonPropertyName("category")] public string? Category { get; set; }
 
-        [JsonPropertyName("version")]
-        public string? Version { get; set; }
+        [JsonPropertyName("version")] public string? Version { get; set; }
     }
 }

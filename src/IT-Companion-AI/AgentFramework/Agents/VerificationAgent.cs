@@ -1,21 +1,33 @@
-﻿using System.Text;
+﻿// Project Name: SKAgent
+// File Name: VerificationAgent.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
+using System.Text;
 using System.Text.Json;
 
-using ITCompanionAI.AgentFramework;
 using ITCompanionAI.AgentFramework.Storage;
-
 
 
 // ============================================================================
 // AGENTS: Verification + Reconciliation
 // ============================================================================
 
+
 namespace ITCompanionAI.AgentFramework.Agents;
+
 
 public sealed class VerificationAgent
 {
     private readonly ILLMClient _llmClient;
     private readonly IVectorStore _vectorStore;
+
+
+
+
 
     public VerificationAgent(ILLMClient llmClient, IVectorStore vectorStore)
     {
@@ -23,17 +35,22 @@ public sealed class VerificationAgent
         _vectorStore = vectorStore;
     }
 
+
+
+
+
     public async Task VerifySymbolAsync(
         string symbol,
         CancellationToken cancellationToken = default)
     {
-        var chunks = await _vectorStore.GetChunksBySymbolAsync(symbol, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<ChunkRecord> chunks =
+            await _vectorStore.GetChunksBySymbolAsync(symbol, cancellationToken).ConfigureAwait(false);
         if (chunks.Count == 0)
         {
             return;
         }
 
-        var sb = new StringBuilder();
+        StringBuilder sb = new();
         sb.AppendLine("You are checking consistency of Semantic Kernel API information.");
         sb.AppendLine($"Symbol: {symbol}");
         sb.AppendLine();
@@ -46,15 +63,15 @@ public sealed class VerificationAgent
         }
 
         sb.AppendLine("""
-        Task:
-        - Determine if fragments agree on the symbol's namespace, type (class/method/etc.), and usage.
-        - Identify clearly outdated or conflicting information.
-        - Return JSON with fields:
-          - verified: bool
-          - confidence: number between 0 and 1
-          - deprecated: bool
-          - notes: string
-        """);
+                      Task:
+                      - Determine if fragments agree on the symbol's namespace, type (class/method/etc.), and usage.
+                      - Identify clearly outdated or conflicting information.
+                      - Return JSON with fields:
+                        - verified: bool
+                        - confidence: number between 0 and 1
+                        - deprecated: bool
+                        - notes: string
+                      """);
 
         var json = await _llmClient.CompleteAsync(sb.ToString(), cancellationToken).ConfigureAwait(false);
 
@@ -76,19 +93,16 @@ public sealed class VerificationAgent
             };
         }
 
-        foreach (var chunk in chunks)
+        foreach (ChunkRecord chunk in chunks)
         {
             chunk.Verified = result.Verified;
             chunk.Confidence = result.Confidence;
             chunk.Deprecated = result.Deprecated;
         }
 
-        var byDoc = chunks.GroupBy(c => c.DocumentId);
-        foreach (var group in byDoc)
-        {
+        IEnumerable<IGrouping<Guid, ChunkRecord>> byDoc = chunks.GroupBy(c => c.DocumentId);
+        foreach (IGrouping<Guid, ChunkRecord> group in byDoc)
             await _vectorStore.UpsertChunksAsync(group.Key, group.ToList(), cancellationToken)
                 .ConfigureAwait(false);
-        }
     }
 }
-

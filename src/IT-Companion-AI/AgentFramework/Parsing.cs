@@ -1,12 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Project Name: SKAgent
+// File Name: Parsing.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
 using System.Text;
 
 using HtmlAgilityPack;
 
+
 // ============================================================================
 // HTML / MARKDOWN PARSING
 // ============================================================================
+
 
 namespace ITCompanionAI.AgentFramework;
 
@@ -17,6 +25,8 @@ public interface IContentParser
     string ParseMarkdown(string markdown);
 }
 
+
+
 public sealed class HtmlMarkdownContentParser : IContentParser
 {
     public string ParseHtml(string html)
@@ -26,14 +36,28 @@ public sealed class HtmlMarkdownContentParser : IContentParser
             return string.Empty;
         }
 
-        var doc = new HtmlDocument();
+        HtmlDocument doc = new();
         doc.LoadHtml(html);
 
-        var sb = new StringBuilder();
-        var body = doc.DocumentNode.SelectSingleNode("//body") ?? doc.DocumentNode;
+        StringBuilder sb = new();
+        HtmlNode body = doc.DocumentNode.SelectSingleNode("//body") ?? doc.DocumentNode;
         ExtractText(body, sb);
         return sb.ToString();
     }
+
+
+
+
+
+    public string ParseMarkdown(string markdown)
+    {
+        // Simple pass-through for now; you can wire a real Markdown parser later if desired.
+        return markdown ?? string.Empty;
+    }
+
+
+
+
 
     private static void ExtractText(HtmlNode node, StringBuilder sb)
     {
@@ -46,15 +70,6 @@ public sealed class HtmlMarkdownContentParser : IContentParser
             }
         }
 
-        foreach (var child in node.ChildNodes)
-        {
-            ExtractText(child, sb);
-        }
-    }
-
-    public string ParseMarkdown(string markdown)
-    {
-        // Simple pass-through for now; you can wire a real Markdown parser later if desired.
-        return markdown ?? string.Empty;
+        foreach (HtmlNode child in node.ChildNodes) ExtractText(child, sb);
     }
 }

@@ -1,16 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Project Name: SKAgent
+// File Name: Query.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
 using System.Text;
 
-using ITCompanionAI.AgentFramework.Agents;
 using ITCompanionAI.AgentFramework.Storage;
-
-
 
 
 // ============================================================================
 // QUERY SERVICE (for your web chat)
 // ============================================================================
+
 
 namespace ITCompanionAI.AgentFramework;
 
@@ -20,11 +24,17 @@ public sealed record QueryResult(
     IReadOnlyList<ReconciledChunkRecord> SupportingChunks
 );
 
+
+
 public sealed class KnowledgeQueryService
 {
     private readonly IEmbeddingClient _embeddingClient;
-    private readonly IVectorStore _vectorStore;
     private readonly ILLMClient _llmClient;
+    private readonly IVectorStore _vectorStore;
+
+
+
+
 
     public KnowledgeQueryService(
         IEmbeddingClient embeddingClient,
@@ -36,6 +46,10 @@ public sealed class KnowledgeQueryService
         _llmClient = llmClient;
     }
 
+
+
+
+
     public async Task<QueryResult> QueryAsync(
         string question,
         CancellationToken cancellationToken = default)
@@ -43,14 +57,15 @@ public sealed class KnowledgeQueryService
         var queryEmbedding = await _embeddingClient.EmbedAsync(question, cancellationToken)
             .ConfigureAwait(false);
 
-        var reconciled = await _vectorStore.SearchReconciledAsync(queryEmbedding, topK: 10, cancellationToken)
+        IReadOnlyList<ReconciledChunkRecord> reconciled = await _vectorStore
+            .SearchReconciledAsync(queryEmbedding, 10, cancellationToken)
             .ConfigureAwait(false);
 
         var sb = new StringBuilder();
         sb.AppendLine("You are an assistant that answers questions about the Semantic Kernel API.");
         sb.AppendLine("Use the following information as authoritative context:");
         sb.AppendLine();
-        foreach (var chunk in reconciled)
+        foreach (ReconciledChunkRecord chunk in reconciled)
         {
             sb.AppendLine($"[Symbol={chunk.Symbol}, Confidence={chunk.Confidence:F2}]");
             sb.AppendLine(chunk.Summary);
@@ -66,9 +81,8 @@ public sealed class KnowledgeQueryService
             .ConfigureAwait(false);
 
         return new QueryResult(
-            Answer: answer.Trim(),
-            SupportingChunks: reconciled
+            answer.Trim(),
+            reconciled
         );
     }
 }
-

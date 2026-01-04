@@ -1,19 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Project Name: SKAgent
+// File Name: Llm.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
 using System.Globalization;
 
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.Tokenizers;
 
-
 using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;
+
 
 // ============================================================================
 // ONNX: Embeddings + LLM
 // ============================================================================
+
 
 namespace ITCompanionAI.AgentFramework;
 
@@ -23,27 +28,35 @@ public interface IEmbeddingClient
     Task<float[]> EmbedAsync(string text, CancellationToken cancellationToken = default);
 }
 
+
+
 public interface ILLMClient
 {
     Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default);
 }
 
+
+
 /// <summary>
-/// ONNX embedding client for a bge-small-en-like model.
-/// Assumes the model takes input_ids and attention_mask and outputs a single embedding vector.
-/// You may need to adjust input/output names to match your specific model.
+///     ONNX embedding client for a bge-small-en-like model.
+///     Assumes the model takes input_ids and attention_mask and outputs a single embedding vector.
+///     You may need to adjust input/output names to match your specific model.
 /// </summary>
 public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
 {
+    private readonly string _attentionMaskName;
+    private readonly int _embeddingDim;
+    private readonly string _inputIdsName;
+    private readonly int _maxTokens;
+    private readonly string _outputName;
+    private readonly bool _requiresTokenTypeIds;
     private readonly InferenceSession _session;
     private readonly HFTokenizer.Tokenizer _tokenizer;
-    private readonly int _maxTokens;
-    private readonly string _inputIdsName;
-    private readonly string _attentionMaskName;
-    private readonly string _outputName;
-    private readonly int _embeddingDim;
     private readonly string? _tokenTypeIdsName;
-    private readonly bool _requiresTokenTypeIds;
+
+
+
+
 
     public OnnxEmbeddingClient(
         string modelPath,
@@ -75,53 +88,64 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
 
 
 
+    public void Dispose()
+    {
+        _session.Dispose();
+    }
+
+
+
 
 
     /// <summary>
-    /// Generates an embedding vector for the specified input text using the underlying ONNX model.
+    ///     Generates an embedding vector for the specified input text using the underlying ONNX model.
     /// </summary>
-    /// <remarks>If the model outputs a sequence of vectors, mean pooling is applied to produce a single
-    /// embedding vector. The length of the returned array corresponds to the embedding dimension expected by the
-    /// model.</remarks>
+    /// <remarks>
+    ///     If the model outputs a sequence of vectors, mean pooling is applied to produce a single
+    ///     embedding vector. The length of the returned array corresponds to the embedding dimension expected by the
+    ///     model.
+    /// </remarks>
     /// <param name="text">The input text to be embedded. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a single-precision floating point
-    /// array representing the embedding vector for the input text.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the tokenizer produces no encoding for the given text, or if the model output shape does not match the
-    /// expected embedding dimension.</exception>
+    /// <returns>
+    ///     A task that represents the asynchronous operation. The task result contains a single-precision floating point
+    ///     array representing the embedding vector for the input text.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    ///     Thrown if the tokenizer produces no encoding for the given text, or if the model output shape does not match the
+    ///     expected embedding dimension.
+    /// </exception>
     public Task<float[]> EmbedAsync(string text, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         // HuggingFace tokenizers return an Encoding (or sequence). We need the token IDs as an indexable list.
-        var encoding = _tokenizer.Encode(text, addSpecialTokens: false).FirstOrDefault();
+        HFTokenizer.Encoding? encoding = _tokenizer.Encode(text, false).FirstOrDefault();
         if (encoding is null)
         {
             throw new InvalidOperationException("Tokenizer produced no encoding for the given text.");
         }
 
-        var tokenIds = encoding.Ids.Select(id => (long)id).ToList();
+        List<long> tokenIds = encoding.Ids.Select(id => (long)id).ToList();
         if (tokenIds.Count > _maxTokens)
         {
             tokenIds = tokenIds.Take(_maxTokens).ToList();
         }
 
         var sequenceLength = tokenIds.Count;
-        var inputIds = new DenseTensor<long>(new[] { 1, sequenceLength });
-        var attentionMask = new DenseTensor<long>(new[] { 1, sequenceLength });
-        DenseTensor<long>? tokenTypeIds = _requiresTokenTypeIds ? new DenseTensor<long>(new[] { 1, sequenceLength }) : null;
+        DenseTensor<long> inputIds = new(new[] { 1, sequenceLength });
+        DenseTensor<long> attentionMask = new(new[] { 1, sequenceLength });
+        DenseTensor<long>? tokenTypeIds =
+            _requiresTokenTypeIds ? new DenseTensor<long>(new[] { 1, sequenceLength }) : null;
 
-        for (int i = 0; i < sequenceLength; i++)
+        for (var i = 0; i < sequenceLength; i++)
         {
             inputIds[0, i] = tokenIds[i];
             attentionMask[0, i] = 1;
-            if (tokenTypeIds is not null)
-            {
-                tokenTypeIds[0, i] = 0;
-            }
+            tokenTypeIds?[0, i] = 0;
         }
 
-        var inputs = new List<NamedOnnxValue>
+        List<NamedOnnxValue> inputs = new()
         {
             NamedOnnxValue.CreateFromTensor(_inputIdsName, inputIds),
             NamedOnnxValue.CreateFromTensor(_attentionMaskName, attentionMask)
@@ -132,7 +156,7 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
             inputs.Add(NamedOnnxValue.CreateFromTensor(_tokenTypeIdsName!, tokenTypeIds));
         }
 
-        using var results = _session.Run(inputs);
+        using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = _session.Run(inputs);
         var output = results.First(r => r.Name == _outputName).AsEnumerable<float>().ToArray();
 
         // Model may output sequence; we take mean pooling as a simple, stable strategy.
@@ -140,17 +164,12 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
         {
             var hiddenSize = output.Length / sequenceLength;
             var pooled = new float[hiddenSize];
-            for (int t = 0; t < sequenceLength; t++)
-            {
-                for (int h = 0; h < hiddenSize; h++)
-                {
-                    pooled[h] += output[t * hiddenSize + h];
-                }
-            }
-            for (int h = 0; h < hiddenSize; h++)
-            {
-                pooled[h] /= sequenceLength;
-            }
+            for (var t = 0; t < sequenceLength; t++)
+            for (var h = 0; h < hiddenSize; h++)
+                pooled[h] += output[t * hiddenSize + h];
+
+            for (var h = 0; h < hiddenSize; h++) pooled[h] /= sequenceLength;
+
             return Task.FromResult(pooled);
         }
 
@@ -158,44 +177,48 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
         return output.Length == _embeddingDim
             ? Task.FromResult(output)
             : throw new InvalidOperationException(
-            $"Unexpected embedding output shape. Length={output.Length}, expected {_embeddingDim} or multiple of token count.");
+                $"Unexpected embedding output shape. Length={output.Length}, expected {_embeddingDim} or multiple of token count.");
     }
-
-    public void Dispose() => _session.Dispose();
 }
 
+
+
 /// <summary>
-/// ONNX LLM client for a phi-2-like model with a GPT-style interface.
-/// Here we assume simple prompt-in / text-out via "input_ids" and "logits" or similar.
-/// For simplicity, we implement greedy decoding with a max token limit.
-/// You may need to adjust IO names to match your model.
+///     ONNX LLM client for a phi-2-like model with a GPT-style interface.
+///     Here we assume simple prompt-in / text-out via "input_ids" and "logits" or similar.
+///     For simplicity, we implement greedy decoding with a max token limit.
+///     You may need to adjust IO names to match your model.
 /// </summary>
 public sealed class OnnxLLMClient : ILLMClient, IDisposable
 {
-    private readonly InferenceSession _session;
-    private readonly Tokenizer _tokenizer;
-    private readonly int _maxNewTokens;
+    private readonly string _attentionMaskName;
     private readonly string _inputIdsName;
+    private readonly int _kvDim;
+    private readonly TensorElementType _kvElementType;
+    private readonly int[]? _kvEmptyShape;
+    private readonly int _kvHeads;
+    private readonly int _maxNewTokens;
+    private readonly int _numPastLayers;
     private readonly string _outputName;
     private readonly string _positionIdsName;
-    private readonly string _attentionMaskName;
-    private readonly bool _requiresPositionIds;
     private readonly bool _requiresAttentionMask;
     private readonly bool _requiresPastKeyValues;
-    private readonly int _numPastLayers;
-    private readonly int _kvHeads;
-    private readonly int _kvDim;
-    private readonly int[]? _kvEmptyShape;
-    private readonly TensorElementType _kvElementType;
+    private readonly bool _requiresPositionIds;
+    private readonly InferenceSession _session;
+    private readonly Tokenizer _tokenizer;
+
+
+
+
 
     public OnnxLLMClient(
-    string modelPath,
-    Tokenizer tokenizer,
-    int maxNewTokens = 256,
-    string inputIdsName = "input_ids",
-    string outputName = "logits",
-    string positionIdsName = "position_ids",
-    string attentionMaskName = "attention_mask")
+        string modelPath,
+        Tokenizer tokenizer,
+        int maxNewTokens = 256,
+        string inputIdsName = "input_ids",
+        string outputName = "logits",
+        string positionIdsName = "position_ids",
+        string attentionMaskName = "attention_mask")
     {
         if (!File.Exists(modelPath))
         {
@@ -213,13 +236,13 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         _requiresPositionIds = _session.InputMetadata.ContainsKey(_positionIdsName);
         _requiresAttentionMask = _session.InputMetadata.ContainsKey(_attentionMaskName);
         _requiresPastKeyValues = _session.InputMetadata.Keys
- .Any(k => k.StartsWith("past_key_values.", StringComparison.Ordinal));
+            .Any(k => k.StartsWith("past_key_values.", StringComparison.Ordinal));
 
         if (_requiresPastKeyValues)
         {
-            var kvLayerMetas = _session.InputMetadata
+            KeyValuePair<string, NodeMetadata>[] kvLayerMetas = _session.InputMetadata
                 .Where(kvp => kvp.Key.StartsWith("past_key_values.", StringComparison.Ordinal)
-                           && kvp.Key.EndsWith(".key", StringComparison.Ordinal))
+                              && kvp.Key.EndsWith(".key", StringComparison.Ordinal))
                 .OrderBy(kvp => ParseLayerIndex(kvp.Key))
                 .ToArray();
 
@@ -230,7 +253,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
             _numPastLayers = kvLayerMetas.Length;
 
-            var kvMeta = kvLayerMetas[0].Value;
+            NodeMetadata kvMeta = kvLayerMetas[0].Value;
             var dims = kvMeta.Dimensions ?? Array.Empty<int>();
             _kvElementType = kvMeta.ElementDataType;
 
@@ -240,12 +263,12 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
                 _kvDim = NormalizeDim(dims[4], 64);
                 _kvEmptyShape = new[]
                 {
-    NormalizeDim(dims[0], 2),    // 2
-    NormalizeDim(dims[1], 1),    // batch
-    _kvHeads,                    // num_heads
-    0,                           // past_seq_len
-    _kvDim                       // head_dim
-};
+                    NormalizeDim(dims[0], 2), // 2
+                    NormalizeDim(dims[1], 1), // batch
+                    _kvHeads, // num_heads
+                    0, // past_seq_len
+                    _kvDim // head_dim
+                };
             }
             else if (dims.Length == 4)
             {
@@ -253,11 +276,11 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
                 _kvDim = NormalizeDim(dims[3], 64);
                 _kvEmptyShape = new[]
                 {
-    NormalizeDim(dims[0], 1),    // batch
-    _kvHeads,                    // num_heads
-    0,                           // past_seq_len
-    _kvDim                       // head_dim
-};
+                    NormalizeDim(dims[0], 1), // batch
+                    _kvHeads, // num_heads
+                    0, // past_seq_len
+                    _kvDim // head_dim
+                };
             }
             else
             {
@@ -277,8 +300,17 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+    public void Dispose()
+    {
+        _session.Dispose();
+    }
+
+
+
+
+
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="prompt"></param>
     /// <param name="cancellationToken"></param>
@@ -288,24 +320,24 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         // Encode prompt
-        var promptTokenIds = _tokenizer.EncodeToIds(prompt).ToList();
-        var tokens = new List<int>(capacity: promptTokenIds.Count + _maxNewTokens);
+        List<int> promptTokenIds = _tokenizer.EncodeToIds(prompt).ToList();
+        List<int> tokens = new(promptTokenIds.Count + _maxNewTokens);
         tokens.AddRange(promptTokenIds);
 
         // Build completion separately to avoid TrimCompletion/tokenizer round-trip issues
-        var completionTokenIds = new List<int>(capacity: _maxNewTokens);
+        List<int> completionTokenIds = new(_maxNewTokens);
 
         // Persist KV cache across steps
-        var pastKeysFloat = new List<DenseTensor<float>>();
-        var pastValuesFloat = new List<DenseTensor<float>>();
-        var pastKeysHalf = new List<DenseTensor<Half>>();
-        var pastValuesHalf = new List<DenseTensor<Half>>();
+        List<DenseTensor<float>> pastKeysFloat = new();
+        List<DenseTensor<float>> pastValuesFloat = new();
+        List<DenseTensor<Half>> pastKeysHalf = new();
+        List<DenseTensor<Half>> pastValuesHalf = new();
 
-        for (int step = 0; step < _maxNewTokens; step++)
+        for (var step = 0; step < _maxNewTokens; step++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var context = new OnnxLLMClientInputContext(
+            OnnxLLMClientInputContext context = new(
                 _requiresPastKeyValues,
                 _requiresPositionIds,
                 _requiresAttentionMask,
@@ -316,7 +348,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
                 _kvEmptyShape,
                 _kvElementType);
 
-            var inputs = BuildInferenceInputs(
+            List<NamedOnnxValue> inputs = BuildInferenceInputs(
                 tokens,
                 step,
                 context,
@@ -325,9 +357,9 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
                 pastKeysHalf,
                 pastValuesHalf);
 
-            using var results = _session.Run(inputs);
+            using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = _session.Run(inputs);
 
-            int nextId = SelectNextToken(results);
+            var nextId = SelectNextToken(results);
 
             tokens.Add(nextId);
             completionTokenIds.Add(nextId);
@@ -345,6 +377,10 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         var completionText = _tokenizer.Decode(completionTokenIds);
         return Task.FromResult(completionText.Trim());
     }
+
+
+
+
 
     private List<NamedOnnxValue> BuildInferenceInputs(
         IList<int> tokens,
@@ -365,6 +401,10 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             pastValuesHalf);
     }
 
+
+
+
+
     internal static List<NamedOnnxValue> BuildInferenceInputsCore(
         IList<int> tokens,
         int step,
@@ -384,7 +424,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             throw new ArgumentNullException(nameof(context));
         }
 
-        static bool HasValidCache<T>(IReadOnlyList<DenseTensor<T>>? keys, IReadOnlyList<DenseTensor<T>>? values, int expectedLayers)
+        static bool HasValidCache<T>(IReadOnlyList<DenseTensor<T>>? keys, IReadOnlyList<DenseTensor<T>>? values,
+            int expectedLayers)
             where T : struct
         {
             if (keys == null || values == null || keys.Count != expectedLayers || values.Count != expectedLayers)
@@ -392,49 +433,44 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
                 return false;
             }
 
-            for (int layer = 0; layer < expectedLayers; layer++)
-            {
-                if (keys[layer] == null || values[layer] == null || keys[layer].Length == 0 || values[layer].Length == 0)
+            for (var layer = 0; layer < expectedLayers; layer++)
+                if (keys[layer] == null || values[layer] == null || keys[layer].Length == 0 ||
+                    values[layer].Length == 0)
                 {
                     return false;
                 }
-            }
 
             return true;
         }
 
-        int contextLen = tokens.Count;
-        bool useIncremental = context.RequiresPastKeyValues && step > 0;
-        int currentLen = useIncremental ? 1 : contextLen;
-        int startIndex = contextLen - currentLen;
+        var contextLen = tokens.Count;
+        var useIncremental = context.RequiresPastKeyValues && step > 0;
+        var currentLen = useIncremental ? 1 : contextLen;
+        var startIndex = contextLen - currentLen;
 
         // Core inputs
-        var inputTensor = new DenseTensor<long>(new[] { 1, currentLen });
-        DenseTensor<long>? positionIds = context.RequiresPositionIds ? new DenseTensor<long>(new[] { 1, currentLen }) : null;
-        DenseTensor<long>? attentionMask = context.RequiresAttentionMask ? new DenseTensor<long>(new[] { 1, contextLen }) : null;
+        DenseTensor<long> inputTensor = new(new[] { 1, currentLen });
+        DenseTensor<long>? positionIds =
+            context.RequiresPositionIds ? new DenseTensor<long>(new[] { 1, currentLen }) : null;
+        DenseTensor<long>? attentionMask =
+            context.RequiresAttentionMask ? new DenseTensor<long>(new[] { 1, contextLen }) : null;
 
-        for (int i = 0; i < currentLen; i++)
+        for (var i = 0; i < currentLen; i++)
         {
-            int tokenIndex = startIndex + i;
+            var tokenIndex = startIndex + i;
             inputTensor[0, i] = tokens[tokenIndex];
-            if (positionIds != null)
-            {
-                positionIds[0, i] = tokenIndex;
-            }
+            positionIds?[0, i] = tokenIndex;
         }
 
         if (attentionMask != null)
         {
-            for (int i = 0; i < contextLen; i++)
-            {
-                attentionMask[0, i] = 1;
-            }
+            for (var i = 0; i < contextLen; i++) attentionMask[0, i] = 1;
         }
 
-        var inputs = new List<NamedOnnxValue>
-{
-    NamedOnnxValue.CreateFromTensor(context.InputIdsName, inputTensor)
-};
+        List<NamedOnnxValue> inputs = new()
+        {
+            NamedOnnxValue.CreateFromTensor(context.InputIdsName, inputTensor)
+        };
 
         if (positionIds != null)
         {
@@ -496,7 +532,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         // Final guard: ensure required KV inputs are present if model expects them
         if (context.RequiresPastKeyValues && step > 0)
         {
-            bool hasKv0Key = inputs.Any(i => i.Name == "past_key_values.0.key");
+            var hasKv0Key = inputs.Any(i => i.Name == "past_key_values.0.key");
             if (!hasKv0Key)
             {
                 var names = string.Join(", ", inputs.Select(i => i.Name));
@@ -514,18 +550,21 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="results"></param>
     /// <returns></returns>
     private int SelectNextToken(IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results)
     {
-        var logitsTensor = results.First(r => r.Name == _outputName).AsTensor<float>();
-        int vocabSize = logitsTensor.Dimensions[^1];
+        Tensor<float> logitsTensor = results.First(r => r.Name == _outputName).AsTensor<float>();
+        var vocabSize = logitsTensor.Dimensions[^1];
         var logits = logitsTensor.ToArray();
-        var lastLogits = new ArraySegment<float>(logits, logits.Length - vocabSize, vocabSize);
+        ArraySegment<float> lastLogits = new(logits, logits.Length - vocabSize, vocabSize);
         return ArgMax(lastLogits);
     }
+
+
+
+
 
     private void UpdateKvCache(
         IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results,
@@ -549,6 +588,10 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         }
     }
 
+
+
+
+
     private void RefreshCache<T>(
         IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results,
         List<DenseTensor<T>> pastKeys,
@@ -558,45 +601,64 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         pastKeys.Clear();
         pastValues.Clear();
 
-        for (int layer = 0; layer < _numPastLayers; layer++)
+        for (var layer = 0; layer < _numPastLayers; layer++)
         {
             pastKeys.Add(CloneTensor(results.First(r => r.Name == $"present.{layer}.key").AsTensor<T>()));
             pastValues.Add(CloneTensor(results.First(r => r.Name == $"present.{layer}.value").AsTensor<T>()));
         }
     }
 
+
+
+
+
     private static DenseTensor<T> CloneTensor<T>(Tensor<T> tensor)
         where T : struct
     {
         var dims = tensor.Dimensions.ToArray();
-        var data = tensor.ToArray();
+        T[] data = tensor.ToArray();
         return new DenseTensor<T>(data, dims);
     }
 
+
+
+
+
     internal static int ArgMax(ArraySegment<float> logits)
     {
-        int bestIndex = 0;
-        float bestValue = logits[0];
-        for (int i = 1; i < logits.Count; i++)
-        {
+        var bestIndex = 0;
+        var bestValue = logits[0];
+        for (var i = 1; i < logits.Count; i++)
             if (logits[i] > bestValue)
             {
                 bestValue = logits[i];
                 bestIndex = i;
             }
-        }
+
         return bestIndex;
     }
+
+
+
+
 
     internal static string TrimCompletion(string full, string prompt)
     {
         return full.StartsWith(prompt, StringComparison.Ordinal) ? full.Substring(prompt.Length).Trim() : full.Trim();
     }
 
+
+
+
+
     private static int NormalizeDim(int metaDim, int fallback)
     {
         return metaDim > 0 ? metaDim : fallback;
     }
+
+
+
+
 
     internal static int ParseLayerIndex(string inputName)
     {
@@ -614,8 +676,12 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             : 0;
     }
 
+
+
+
+
     /// <summary>
-    /// Creates an empty KV tensor of the specified shape and type.
+    ///     Creates an empty KV tensor of the specified shape and type.
     /// </summary>
     /// <typeparam name="T">The value type (float or Half).</typeparam>
     /// <param name="shape">The shape of the tensor.</param>
@@ -626,6 +692,10 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             ? throw new ArgumentException("Shape must be a non-empty array.", nameof(shape))
             : new DenseTensor<T>(shape);
     }
+
+
+
+
 
     private static void AddEmptyKvInputs<T>(List<NamedOnnxValue> inputs, int numLayers, int[] shape)
         where T : struct
@@ -643,14 +713,19 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             safeShape[2] = 1;
         }
 
-        for (int layer = 0; layer < numLayers; layer++)
+        for (var layer = 0; layer < numLayers; layer++)
         {
             inputs.Add(NamedOnnxValue.CreateFromTensor($"past_key_values.{layer}.key", CreateEmptyKv<T>(safeShape)));
             inputs.Add(NamedOnnxValue.CreateFromTensor($"past_key_values.{layer}.value", CreateEmptyKv<T>(safeShape)));
         }
     }
 
-    private static void AddCachedKvInputs<T>(List<NamedOnnxValue> inputs, IReadOnlyList<DenseTensor<T>> keys, IReadOnlyList<DenseTensor<T>> values)
+
+
+
+
+    private static void AddCachedKvInputs<T>(List<NamedOnnxValue> inputs, IReadOnlyList<DenseTensor<T>> keys,
+        IReadOnlyList<DenseTensor<T>> values)
         where T : struct
     {
         if (keys.Count != values.Count)
@@ -658,17 +733,15 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             throw new InvalidOperationException("KV cache keys and values counts do not match.");
         }
 
-        for (int layer = 0; layer < keys.Count; layer++)
+        for (var layer = 0; layer < keys.Count; layer++)
         {
             inputs.Add(NamedOnnxValue.CreateFromTensor($"past_key_values.{layer}.key", keys[layer]));
             inputs.Add(NamedOnnxValue.CreateFromTensor($"past_key_values.{layer}.value", values[layer]));
         }
     }
-
-    public void Dispose() => _session.Dispose();
-
-
 }
+
+
 
 internal sealed record OnnxLLMClientInputContext(
     bool RequiresPastKeyValues,
@@ -680,4 +753,3 @@ internal sealed record OnnxLLMClientInputContext(
     int NumPastLayers,
     int[]? KvEmptyShape,
     TensorElementType KvElementType);
-

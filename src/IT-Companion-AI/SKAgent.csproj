@@ -53,14 +53,14 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
       <IsPublishable>False</IsPublishable>
     </PropertyGroup>
+
     <ItemGroup>
-      <Compile Remove="AgentFramework\AITools.cs" />
-      <Compile Remove="AgentFramework\KernelSetup.cs" />
-      <Compile Remove="AgentFramework\RagStore.cs" />
+  
+      <Compile Remove="Sample.cs" />
+      <Compile Remove="SampleRun.cs" />
     </ItemGroup>
-    <ItemGroup>
-      <None Remove="Views\ButtonOverlay.xaml" />
-    </ItemGroup>
+
+    
 
     <ItemGroup>
         <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -75,9 +75,10 @@
 
     <ItemGroup>
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
         <PackageReference Include="Markdig" Version="0.44.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
           <PrivateAssets>all</PrivateAssets>
@@ -106,23 +107,9 @@
         <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
         <PackageReference Include="Tokenizers.HuggingFace" Version="2.21.4" />
 
+        <PackageReference Include="Octokit" Version="13.0.1" />
+
         <Manifest Include="$(ApplicationManifest)" />
     </ItemGroup>
-
-
-    <ItemGroup>
-      <Folder Include="AgentFramework\Memory\" />
-      <Folder Include="AgentFramework\Tools\" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-      <Page Update="Views\ButtonOverlay.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
-    </ItemGroup>
-
-
-
 
 </Project>
