@@ -1,3 +1,17 @@
+<!-- 
+Document: AgentTools.md
+Version: 1.0.0
+Last Updated: 2026-01-04
+Author: Development Team
+Status: Active
+Description: Canonical list of the 12 most common tool types in Agent AI systems
+
+Change History:
+- 1.0.0 (2026-01-04): Initial version with version tracking header
+-->
+
+# The 12 Most Common Tool Types in Agent AI Systems
+
 
 Great question, Kyle — and this is one of those areas where people get confused because they think “agent AI” means “a model that can do everything.”  
 In reality, **every agent in the real world relies on a small, predictable set of tool types**, no matter whether it’s a Windows IT agent, a DevOps agent, a research agent, or a robotics agent.
