@@ -1,15 +1,15 @@
 ﻿// Project Name: SKAgent
 // File Name: ButtonViewModel.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
 
-using ITCompanionAI.AgentFramework.Ingestion;
+using ITCompanionAI.AgentFramework;
+using ITCompanionAI.KnowledgeBase;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 
@@ -24,14 +24,16 @@ public partial class ButtonViewModel : BaseViewModel
     [RelayCommand]
     private async Task HarvestApiAsync()
     {
-        var orchestrator = App.GetService<ApiHarvester>();
-        var requestedSnapshotId = Guid.NewGuid();
-        await orchestrator.HarvestFromDirectoryAsync(requestedSnapshotId, "d:\\SKAPIRepo\\semantic-kernel\\dotnet\\src", CancellationToken.None)
-            .ConfigureAwait(false);
-        //    await orchestrator.RunAsync(new IngestionRequest(path)).ConfigureAwait(false);
+        var path = "d:\\SKAPIRepo\\semantic-kernel\\dotnet\\src";
         App.Services.GetRequiredService<ILogger<App>>().LogInformation("Application Starting Up");
 
+        var ingester = new APIIngestion(new KnowledgeBaseContext());
+        //await ingester.StartIngestionAsync(""CancellationToken.None).ConfigureAwait(false);
+
+        App.Services.GetRequiredService<ILogger<App>>().LogInformation("Ingestion Complete");
     }
+
+
 
 
 
@@ -50,6 +52,8 @@ public partial class ButtonViewModel : BaseViewModel
 
 
 
+
+
     /// <summary>
     ///     Executes the action behind the "Get Doc Blocs" button.
     /// </summary>
@@ -58,6 +62,8 @@ public partial class ButtonViewModel : BaseViewModel
     {
         await Task.CompletedTask.ConfigureAwait(false);
     }
+
+
 
 
 
@@ -76,6 +82,8 @@ public partial class ButtonViewModel : BaseViewModel
 
 
 
+
+
     /// <summary>
     ///     Executes the action behind the "Action 2" button.
     /// </summary>
@@ -83,6 +91,8 @@ public partial class ButtonViewModel : BaseViewModel
     private void Action2()
     {
     }
+
+
 
 
 

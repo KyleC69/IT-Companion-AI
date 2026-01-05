@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: ReconciliationAgent.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -29,6 +29,8 @@ public sealed class ReconciliationAgent
 
 
 
+
+
     public ReconciliationAgent(
         ILLMClient llmClient,
         IEmbeddingClient embeddingClient,
@@ -38,6 +40,8 @@ public sealed class ReconciliationAgent
         _embeddingClient = embeddingClient;
         _vectorStore = vectorStore;
     }
+
+
 
 
 
@@ -98,6 +102,8 @@ public sealed class ReconciliationAgent
 
         await _vectorStore.UpsertReconciledChunkAsync(reconciled, cancellationToken).ConfigureAwait(false);
     }
+
+
 
 
 

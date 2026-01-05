@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: Ingestion.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -15,6 +15,7 @@ public sealed class IngestionArtifact
 
 
 
+
 public sealed class IngestionRunInfo
 {
     public string RunId { get; set; } = default!; // uuid/ulid string
@@ -22,6 +23,7 @@ public sealed class IngestionRunInfo
     public string SchemaVersion { get; set; } = "1.0.0";
     public SourceSnapshotInfo SourceSnapshot { get; set; } = default!;
 }
+
 
 
 
@@ -39,6 +41,7 @@ public sealed class SourceSnapshotInfo
 
 
 
+
 public sealed class SourceConfig
 {
     public bool IncludePrivate { get; set; }
@@ -48,10 +51,12 @@ public sealed class SourceConfig
 
 
 
+
 public sealed class ApiSurface
 {
     public List<ApiTypeInfo> Types { get; set; } = [];
 }
+
 
 
 
@@ -73,11 +78,13 @@ public sealed class ApiTypeInfo
 
 
 
+
 public sealed class ApiAttributeInfo
 {
     public string Name { get; set; } = default!;
     public List<string> CtorArguments { get; set; } = [];
 }
+
 
 
 
@@ -102,6 +109,7 @@ public sealed class ApiMemberInfo
 
 
 
+
 public sealed class ApiParameterInfo
 {
     public string Name { get; set; } = default!;
@@ -110,6 +118,7 @@ public sealed class ApiParameterInfo
     public bool HasDefaultValue { get; set; }
     public string? DefaultValueLiteral { get; set; }
 }
+
 
 
 
@@ -122,6 +131,7 @@ public sealed class SourceLocationInfo
 
 
 
+
 public sealed class ApiMemberDocLink
 {
     public string DocUid { get; set; } = default!; // "doc:csharp:..."
@@ -130,10 +140,12 @@ public sealed class ApiMemberDocLink
 
 
 
+
 public sealed class Docs
 {
     public List<DocPageInfo> Pages { get; set; } = [];
 }
+
 
 
 
@@ -150,6 +162,7 @@ public sealed class DocPageInfo
 
 
 
+
 public sealed class DocSectionInfo
 {
     public string SectionUid { get; set; } = default!; // "sec:..."
@@ -162,6 +175,7 @@ public sealed class DocSectionInfo
 
 
 
+
 public sealed class CodeBlockInfo
 {
     public string CodeUid { get; set; } = default!; // "code:..."
@@ -171,6 +185,7 @@ public sealed class CodeBlockInfo
     public List<string> Tags { get; set; } = [];
     public string? InlineComments { get; set; }
 }
+
 
 
 

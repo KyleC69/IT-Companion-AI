@@ -80,9 +80,9 @@ All JSON fields use `NVARCHAR(MAX)` or `JSON` (if you’re on SQL Server 2022+ w
         schema_version NVARCHAR(50) NOT NULL
     );
 
-### `api_type_diff`
+### `ApiType_diff`
 
-    CREATE TABLE api_type_diff (
+    CREATE TABLE ApiType_diff (
         id UNIQUEIDENTIFIER PRIMARY KEY,
         snapshot_diff_id UNIQUEIDENTIFIER NOT NULL,
         type_uid NVARCHAR(400) NOT NULL,
@@ -90,9 +90,9 @@ All JSON fields use `NVARCHAR(MAX)` or `JSON` (if you’re on SQL Server 2022+ w
         detail_json NVARCHAR(MAX) NULL
     );
 
-### `api_member_diff`
+### `ApiMember_diff`
 
-    CREATE TABLE api_member_diff (
+    CREATE TABLE ApiMember_diff (
         id UNIQUEIDENTIFIER PRIMARY KEY,
         snapshot_diff_id UNIQUEIDENTIFIER NOT NULL,
         member_uid NVARCHAR(400) NOT NULL,
@@ -122,8 +122,8 @@ Your Diff Mapper agent should:
 
 1. Load the **old** and **new** snapshots from DB (or from the ingestion JSON).
 2. Compare:
-   * `api_type` rows by `type_uid`
-   * `api_member` rows by `member_uid`
+   * `ApiType` rows by `type_uid`
+   * `ApiMember` rows by `member_uid`
    * `doc_page` rows by `doc_uid`
 3. Emit a `DiffArtifact`.
 4. Persist it into the SQL Server tables above.

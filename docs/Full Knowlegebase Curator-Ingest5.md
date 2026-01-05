@@ -20,7 +20,7 @@ The Sample Engineer agent:
 
 * Reads:
   * `feature` records (semantic SK features)
-  * `api_member` records (actual API surface)
+  * `ApiMember` records (actual API surface)
   * `code_block` records (docs)
 * Generates:
   * Minimal, idiomatic, compilable C# samples
@@ -108,9 +108,9 @@ This is the JSON your Sample Engineer agent emits.
         tags NVARCHAR(MAX) NULL
     );
 
-### `sample_api_member_link`
+### `sample_ApiMember_link`
 
-    CREATE TABLE sample_api_member_link (
+    CREATE TABLE sample_ApiMember_link (
         id UNIQUEIDENTIFIER PRIMARY KEY,
         sample_id UNIQUEIDENTIFIER NOT NULL,
         member_uid NVARCHAR(400) NOT NULL
@@ -135,7 +135,7 @@ From `feature` table:
 
 ### **Step 2 — Read API members**
 
-From `api_member` table:
+From `ApiMember` table:
 
 * signatures
 * parameters

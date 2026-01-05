@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: models.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -15,6 +15,7 @@ public sealed record IngestionTarget(
     string? Category = null,
     string? Version = null
 );
+
 
 
 

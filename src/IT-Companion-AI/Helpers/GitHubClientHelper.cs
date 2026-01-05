@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: GitHubClientHelper.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -21,6 +21,12 @@ public sealed record GitHubClientOptions(
 {
     public const string TokenConfigKey = "AIAPP:GITHUB_TOKEN";
     public const string SectionName = "AIAPP:GitHub";
+
+
+
+
+
+
 
     public static GitHubClientOptions FromConfiguration(IConfiguration configuration)
     {
@@ -57,10 +63,12 @@ public sealed record GitHubClientOptions(
 
 
 
+
 public interface IGitHubClientFactory
 {
     GitHubClient CreateClient();
 }
+
 
 
 
@@ -72,10 +80,14 @@ public sealed class GitHubClientFactory : IGitHubClientFactory
 
 
 
+
+
     public GitHubClientFactory(IConfiguration configuration)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
+
+
 
 
 

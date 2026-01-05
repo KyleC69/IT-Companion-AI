@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: Storage.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -29,9 +29,13 @@ public interface IVectorStore
 
 
 
+
+
     Task<DocumentRecord> UpsertDocumentAsync(
         DocumentRecord document,
         CancellationToken cancellationToken = default);
+
+
 
 
 
@@ -46,6 +50,8 @@ public interface IVectorStore
 
 
 
+
+
     Task<IReadOnlyList<ChunkRecord>> GetChunksBySymbolAsync(
         string symbol,
         CancellationToken cancellationToken = default);
@@ -54,9 +60,13 @@ public interface IVectorStore
 
 
 
+
+
     Task UpsertReconciledChunkAsync(
         ReconciledChunkRecord chunk,
         CancellationToken cancellationToken = default);
+
+
 
 
 
@@ -71,11 +81,14 @@ public interface IVectorStore
 
 
 
+
+
     Task<IReadOnlyList<ChunkRecord>> SearchRawChunksAsync(
         float[] embedding,
         int topK,
         CancellationToken cancellationToken = default);
 }
+
 
 
 
@@ -90,11 +103,15 @@ public sealed class PgVectorStore : IVectorStore
 
 
 
+
+
     public PgVectorStore(string connectionString, int embeddingDim)
     {
         _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         _embeddingDim = embeddingDim;
     }
+
+
 
 
 
@@ -190,6 +207,8 @@ END";
 
 
 
+
+
     public async Task<DocumentRecord> UpsertDocumentAsync(
         DocumentRecord document,
         CancellationToken cancellationToken = default)
@@ -244,6 +263,8 @@ OUTPUT inserted.id, inserted.external_id, inserted.source, inserted.title, inser
             }
             : throw new DataException("Failed to upsert document.");
     }
+
+
 
 
 
@@ -312,6 +333,8 @@ WHEN NOT MATCHED THEN
 
 
 
+
+
     public async Task<IReadOnlyList<ChunkRecord>> GetChunksBySymbolAsync(
         string symbol,
         CancellationToken cancellationToken = default)
@@ -348,6 +371,8 @@ WHERE symbol = @symbol;";
 
         return result;
     }
+
+
 
 
 
@@ -393,6 +418,8 @@ WHEN NOT MATCHED THEN
 
 
 
+
+
     public async Task<IReadOnlyList<ReconciledChunkRecord>> SearchReconciledAsync(
         float[] embedding,
         int topK,
@@ -425,6 +452,8 @@ FROM dbo.reconciled_chunks;";
             .Take(topK <= 0 ? 0 : topK)
             .ToList();
     }
+
+
 
 
 
@@ -471,12 +500,16 @@ FROM dbo.chunks;";
 
 
 
+
+
     private async Task<SqlConnection> OpenConnectionAsync(CancellationToken ct)
     {
         SqlConnection conn = new(_connectionString);
         await conn.OpenAsync(ct).ConfigureAwait(false);
         return conn;
     }
+
+
 
 
 
@@ -494,6 +527,8 @@ FROM dbo.chunks;";
 
 
 
+
+
     private float[] FromSqlVector(SqlVector<float> vector)
     {
         return vector.IsNull
@@ -503,6 +538,8 @@ FROM dbo.chunks;";
                     $"Embedding dimension mismatch. Expected {_embeddingDim}, received {vector.Length}.")
                 : vector.Memory.ToArray();
     }
+
+
 
 
 

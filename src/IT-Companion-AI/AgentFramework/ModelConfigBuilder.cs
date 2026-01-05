@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: ModelConfigBuilder.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -40,10 +40,13 @@ public sealed class ModelConfig
 
 
 
+
 public sealed class ModelConfigBuilder
 {
     private readonly string _configPath;
     private readonly InferenceSession _session;
+
+
 
 
 
@@ -64,6 +67,8 @@ public sealed class ModelConfigBuilder
         _configPath = configPath;
         _session = session ?? throw new ArgumentNullException(nameof(session));
     }
+
+
 
 
 
@@ -182,9 +187,13 @@ public sealed class ModelConfigBuilder
 
 
 
+
+
     // -------------------------------
     // Helpers
     // -------------------------------
+
+
 
 
 
@@ -203,11 +212,15 @@ public sealed class ModelConfigBuilder
 
 
 
+
+
     private static string FindInputName(IReadOnlyDictionary<string, NodeMetadata> inputs, string expected)
     {
         var match = inputs.Keys.FirstOrDefault(k => k.Equals(expected, StringComparison.OrdinalIgnoreCase));
         return match ?? throw new InvalidOperationException($"ONNX model does not expose required input '{expected}'.");
     }
+
+
 
 
 

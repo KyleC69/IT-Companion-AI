@@ -83,7 +83,7 @@ This is the JSON the Librarian agent emits.
     public sealed class RagChunkInfo
     {
         public string ChunkId { get; set; } = default!;   // "rag:feature:kernel-building:overview"
-        public string Kind { get; set; } = default!;      // feature | sample | api_member | doc_section | diff
+        public string Kind { get; set; } = default!;      // feature | sample | ApiMember | doc_section | diff
         public string Text { get; set; } = default!;
         public RagChunkMetadata Metadata { get; set; } = default!;
         public float[] Embedding { get; set; } = default!; // vector for SQL Server

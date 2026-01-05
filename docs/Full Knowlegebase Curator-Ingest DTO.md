@@ -173,10 +173,10 @@ Assuming PostgreSQL + EF Core (or Dapper, etc.), conceptually:
 
 * `IngestionRunInfo` → `ingestion_run`
 * `SourceSnapshotInfo` → `source_snapshot`
-* `ApiTypeInfo` → `api_type`
-* `ApiMemberInfo` → `api_member`
-* `ApiParameterInfo` → `api_parameter`
-* `ApiMemberDocLink` → `api_member_doc_link`
+* `ApiTypeInfo` → `ApiType`
+* `ApiMemberInfo` → `ApiMember`
+* `ApiParameterInfo` → `ApiParameter`
+* `ApiMemberDocLink` → `ApiMember_doc_link`
 * `DocPageInfo` → `doc_page`
 * `DocSectionInfo` → `doc_section`
 * `CodeBlockInfo` → `code_block`

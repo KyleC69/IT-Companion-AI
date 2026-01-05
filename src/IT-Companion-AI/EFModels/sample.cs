@@ -1,49 +1,69 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+﻿// Project Name: SKAgent
+// File Name: Sample.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz KyleC69
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
-namespace ITCompanionAI.Context;
 
-[Table("sample")]
-[Index("feature_uid", Name = "ix_sample_feature_uid")]
-[Index("sample_uid", Name = "uq_sample_uid", IsUnique = true)]
-public partial class sample
+using Microsoft.Practices.EnterpriseLibrary.Validation.Validators;
+
+
+namespace ITCompanionAI.KnowledgeBase;
+
+
+public partial class Sample
 {
-    [Key]
-    public Guid id { get; set; }
+    public Sample()
+    {
+        SampleApiMemberLinks_SampleId = new List<SampleApiMemberLink>();
+        OnCreated();
+    }
 
-    public Guid sample_run_id { get; set; }
 
-    [StringLength(1000)]
-    public string sample_uid { get; set; } = null!;
 
-    [StringLength(1000)]
-    public string? feature_uid { get; set; }
 
-    [StringLength(200)]
-    public string? language { get; set; }
 
-    public string? code { get; set; }
 
-    [StringLength(400)]
-    public string? entry_point { get; set; }
 
-    [StringLength(200)]
-    public string? target_framework { get; set; }
+    [NotNullValidator] public Guid Id { get; set; }
 
-    public string? package_references { get; set; }
+    [NotNullValidator] public Guid SampleRunId { get; set; }
 
-    [StringLength(1000)]
-    public string? derived_from_code_uid { get; set; }
+    [StringLengthValidator(0, RangeBoundaryType.Ignore, 1000, RangeBoundaryType.Inclusive)]
+    [NotNullValidator]
+    public string SampleUid { get; set; }
 
-    public string? tags { get; set; }
+    [StringLengthValidator(0, RangeBoundaryType.Ignore, 1000, RangeBoundaryType.Inclusive)]
+    public string FeatureUid { get; set; }
 
-    [InverseProperty("sample")]
-    public virtual ICollection<sample_api_member_link> sample_api_member_links { get; set; } = new List<sample_api_member_link>();
+    [StringLengthValidator(0, RangeBoundaryType.Ignore, 200, RangeBoundaryType.Inclusive)]
+    public string Language { get; set; }
 
-    [ForeignKey("sample_run_id")]
-    [InverseProperty("samples")]
-    public virtual sample_run sample_run { get; set; } = null!;
+    public string Code { get; set; }
+
+    [StringLengthValidator(0, RangeBoundaryType.Ignore, 400, RangeBoundaryType.Inclusive)]
+    public string EntryPoint { get; set; }
+
+    [StringLengthValidator(0, RangeBoundaryType.Ignore, 200, RangeBoundaryType.Inclusive)]
+    public string TargetFramework { get; set; }
+
+    public string PackageReferences { get; set; }
+
+    [StringLengthValidator(0, RangeBoundaryType.Ignore, 1000, RangeBoundaryType.Inclusive)]
+    public string DerivedFromCodeUid { get; set; }
+
+    public string Tags { get; set; }
+
+
+    public virtual SampleRun SampleRun_SampleRunId { get; set; }
+
+
+    public virtual ICollection<SampleApiMemberLink> SampleApiMemberLinks_SampleId { get; set; }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
 }

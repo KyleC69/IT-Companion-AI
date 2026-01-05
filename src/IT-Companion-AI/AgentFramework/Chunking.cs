@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: Chunking.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -28,10 +28,12 @@ public sealed record Chunk(
 
 
 
+
 public interface IChunker
 {
     IReadOnlyList<Chunk> Chunk(string text, string? section = null);
 }
+
 
 
 
@@ -47,6 +49,8 @@ public sealed class TokenizerChunker : IChunker
 
 
 
+
+
     public TokenizerChunker(Tokenizer tokenizer, int maxTokens = 512)
     {
         _tokenizer = tokenizer;
@@ -57,6 +61,8 @@ public sealed class TokenizerChunker : IChunker
 
         _maxTokens = maxTokens;
     }
+
+
 
 
 

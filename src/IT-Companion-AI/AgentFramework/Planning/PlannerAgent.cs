@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: PlannerAgent.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -33,8 +33,12 @@ public interface IPlannerAgent
 
 
 
+
+
     IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages,
         AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default);
+
+
 
 
 
@@ -47,10 +51,13 @@ public interface IPlannerAgent
 
 
 
+
 public sealed class PlannerAgent : Agent, IPlannerAgent
 {
     private readonly ILLMClient _llmClient;
     private readonly ChatHistory messagehistory = [];
+
+
 
 
 
@@ -65,6 +72,8 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
 
 
 
+
+
     public async Task<IngestionPlan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
 
@@ -74,6 +83,8 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
         return plan;
 
     }
+
+
 
 
 
@@ -106,6 +117,8 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
 
 
 
+
+
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -117,10 +130,14 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
 
 
 
+
+
     public static IngestionPlan ParsePlanForTests(string goal, string rawResponse)
     {
         return ParsePlan(goal, rawResponse);
     }
+
+
 
 
 
@@ -174,6 +191,8 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
 
 
 
+
+
     private static string BuildPlannerPrompt(string goal)
     {
         var sb = new StringBuilder();
@@ -206,6 +225,8 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
 
         return sb.ToString();
     }
+
+
 
 
 
@@ -285,10 +306,14 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
 
 
 
+
+
     protected override IEnumerable<string> GetChannelKeys()
     {
         throw new NotImplementedException();
     }
+
+
 
 
 
@@ -303,6 +328,8 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
 
 
 
+
+
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
@@ -312,10 +339,13 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
 
 
 
+
+
     private sealed class PlannerResponse
     {
         [JsonPropertyName("targets")] public List<PlannerTarget> Targets { get; set; } = [];
     }
+
 
 
 

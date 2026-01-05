@@ -1,7 +1,7 @@
 // Project Name: SKAgent
 // File Name: App.xaml.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -12,8 +12,8 @@ using ITCompanionAI.AgentFramework;
 using ITCompanionAI.AgentFramework.Ingestion;
 using ITCompanionAI.AgentFramework.Planning;
 using ITCompanionAI.AgentFramework.Storage;
-using ITCompanionAI.DatabaseContext;
 using ITCompanionAI.Helpers;
+using ITCompanionAI.KnowledgeBase;
 using ITCompanionAI.Views;
 
 using Microsoft.Extensions.Configuration;
@@ -38,6 +38,8 @@ public partial class App : Application
 
 
 
+
+
     /// <summary>
     ///     Initializes the singleton application object.  This is the first line of authored code
     ///     executed, and as such is the logical equivalent of main() or WinMain().
@@ -46,36 +48,30 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().
-            UseContentRoot(AppContext.BaseDirectory).
-            ConfigureAppConfiguration((context, config) =>
-            {
-                // Explicitly load user-secrets for this WinUI host so keys like "ITAI:GITHUB_TOKEN" are available.
-                config.AddUserSecrets<App>(optional: true);
-            }).
-            ConfigureServices((context, services) =>
-            {
-                services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
-                services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
-                services.AddSingleton<IPlannerAgent, PlannerAgent>();
-                services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
+        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureAppConfiguration((context, config) =>
+        {
+            // Explicitly load user-secrets for this WinUI host so keys like "ITAI:GITHUB_TOKEN" are available.
+            config.AddUserSecrets<App>(true);
+        }).ConfigureServices((context, services) =>
+        {
+            services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
+            services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
+            services.AddSingleton<IPlannerAgent, PlannerAgent>();
+            services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
 
-                services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
+            services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
 
-                services.AddDbContext<AIAgentRagContext>();
-                services.AddSingleton<ApiHarvester>();
+            services.AddDbContext<KnowledgeBaseContext>();
+            //   services.AddSingleton<ApiHarvester>();
 
-                PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", embeddingDim: 1536);
-                //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
+            PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", 1536);
+            //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
 
-                services.AddSingleton<IVectorStore>(sp =>
-                {
-                    return store;
-                });
+            services.AddSingleton<IVectorStore>(sp => { return store; });
 
-             
 
-            }).Build();
+
+        }).Build();
 
         Services = Host.Services;
         //  TheKernel = Services.GetRequiredService<Kernel>();
@@ -93,10 +89,12 @@ public partial class App : Application
 
 
 
+
+
     public IHost? Host { get; set; }
 
     public static Application AppHost => Current;
-   
+
 
     /// <summary>
     ///     Gets the service provider for dependency injection.
@@ -110,6 +108,8 @@ public partial class App : Application
 
 
 
+
+
     public static T GetService<T>()
         where T : class
     {
@@ -118,6 +118,8 @@ public partial class App : Application
                 $"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.")
             : service;
     }
+
+
 
 
 
@@ -150,6 +152,8 @@ public partial class App : Application
 
 
 
+
+
     /// <summary>
     ///     Invoked when Navigation to a certain page fails
     /// </summary>
@@ -160,6 +164,7 @@ public partial class App : Application
         throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
     }
 }
+
 
 
 

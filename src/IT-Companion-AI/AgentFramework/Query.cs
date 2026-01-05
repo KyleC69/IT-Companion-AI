@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: Query.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -26,11 +26,14 @@ public sealed record QueryResult(
 
 
 
+
 public sealed class KnowledgeQueryService
 {
     private readonly IEmbeddingClient _embeddingClient;
     private readonly ILLMClient _llmClient;
     private readonly IVectorStore _vectorStore;
+
+
 
 
 
@@ -45,6 +48,8 @@ public sealed class KnowledgeQueryService
         _vectorStore = vectorStore;
         _llmClient = llmClient;
     }
+
+
 
 
 

@@ -20,7 +20,6 @@ This gives you a **canonical way to start and finish an ingestion**, plus a sing
        95_ingestion_entrypoints.sql
        High-level ingestion helpers for EF / app orchestration
        ============================================================================= */
-
     SET NOCOUNT ON;
     GO
 
@@ -177,7 +176,6 @@ In your `DbContext`:
         public DbSet<ApiMemberCurrent> ApiMembers { get; set; }
         public DbSet<DocPageCurrent> DocPages { get; set; }
         public DbSet<ApiFeatureCurrent> ApiFeatures { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ApiTypeCurrent>()
@@ -223,7 +221,6 @@ Example: starting an ingestion run from C#:
             SqlDbType = System.Data.SqlDbType.UniqueIdentifier,
             Direction = System.Data.ParameterDirection.Output
         };
-
         await db.Database.ExecuteSqlRawAsync(
             "EXEC dbo.BeginIngestionRun @SchemaVersion = {0}, @Notes = {1}, @IngestionRunId = @IngestionRunId OUTPUT",
             schemaVersion,
@@ -252,7 +249,6 @@ Creating a snapshot:
             SqlDbType = System.Data.SqlDbType.UniqueIdentifier,
             Direction = System.Data.ParameterDirection.Output
         };
-
         await db.Database.ExecuteSqlRawAsync(
             @"EXEC dbo.CreateSourceSnapshot
                   @IngestionRunId  = {0},
@@ -344,7 +340,7 @@ Same pattern for `UpsertApiMember`, `UpsertDocPage`, `UpsertApiFeature`.
 
 * * *
 
-### 3. Recommended ingestion flow (conceptual)
+###  3. Recommended ingestion flow (conceptual)
 
 From your app/agent:
 
@@ -382,5 +378,3 @@ A few things I strongly recommend:
 * Treat the DB as the **source of truth**, EF as a **client of the contract**, not the owner of the schema.
 
 * * *
-
-

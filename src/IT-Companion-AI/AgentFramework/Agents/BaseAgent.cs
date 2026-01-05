@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: BaseAgent.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -28,12 +28,16 @@ internal class BaseAgent : Agent
 
 
 
+
+
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
+
+
 
 
 
@@ -48,10 +52,14 @@ internal class BaseAgent : Agent
 
 
 
+
+
     protected override IEnumerable<string> GetChannelKeys()
     {
         throw new NotImplementedException();
     }
+
+
 
 
 

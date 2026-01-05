@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: Ingester.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -35,6 +35,7 @@ public sealed class DocumentRecord
 
 
 
+
 public sealed class ChunkRecord
 {
     public Guid Id { get; init; }
@@ -54,6 +55,7 @@ public sealed class ChunkRecord
 
 
 
+
 public sealed class ReconciledChunkRecord
 {
     public Guid Id { get; init; }
@@ -65,6 +67,7 @@ public sealed class ReconciledChunkRecord
     public double Confidence { get; init; }
     public int SourceCount { get; init; }
 }
+
 
 
 
@@ -130,6 +133,7 @@ public class Ingester
         return services;
     }
 }
+
 
 
 

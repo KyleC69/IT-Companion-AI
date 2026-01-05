@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: Llm.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -30,10 +30,12 @@ public interface IEmbeddingClient
 
 
 
+
 public interface ILLMClient
 {
     Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default);
 }
+
 
 
 
@@ -53,6 +55,8 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
     private readonly InferenceSession _session;
     private readonly HFTokenizer.Tokenizer _tokenizer;
     private readonly string? _tokenTypeIdsName;
+
+
 
 
 
@@ -88,10 +92,14 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
 
 
 
+
+
     public void Dispose()
     {
         _session.Dispose();
     }
+
+
 
 
 
@@ -183,6 +191,7 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
 
 
 
+
 /// <summary>
 ///     ONNX LLM client for a phi-2-like model with a GPT-style interface.
 ///     Here we assume simple prompt-in / text-out via "input_ids" and "logits" or similar.
@@ -206,6 +215,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
     private readonly bool _requiresPositionIds;
     private readonly InferenceSession _session;
     private readonly Tokenizer _tokenizer;
+
+
 
 
 
@@ -301,10 +312,14 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     public void Dispose()
     {
         _session.Dispose();
     }
+
+
 
 
 
@@ -382,6 +397,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     private List<NamedOnnxValue> BuildInferenceInputs(
         IList<int> tokens,
         int step,
@@ -400,6 +417,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             pastKeysHalf,
             pastValuesHalf);
     }
+
+
 
 
 
@@ -549,6 +568,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     /// <summary>
     /// </summary>
     /// <param name="results"></param>
@@ -561,6 +582,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         ArraySegment<float> lastLogits = new(logits, logits.Length - vocabSize, vocabSize);
         return ArgMax(lastLogits);
     }
+
+
 
 
 
@@ -592,6 +615,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     private void RefreshCache<T>(
         IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results,
         List<DenseTensor<T>> pastKeys,
@@ -612,6 +637,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     private static DenseTensor<T> CloneTensor<T>(Tensor<T> tensor)
         where T : struct
     {
@@ -619,6 +646,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         T[] data = tensor.ToArray();
         return new DenseTensor<T>(data, dims);
     }
+
+
 
 
 
@@ -642,6 +671,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     internal static string TrimCompletion(string full, string prompt)
     {
         return full.StartsWith(prompt, StringComparison.Ordinal) ? full.Substring(prompt.Length).Trim() : full.Trim();
@@ -651,10 +682,14 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     private static int NormalizeDim(int metaDim, int fallback)
     {
         return metaDim > 0 ? metaDim : fallback;
     }
+
+
 
 
 
@@ -680,6 +715,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     /// <summary>
     ///     Creates an empty KV tensor of the specified shape and type.
     /// </summary>
@@ -692,6 +729,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             ? throw new ArgumentException("Shape must be a non-empty array.", nameof(shape))
             : new DenseTensor<T>(shape);
     }
+
+
 
 
 
@@ -724,6 +763,8 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
 
 
+
+
     private static void AddCachedKvInputs<T>(List<NamedOnnxValue> inputs, IReadOnlyList<DenseTensor<T>> keys,
         IReadOnlyList<DenseTensor<T>> values)
         where T : struct
@@ -740,6 +781,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         }
     }
 }
+
 
 
 

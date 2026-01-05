@@ -67,7 +67,7 @@ This is the JSON the Reviewer agent emits.
 
     public sealed class ReviewItemInfo
     {
-        public string TargetKind { get; set; } = default!; // sample | feature | doc | api_member
+        public string TargetKind { get; set; } = default!; // sample | feature | doc | ApiMember
         public string TargetId { get; set; } = default!;   // sample_uid, feature_uid, doc_uid, member_uid
         public string Status { get; set; } = default!;     // approved | disputed | risky | deprecated
         public string Summary { get; set; } = default!;
@@ -134,10 +134,10 @@ Below is the deterministic logic.
 **Step 1 — Load all artifacts for the snapshot**
 ------------------------------------------------
 
-* `api_type`, `api_member`, `api_parameter`
+* `ApiType`, `ApiMember`, `ApiParameter`
 * `doc_page`, `doc_section`, `code_block`
 * `feature`, `feature_type_link`, `feature_member_link`
-* `sample`, `sample_api_member_link`
+* `sample`, `sample_ApiMember_link`
 * `execution_result`
 * `snapshot_diff`
 

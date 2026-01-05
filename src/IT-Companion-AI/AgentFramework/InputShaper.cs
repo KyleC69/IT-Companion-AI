@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: InputShaper.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -11,6 +11,7 @@ using ITCompanionAI.AgentFramework;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.Tokenizers;
+
 
 
 
@@ -24,12 +25,16 @@ public sealed class InputShaper
 
 
 
+
+
     public InputShaper(InferenceSession session, ModelConfig config, Tokenizer tokenizer)
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
     }
+
+
 
 
 
@@ -109,7 +114,11 @@ public sealed class InputShaper
 
 
 
+
+
     // ===================== DIM RESOLUTION =====================
+
+
 
 
 
@@ -138,6 +147,8 @@ public sealed class InputShaper
 
         return resolved;
     }
+
+
 
 
 
@@ -212,6 +223,8 @@ public sealed class InputShaper
 
 
 
+
+
     private static int[] ResolveGenericDims(string name, IReadOnlyList<int> dims, int batchSize, int seqLen)
     {
         if (dims.Count == 0)
@@ -234,6 +247,8 @@ public sealed class InputShaper
 
         return resolved;
     }
+
+
 
 
 
@@ -264,6 +279,8 @@ public sealed class InputShaper
 
 
 
+
+
     private bool IsPastValueName(string name)
     {
         if (string.IsNullOrEmpty(_config.PastValueFormat))
@@ -287,7 +304,11 @@ public sealed class InputShaper
 
 
 
+
+
     // ===================== SEMANTIC TENSORS =====================
+
+
 
 
 
@@ -315,6 +336,8 @@ public sealed class InputShaper
                 $"Input '{name}' (input_ids) has element type {elementType}. Only Int32/Int64 are supported.")
         };
     }
+
+
 
 
 
@@ -349,6 +372,8 @@ public sealed class InputShaper
 
 
 
+
+
     private static NamedOnnxValue CreatePositionIds(
         string name,
         TensorElementType elementType,
@@ -369,6 +394,8 @@ public sealed class InputShaper
                 $"Input '{name}' (position_ids) has element type {elementType}. Only Int32/Int64 are supported.")
         };
     }
+
+
 
 
 
@@ -413,7 +440,11 @@ public sealed class InputShaper
 
 
 
+
+
     // ===================== GENERIC TENSORS =====================
+
+
 
 
 
@@ -440,6 +471,8 @@ public sealed class InputShaper
 
 
 
+
+
     private static NamedOnnxValue CreateTensor<T>(
         string name,
         int[] dims,
@@ -454,7 +487,11 @@ public sealed class InputShaper
 
 
 
+
+
     // ===================== VALIDATION =====================
+
+
 
 
 
@@ -508,6 +545,8 @@ public sealed class InputShaper
             }
         }
     }
+
+
 
 
 

@@ -173,7 +173,7 @@ One JSON per ingestion run (per language/source):
 
 **API:**
 
-* **`api_type`**
+* **`ApiType`**
   
   * **`id`** (PK, UUID)
   * **`source_snapshot_id`** (FK)
@@ -189,10 +189,10 @@ One JSON per ingestion run (per language/source):
   * **`remarks`** (text)
   * **`attributes`** (jsonb)
 
-* **`api_member`**
+* **`ApiMember`**
   
   * **`id`** (PK, UUID)
-  * **`api_type_id`** (FK → `api_type.id`)
+  * **`ApiType_id`** (FK → `ApiType.id`)
   * **`member_uid`** (text, unique per snapshot)
   * **`name`** (text)
   * **`kind`** (text)
@@ -209,20 +209,20 @@ One JSON per ingestion run (per language/source):
   * **`source_start_line`** (int)
   * **`source_end_line`** (int)
 
-* **`api_parameter`**
+* **`ApiParameter`**
   
   * **`id`** (PK, UUID)
-  * **`api_member_id`** (FK)
+  * **`ApiMember_id`** (FK)
   * **`name`** (text)
   * **`type`** (text)
   * **`position`** (int)
   * **`has_default_value`** (bool)
   * **`default_value_literal`** (text)
 
-* **`api_member_doc_link`**
+* **`ApiMember_doc_link`**
   
   * **`id`** (PK, UUID)
-  * **`api_member_id`** (FK)
+  * **`ApiMember_id`** (FK)
   * **`doc_uid`** (text)
   * **`section_uid`** (text)
 
@@ -333,7 +333,7 @@ Output: change set keyed by `type_uid` / `member_uid`.
   * **`timestamp_utc`** (timestamptz)
   * **`schema_version`** (text)
 
-* **`api_type_diff`**
+* **`ApiType_diff`**
   
   * **`id`** (PK, UUID)
   * **`snapshot_diff_id`** (FK)
@@ -341,7 +341,7 @@ Output: change set keyed by `type_uid` / `member_uid`.
   * **`change_kind`** (text)
   * **`detail_json`** (jsonb)
 
-* **`api_member_diff`**
+* **`ApiMember_diff`**
   
   * **`id`** (PK, UUID)
   * **`snapshot_diff_id`** (FK)
@@ -535,7 +535,7 @@ This agent takes a snapshot + diffs and builds a **canonical SK feature model**,
   * **`derived_from_code_uid`** (text)
   * **`tags`** (text[])
 
-* **`sample_api_member_link`**
+* **`sample_ApiMember_link`**
   
   * **`id`** (PK, UUID)
   * **`sample_id`** (FK → `sample.id`)
@@ -578,7 +578,7 @@ This agent takes a snapshot + diffs and builds a **canonical SK feature model**,
       },
       "reviews": [
         {
-          "targetKind": "sample", // sample | feature | doc | api_member
+          "targetKind": "sample", // sample | feature | doc | ApiMember
           "targetId": "sample:csharp:kernel-builder:minimal",
           "status": "disputed",   // approved | disputed | risky | deprecated
           "summary": "Sample uses a planner API that is marked obsolete.",
@@ -607,7 +607,7 @@ This agent takes a snapshot + diffs and builds a **canonical SK feature model**,
   
   * **`id`** (PK, UUID)
   * **`review_run_id`** (FK)
-  * **`target_kind`** (text) // sample | feature | doc | api_member
+  * **`target_kind`** (text) // sample | feature | doc | ApiMember
   * **`target_uid`** (text) // `sample_uid`, `feature_uid`, `doc_uid`, `member_uid`
   * **`status`** (text) // approved | disputed | risky | deprecated
   * **`summary`** (text)
@@ -642,7 +642,7 @@ RAG Librarian reads from all the above and emits **chunk records**:
       "chunks": [
         {
           "chunkId": "rag:feature:kernel-building:overview",
-          "kind": "feature", // feature | sample | api_member | doc_section | diff
+          "kind": "feature", // feature | sample | ApiMember | doc_section | diff
           "featureId": "feature:kernel-building",
           "text": "Kernel building in Semantic Kernel (C#) allows you to ...",
           "metadata": {
@@ -699,8 +699,8 @@ RAG Librarian reads from all the above and emits **chunk records**:
 
 4. **Sample Engineer**
    
-   * Reads `feature_*`, `api_member`, `code_block`.
-   * Emits **Sample JSON** → ETL into `sample_run`, `sample`, `sample_api_member_link`.
+   * Reads `feature_*`, `ApiMember`, `code_block`.
+   * Emits **Sample JSON** → ETL into `sample_run`, `sample`, `sample_ApiMember_link`.
 
 5. **Executor & Verifier**
    

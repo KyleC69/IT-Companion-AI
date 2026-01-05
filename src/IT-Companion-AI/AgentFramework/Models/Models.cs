@@ -1,7 +1,7 @@
 // Project Name: SKAgent
 // File Name: Models.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -46,6 +46,8 @@ public sealed record CustomModelDefinition(
 
 
 
+
+
     /// <summary>
     ///     Retrieves a typed option value or the provided default when the option is absent or cannot be cast.
     /// </summary>
@@ -74,6 +76,7 @@ public sealed record CustomModelDefinition(
 
 
 
+
 /// <summary>
 ///     Represents a routed agent message for logging or UI display.
 /// </summary>
@@ -91,6 +94,8 @@ public sealed record AgentTranscript(string AgentName, string Role, string Conte
 
 
 
+
+
     /// <summary>
     ///     Creates a transcript entry for a system or agent message.
     /// </summary>
@@ -102,6 +107,7 @@ public sealed record AgentTranscript(string AgentName, string Role, string Conte
 
 
 
+
 internal interface ISpecialistAgent
 {
     string SpecialistName { get; }
@@ -110,9 +116,12 @@ internal interface ISpecialistAgent
 
 
 
+
+
     Task<SpecialistResult> ExecuteAsync(string userMessage, string task, CancellationToken cancellationToken,
         Action<AgentTranscript>? logCallback);
 }
+
 
 
 

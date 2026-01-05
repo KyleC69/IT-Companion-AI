@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: VerificationAgent.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -29,11 +29,15 @@ public sealed class VerificationAgent
 
 
 
+
+
     public VerificationAgent(ILLMClient llmClient, IVectorStore vectorStore)
     {
         _llmClient = llmClient;
         _vectorStore = vectorStore;
     }
+
+
 
 
 

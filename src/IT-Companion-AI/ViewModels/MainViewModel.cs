@@ -1,7 +1,7 @@
 ﻿// Project Name: SKAgent
 // File Name: MainViewModel.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
@@ -28,6 +28,8 @@ public partial class MainViewModel : BaseViewModel
 
 
 
+
+
     public MainViewModel()
     {
         _cts = new CancellationTokenSource();
@@ -40,6 +42,8 @@ public partial class MainViewModel : BaseViewModel
 
         });
     }
+
+
 
 
 
@@ -89,6 +93,8 @@ public partial class MainViewModel : BaseViewModel
 
 
 
+
+
     /// <summary>
     ///     Initializes the agent orchestrator and restores any persisted chat history,
     ///     guarding against repeated initialization while updating the busy state.
@@ -114,6 +120,8 @@ public partial class MainViewModel : BaseViewModel
 
         */
     }
+
+
 
 
 
@@ -225,6 +233,8 @@ public partial class MainViewModel : BaseViewModel
 
 
 
+
+
     /// <summary>
     /// </summary>
     /// <returns></returns>
@@ -242,9 +252,12 @@ public partial class MainViewModel : BaseViewModel
 
 
 
+
+
     partial void OnUserInputChanged(string value);
     partial void OnIsBusyChanged(bool value);
 }
+
 
 
 
