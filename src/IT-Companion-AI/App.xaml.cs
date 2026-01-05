@@ -12,9 +12,11 @@ using ITCompanionAI.AgentFramework;
 using ITCompanionAI.AgentFramework.Ingestion;
 using ITCompanionAI.AgentFramework.Planning;
 using ITCompanionAI.AgentFramework.Storage;
+using ITCompanionAI.DatabaseContext;
 using ITCompanionAI.Helpers;
 using ITCompanionAI.Views;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -44,10 +46,15 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory)
-            .ConfigureServices((context, services) =>
+        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().
+            UseContentRoot(AppContext.BaseDirectory).
+            ConfigureAppConfiguration((context, config) =>
             {
-                services.AddSingleton<IIngestionAgent, IngestionAgent>();
+                // Explicitly load user-secrets for this WinUI host so keys like "ITAI:GITHUB_TOKEN" are available.
+                config.AddUserSecrets<App>(optional: true);
+            }).
+            ConfigureServices((context, services) =>
+            {
                 services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
                 services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
                 services.AddSingleton<IPlannerAgent, PlannerAgent>();
@@ -55,12 +62,18 @@ public partial class App : Application
 
                 services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
 
-                PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", 1536);
+                services.AddDbContext<AIAgentRagContext>();
+                services.AddSingleton<ApiHarvester>();
+
+                PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", embeddingDim: 1536);
                 //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
 
-                services.AddSingleton<IVectorStore>(sp => { return store; });
+                services.AddSingleton<IVectorStore>(sp =>
+                {
+                    return store;
+                });
 
-                Ingester.ConfigureServices(context, services);
+             
 
             }).Build();
 
@@ -83,7 +96,7 @@ public partial class App : Application
     public IHost? Host { get; set; }
 
     public static Application AppHost => Current;
-    public static Ingester Ingester => new();
+   
 
     /// <summary>
     ///     Gets the service provider for dependency injection.

@@ -19,12 +19,8 @@ public sealed record GitHubClientOptions(
     Uri ApiBaseAddress,
     string Token)
 {
-    public const string TokenConfigKey = "ITAI:GITHUB_TOKEN";
-    public const string SectionName = "ITAI:GitHub";
-
-
-
-
+    public const string TokenConfigKey = "AIAPP:GITHUB_TOKEN";
+    public const string SectionName = "AIAPP:GitHub";
 
     public static GitHubClientOptions FromConfiguration(IConfiguration configuration)
     {

@@ -9,18 +9,20 @@
 using System.Collections.Immutable;
 
 using ITCompanionAI.AgentFramework.Models;
-using ITCompanionAI.AIVectorDb;
+using ITCompanionAI.Context;
 using ITCompanionAI.DatabaseContext;
 using ITCompanionAI.Helpers;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace ITCompanionAI.AgentFramework.Ingestion;
 
+
+namespace ITCompanionAI.AgentFramework.Ingestion;
 
 /// <summary>
 ///     Harvests API surface information from a GitHub repository by downloading source, loading it into a Roslyn
@@ -30,7 +32,7 @@ namespace ITCompanionAI.AgentFramework.Ingestion;
 /// </summary>
 public sealed class ApiHarvester : GitHubRoslynHarvesterBase
 {
-    private readonly AIAgentRagContext _db;
+    private readonly KnowledgeCuratorContext _db;
 
 
 
@@ -41,7 +43,7 @@ public sealed class ApiHarvester : GitHubRoslynHarvesterBase
     /// </summary>
     /// <param name="db">EF Core DbContext used for persistence.</param>
     /// <param name="gitHubClientFactory">Factory for creating an authenticated GitHub client.</param>
-    public ApiHarvester(AIAgentRagContext db, IGitHubClientFactory gitHubClientFactory)
+    public ApiHarvester(KnowledgeCuratorContext db, IGitHubClientFactory gitHubClientFactory)
         : base(gitHubClientFactory)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
@@ -60,13 +62,7 @@ public sealed class ApiHarvester : GitHubRoslynHarvesterBase
     /// <param name="branch">Branch or ref.</param>
     /// <param name="destinationDirectory">Destination local directory (will be created).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public async Task HarvestAsync(
-        Guid sourceSnapshotId,
-        string owner,
-        string repo,
-        string branch,
-        string destinationDirectory,
-        CancellationToken cancellationToken)
+    public async Task HarvestAsync(Guid sourceSnapshotId, string owner, string repo, string branch, string destinationDirectory, CancellationToken cancellationToken)
     {
         if (sourceSnapshotId == Guid.Empty)
         {
@@ -77,6 +73,9 @@ public sealed class ApiHarvester : GitHubRoslynHarvesterBase
         ArgumentException.ThrowIfNullOrWhiteSpace(repo);
         ArgumentException.ThrowIfNullOrWhiteSpace(branch);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationDirectory);
+
+        // Ensure the snapshot exists (or create the required ingestion_run + snapshot) before inserting api_type.
+        sourceSnapshotId = await EnsureSourceSnapshotAsync(sourceSnapshotId, repoUrl: $"https://github.com/{owner}/{repo}", branch: branch, language: "csharp", cancellationToken).ConfigureAwait(false);
 
         static bool IncludePath(string path)
         {
@@ -96,18 +95,19 @@ public sealed class ApiHarvester : GitHubRoslynHarvesterBase
 
         Solution solution = await LoadSolutionAsync(destinationDirectory, cancellationToken).ConfigureAwait(false);
 
-        // Index existing for idempotent-ish reruns per snapshot.
-        Dictionary<string, api_type> existingTypeByHash = await _db.api_types
-            .Where(t => t.source_snapshot_id == sourceSnapshotId && t.type_uid_hash != null)
-            .ToDictionaryAsync(t => t.type_uid_hash!, cancellationToken)
-            .ConfigureAwait(false);
+        // Initialize snapshow ingestion run before adding api_type rows.
+    
 
-        Dictionary<Guid, HashSet<string>> existingMemberHashByTypeId = await _db.api_members
-            .Where(m => m.member_uid_hash != null)
-            .GroupBy(m => m.api_type_id)
-            .ToDictionaryAsync(g => g.Key,
-                g => g.Select(x => x.member_uid_hash!).ToHashSet(StringComparer.OrdinalIgnoreCase), cancellationToken)
-            .ConfigureAwait(false);
+
+
+
+
+
+
+
+
+
+
 
         foreach (Project project in solution.Projects)
         {
@@ -135,6 +135,112 @@ public sealed class ApiHarvester : GitHubRoslynHarvesterBase
                     var typeSymbol =
                         ModelExtensions.GetDeclaredSymbol(semanticModel, typeDecl, cancellationToken) as
                             INamedTypeSymbol;
+                    if (typeSymbol is null || !IsApiEligible(typeSymbol))
+                    {
+                        continue;
+                    }
+
+                    var typeUid = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    if (string.IsNullOrWhiteSpace(typeUid))
+                    {
+                        continue;
+                    }
+
+                    var typeUidHash = Sha256Hex(typeUid);
+
+                    if (!existingTypeByHash.TryGetValue(typeUidHash, out api_type? typeEntity))
+                    {
+                        typeEntity = CreateTypeEntity(sourceSnapshotId, typeSymbol, typeUid, typeUidHash);
+                        existingTypeByHash[typeUidHash] = typeEntity;
+                        _db.api_types.Add(typeEntity);
+                    }
+
+                    AddMembers(typeEntity, typeSymbol, existingMemberHashByTypeId);
+                }
+            }
+        }
+
+        await _db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     Harvests API surface information from an already-available local directory.
+    /// </summary>
+    /// <param name="sourceSnapshotId">Snapshot id that all harvested types will be associated to.</param>
+    /// <param name="sourceDirectory">Directory containing C# source files (and optionally solution/project files).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public Task HarvestAsync(Guid sourceSnapshotId, string sourceDirectory, CancellationToken cancellationToken)
+    {
+        if (sourceSnapshotId == Guid.Empty)
+        {
+            throw new ArgumentException("Snapshot id must be non-empty.", nameof(sourceSnapshotId));
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory);
+
+        return HarvestFromDirectoryAsync(sourceSnapshotId, sourceDirectory, cancellationToken);
+    }
+
+    
+    
+    /// <summary>
+    /// Processes and harvests API surface information from the specified source directory.
+    /// Extracts types, members, and parameters into the database for the given snapshot.
+    /// </summary>
+    /// <param name="sourceSnapshotId">
+    /// The unique identifier of the source snapshot. Must be a non-empty <see cref="Guid"/>.
+    /// </param>
+    /// <param name="sourceDirectory">
+    /// The directory containing the source files to be processed. Must not be null or whitespace.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A task that represents the asynchronous operation.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown if <paramref name="sourceSnapshotId"/> is empty or <paramref name="sourceDirectory"/> is null or whitespace.
+    /// </exception>
+    /// <remarks>
+    /// This method ensures idempotency by indexing existing data and avoiding duplicate entries.
+    /// </remarks>
+    public async Task HarvestFromDirectoryAsync(Guid sourceSnapshotId, string sourceDirectory, CancellationToken cancellationToken)
+    {
+        // Ensure the snapshot exists (or create the required ingestion_run + snapshot) before inserting api_type.
+        sourceSnapshotId = await EnsureSourceSnapshotAsync(sourceSnapshotId, repoUrl: null, branch: null, language: "csharp", cancellationToken).ConfigureAwait(false);
+
+
+
+        Solution solution = await LoadSolutionAsync(sourceDirectory, cancellationToken).ConfigureAwait(false);
+
+         
+
+
+
+
+        foreach (Project project in solution.Projects)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            Compilation? compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            if (compilation is null)
+            {
+                continue;
+            }
+
+            foreach (SyntaxTree tree in compilation.SyntaxTrees)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                SemanticModel semanticModel = compilation.GetSemanticModel(tree, true);
+                SyntaxNode root = await tree.GetRootAsync(cancellationToken).ConfigureAwait(false);
+
+                foreach (BaseTypeDeclarationSyntax typeDecl in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var typeSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, typeDecl, cancellationToken) as INamedTypeSymbol;
                     if (typeSymbol is null || !IsApiEligible(typeSymbol))
                     {
                         continue;
@@ -504,5 +610,55 @@ public sealed class ApiHarvester : GitHubRoslynHarvesterBase
         }
 
         return value[..maxLen];
+    }
+
+    private async Task<Guid> EnsureSourceSnapshotAsync(
+        Guid sourceSnapshotId,
+        string? repoUrl,
+        string? branch,
+        string? language,
+        CancellationToken cancellationToken)
+    {
+        if (sourceSnapshotId == Guid.Empty)
+        {
+            throw new ArgumentException("Snapshot id must be non-empty.", nameof(sourceSnapshotId));
+        }
+
+        bool exists = await _db.source_snapshots
+            .AsNoTracking()
+            .AnyAsync(s => s.id == sourceSnapshotId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (exists)
+        {
+            return sourceSnapshotId;
+        }
+
+        // DB schema expects a source_snapshot row that is linked to an ingestion_run.
+        // Both ids are DB-generated (newid()) in production, so create the records and let EF/database fill ids.
+        var run = new ingestion_run
+        {
+            timestamp_utc = DateTime.UtcNow,
+            schema_version = "1.0.0"
+        };
+
+        _db.ingestion_runs.Add(run);
+        await _db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        string snapshotUid = sourceSnapshotId.ToString("D");
+
+        var snapshot = new source_snapshot
+        {
+            ingestion_run_id = run.id,
+            snapshot_uid = snapshotUid,
+            repo_url = repoUrl,
+            branch = branch,
+            language = language
+        };
+
+        _db.source_snapshots.Add(snapshot);
+        await _db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return snapshot.id;
     }
 }

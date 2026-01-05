@@ -6,6 +6,13 @@
 // Do not remove file headers
 
 
+using ITCompanionAI.AgentFramework.Ingestion;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+
 namespace ITCompanionAI.ViewModels;
 
 
@@ -17,8 +24,12 @@ public partial class ButtonViewModel : BaseViewModel
     [RelayCommand]
     private async Task HarvestApiAsync()
     {
-        //  var orchestrator = new IngestionOrchestrator(new AiagentRagContext(), new ApiHarvester(path),new ApiDocHarvester(), new ApiHelpers.MarkdownDocParser());
+        var orchestrator = App.GetService<ApiHarvester>();
+        var requestedSnapshotId = Guid.NewGuid();
+        await orchestrator.HarvestFromDirectoryAsync(requestedSnapshotId, "d:\\SKAPIRepo\\semantic-kernel\\dotnet\\src", CancellationToken.None)
+            .ConfigureAwait(false);
         //    await orchestrator.RunAsync(new IngestionRequest(path)).ConfigureAwait(false);
+        App.Services.GetRequiredService<ILogger<App>>().LogInformation("Application Starting Up");
 
     }
 

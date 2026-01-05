@@ -132,6 +132,15 @@ public class Ingester
 }
 
 
+
+public class IngestionAgent
+{
+    public async Task IngestAsync(IngestionRequest IngestionRequest, CancellationToken CancellationToken)
+    {
+    }
+}
+
+
 /*
 var host = builder.Build();
 

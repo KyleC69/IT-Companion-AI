@@ -7,6 +7,31 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SKAgent", "src\IT-Companion
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompanionTests", "tests\CompanionTests.csproj", "{73ADC390-9425-35DD-050B-B4636C36624F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{87C2E531-DD49-4499-8ADA-1B144004BA97}"
+	ProjectSection(SolutionItems) = preProject
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
+		DBDto.dgml = DBDto.dgml
+		LICENSE = LICENSE
+		README.md = README.md
+		SECURITY.md = SECURITY.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{37D14365-1E39-4FE9-8D53-B9443B3F145C}"
+	ProjectSection(SolutionItems) = preProject
+		docs\AgenticAiBrainStorm.md = docs\AgenticAiBrainStorm.md
+		docs\AgentTools.md = docs\AgentTools.md
+		docs\AI Layers Architecture.md = docs\AI Layers Architecture.md
+		docs\Full Knowlegebase Curator Design.md = docs\Full Knowlegebase Curator Design.md
+		docs\Full Knowlegebase Curator Design6.md = docs\Full Knowlegebase Curator Design6.md
+		docs\Full Knowlegebase Curator-Ingest Design.md = docs\Full Knowlegebase Curator-Ingest Design.md
+		docs\Full Knowlegebase Curator-Ingest diff.md = docs\Full Knowlegebase Curator-Ingest diff.md
+		docs\Full Knowlegebase Curator-Ingest DTO.md = docs\Full Knowlegebase Curator-Ingest DTO.md
+		docs\Full Knowlegebase Curator-Ingest5.md = docs\Full Knowlegebase Curator-Ingest5.md
+		docs\Full Knowlegebase Curator-Ingest7.md = docs\Full Knowlegebase Curator-Ingest7.md
+		docs\Full Knowlegebase Curator-Ingest8.md = docs\Full Knowlegebase Curator-Ingest8.md
+		docs\MANIFEST.md = docs\MANIFEST.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
