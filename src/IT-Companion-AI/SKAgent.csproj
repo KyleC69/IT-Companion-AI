@@ -169,6 +169,7 @@
 
 
     <ItemGroup>
+      <Folder Include="Contracts\" />
       <Folder Include="EFModels\" />
     </ItemGroup>
 

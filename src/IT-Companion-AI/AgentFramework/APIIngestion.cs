@@ -53,26 +53,6 @@ public class APIIngestion : RoslynHarvesterBase
 
 
 
-    /// <summary>
-    ///     Acts on the provided solution to parse and extract relevant information.
-    ///     Provides the orchestration of parsing logic for the solution.
-    /// </summary>
-    /// <param name="solution"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public static async Task ParseSolutionAsync(Solution solution, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(solution);
-
-        List<ApiTypeDescriptor> types = new();
-        List<ApiMemberDescriptor> members = new();
-        List<ApiParameterDescriptor> parameters = new();
-
-        await ExtractTypesAsync(solution, types, cancellationToken).ConfigureAwait(false);
-        await ExtractMembersAsync(solution, types, members, cancellationToken).ConfigureAwait(false);
-        await ExtractParametersAsync(solution, members, parameters, cancellationToken).ConfigureAwait(false);
-    }
-
 
 
 
@@ -85,40 +65,36 @@ public class APIIngestion : RoslynHarvesterBase
             // Load the solution from the specified directory
             Solution solution = await LoadSolutionFromDirectoryAsync("D:\\SKAPIRepo\\semantic-kernel\\dotnet\\src", token).ConfigureAwait(false);
             
-            // Begin the ingestion run and log the run ID
-            var runId = await _db.BeginIngestionRunAsync("1.0", "Initial Ingestion Run", Guid.Empty).ConfigureAwait(false);
-            // Create a snapshot for the ingestion run
-            var snap = new SourceSnapshot
+           
+            var api= await WalkSolutionAsync(solution, token).ConfigureAwait(false);
+            List<SyntaxTypeTree> list=api.Types.ToList();
+
+        foreach (SyntaxTypeTree type in list)
+        {
+
+       //    foreach (var t in type.)
             {
-                IngestionRunId = runid,
-                SnapshotUid = $"""snapshot:{DateTime.UtcNow.Ticks}\{solution.GetLatestProjectVersion()}""",
+                
+                
+            }
+           
 
-            };
+            // You would then iterate through members, parameters, etc., and add them similarly
+            // For now, this just adds the type.
+        }
 
 
 
 
-         
-                    /*
-                     type:{namespace}\{type_name}
-                member: type: System\String\Length
-                member:type: System\String\Substring(int, int)
-                member: type: MyApp.Models\User\GetFullName()
-                    member: { type_uid}\{ member_name_or_signature}
-                    
-                    param:member:type:System\String\Substring(int,int)\startIndex
-param:member:type:System\String\Substring(int,int)\length
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-    */
+
+
+
+
+
+
+
+
+
     }
 
 

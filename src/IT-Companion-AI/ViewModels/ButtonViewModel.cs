@@ -28,7 +28,7 @@ public partial class ButtonViewModel : BaseViewModel
         App.Services.GetRequiredService<ILogger<App>>().LogInformation("Application Starting Up");
 
         var ingester = new APIIngestion(new KnowledgeBaseContext());
-        //await ingester.StartIngestionAsync(""CancellationToken.None).ConfigureAwait(false);
+        await ingester.StartIngestionAsync(Guid.NewGuid(),CancellationToken.None).ConfigureAwait(false);
 
         App.Services.GetRequiredService<ILogger<App>>().LogInformation("Ingestion Complete");
     }

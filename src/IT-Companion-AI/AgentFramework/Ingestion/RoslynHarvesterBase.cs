@@ -6,11 +6,13 @@
 // Do not remove file headers
 
 
+using System.Collections;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
 
 using ITCompanionAI.Helpers;
+using ITCompanionAI.KnowledgeBase;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,29 +26,16 @@ using Project = Microsoft.CodeAnalysis.Project;
 
 namespace ITCompanionAI.AgentFramework.Ingestion;
 
-
 /// <summary>
 ///     Base class for harvesters that need to retrieve source code from GitHub and analyze it with Roslyn workspaces.
 /// </summary>
-public abstract class RoslynHarvesterBase
+public abstract class RoslynHarvesterBase :CSharpSyntaxWalker
 {
     private readonly IGitHubClientFactory _gitHubClientFactory;
-
-
-
-
-
-
 
     public RoslynHarvesterBase()
     {
     }
-
-
-
-
-
-
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RoslynHarvesterBase" /> class.
@@ -56,12 +45,6 @@ public abstract class RoslynHarvesterBase
     {
         _gitHubClientFactory = gitHubClientFactory ?? throw new ArgumentNullException(nameof(gitHubClientFactory));
     }
-
-
-
-
-
-
 
     /// <summary>
     ///     Downloads repository contents for a given branch into a local directory.
@@ -87,17 +70,7 @@ public abstract class RoslynHarvesterBase
         Directory.CreateDirectory(destinationDirectory);
 
         GitHubClient client = _gitHubClientFactory.CreateClient();
-
-
-
-
     }
-
-
-
-
-
-
 
     /// <summary>
     ///     Creates a Roslyn <see cref="Solution" /> for a local repository directory.
@@ -163,12 +136,6 @@ public abstract class RoslynHarvesterBase
         return solution;
     }
 
-
-
-
-
-
-
     /// <summary>
     ///     Computes a stable 64-char hex SHA-256 hash for uniqueness columns.
     /// </summary>
@@ -181,17 +148,14 @@ public abstract class RoslynHarvesterBase
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
-
-
-
-
-
-
     public static async Task ExtractTypesAsync(
         Solution solution,
-        List<ApiTypeDescriptor> output,
+        List<ApiType> output,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(solution);
+        ArgumentNullException.ThrowIfNull(output);
+
         foreach (Project project in solution.Projects)
         {
             ct.ThrowIfCancellationRequested();
@@ -223,7 +187,16 @@ public abstract class RoslynHarvesterBase
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    var symbol = semanticModel.GetDeclaredSymbol(typeDecl, ct);
+                    INamedTypeSymbol? symbol;
+                    try
+                    {
+                        symbol = semanticModel.GetDeclaredSymbol(typeDecl, ct);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
                     if (symbol is null)
                     {
                         continue;
@@ -281,48 +254,49 @@ public abstract class RoslynHarvesterBase
 
                     var (filePath, startLine, endLine) = GetSourceSpan(typeDecl.SyntaxTree, typeDecl.Span);
 
-                    output.Add(new ApiTypeDescriptor(
-                        semanticUid,
-                        name,
-                        ns,
-                        kind,
-                        accessibility,
-                        isStatic,
-                        isGeneric,
-                        isAbstract,
-                        isSealed,
-                        isRecord,
-                        isRefLike,
-                        baseTypeUid,
-                        interfaces,
-                        containingTypeUid,
-                        genericParameters,
-                        genericConstraints,
-                        summary,
-                        remarks,
-                        attributes,
-                        filePath,
-                        startLine,
-                        endLine,
-                        symbol));
+                    output.Add(new ApiType
+                    {
+                        SemanticUid = semanticUid,
+                        Name = name,
+                        NamespacePath = ns,
+                        Kind = kind,
+                        Accessibility = accessibility,
+                        IsStatic = isStatic,
+                        IsGeneric = isGeneric,
+                        IsAbstract = isAbstract,
+                        IsSealed = isSealed,
+                        IsRecord = isRecord,
+                        IsRefLike = isRefLike,
+                        BaseTypeUid = baseTypeUid,
+                        Interfaces = interfaces,
+                        ContainingTypeUid = containingTypeUid,
+                        GenericParameters = genericParameters,
+                        GenericConstraints = genericConstraints,
+                        Summary = summary,
+                        Remarks = remarks,
+                        Attributes = attributes,
+                        SourceFilePath = filePath,
+                        SourceStartLine = startLine,
+                        SourceEndLine = endLine,
+                    });
                 }
             }
         }
     }
 
-
-
-
-
-
-
     public static async Task ExtractMembersAsync(
         Solution solution,
-        IReadOnlyList<ApiTypeDescriptor> types,
-        List<ApiMemberDescriptor> output,
+        IReadOnlyList<ApiType> types,
+        IReadOnlyDictionary<string, INamedTypeSymbol> roslynTypeSymbolsByUid,
+        List<ApiMember> output,
+        Dictionary<string, ISymbol> roslynMemberSymbolsByUid,
         CancellationToken ct)
     {
-        Dictionary<string, INamedTypeSymbol> typeByUid = types.ToDictionary(t => t.SemanticUid, t => t.Symbol, StringComparer.Ordinal);
+        ArgumentNullException.ThrowIfNull(solution);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(roslynTypeSymbolsByUid);
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(roslynMemberSymbolsByUid);
 
         foreach (Project project in solution.Projects)
         {
@@ -334,24 +308,37 @@ public abstract class RoslynHarvesterBase
                 continue;
             }
 
-            foreach ((var typeUid, INamedTypeSymbol typeSymbol) in typeByUid)
+            foreach (ApiType type in types)
             {
                 ct.ThrowIfCancellationRequested();
 
-                // Ensure the type symbol belongs to the current compilation.
-                // If it doesn't, still use the original symbol; Roslyn symbols are stable enough for metadata extraction.
+                if (string.IsNullOrWhiteSpace(type.SemanticUid))
+                {
+                    continue;
+                }
+
+                if (!roslynTypeSymbolsByUid.TryGetValue(type.SemanticUid, out INamedTypeSymbol? typeSymbol) || typeSymbol is null)
+                {
+                    continue;
+                }
+
                 foreach (ISymbol member in typeSymbol.GetMembers())
                 {
                     ct.ThrowIfCancellationRequested();
+
+                    if (member.IsImplicitlyDeclared)
+                    {
+                        continue;
+                    }
 
                     if (member is IMethodSymbol method && method.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.EventAdd or MethodKind.EventRemove)
                     {
                         continue;
                     }
 
-                    if (member is IMethodSymbol m && m.MethodKind == MethodKind.Constructor)
+                    if (member is IFieldSymbol { AssociatedSymbol: not null })
                     {
-                        // include constructors
+                        continue;
                     }
 
                     if (member.DeclaredAccessibility == Accessibility.NotApplicable)
@@ -359,7 +346,16 @@ public abstract class RoslynHarvesterBase
                         continue;
                     }
 
-                    SyntaxNode? memberDecl = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(ct);
+                    SyntaxNode? memberDecl = null;
+                    try
+                    {
+                        memberDecl = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(ct);
+                    }
+                    catch
+                    {
+                        memberDecl = null;
+                    }
+
                     var (filePath, startLine, endLine) = memberDecl is null
                         ? (null, null, null)
                         : GetSourceSpan(memberDecl.SyntaxTree, memberDecl.Span);
@@ -411,58 +407,66 @@ public abstract class RoslynHarvesterBase
                     var xml = member.GetDocumentationCommentXml(cancellationToken: ct);
                     var (summary, remarks) = ExtractSummaryAndRemarks(xml);
 
-                    output.Add(new ApiMemberDescriptor(
-                        semanticUid,
-                        typeUid,
-                        name,
-                        kind,
-                        methodKind,
-                        accessibility,
-                        isStatic,
-                        isExtensionMethod,
-                        isAsync,
-                        isVirtual,
-                        isOverride,
-                        isAbstract,
-                        isSealed,
-                        isReadOnly,
-                        isConst,
-                        isUnsafe,
-                        returnTypeUid,
-                        returnNullable,
-                        genericParameters,
-                        genericConstraints,
-                        summary,
-                        remarks,
-                        attributes,
-                        filePath,
-                        startLine,
-                        endLine,
-                        member));
+                    var efMember = new ApiMember
+                    {
+                        SemanticUid = semanticUid,
+                        ApiTypeId = type.Id,
+                        Name = name,
+                        Kind = kind,
+                        MethodKind = methodKind,
+                        Accessibility = accessibility,
+                        IsStatic = isStatic,
+                        IsExtensionMethod = isExtensionMethod,
+                        IsAsync = isAsync,
+                        IsVirtual = isVirtual,
+                        IsOverride = isOverride,
+                        IsAbstract = isAbstract,
+                        IsSealed = isSealed,
+                        IsReadonly = isReadOnly,
+                        IsConst = isConst,
+                        IsUnsafe = isUnsafe,
+                        ReturnTypeUid = returnTypeUid,
+                        ReturnNullable = returnNullable,
+                        GenericParameters = genericParameters,
+                        GenericConstraints = genericConstraints,
+                        Summary = summary,
+                        Remarks = remarks,
+                        Attributes = attributes,
+                        SourceFilePath = filePath,
+                        SourceStartLine = startLine,
+                        SourceEndLine = endLine,
+                    };
+
+                    output.Add(efMember);
+                    roslynMemberSymbolsByUid[semanticUid] = member;
                 }
             }
         }
     }
 
-
-
-
-
-
-
     public static Task ExtractParametersAsync(
         Solution solution,
-        IReadOnlyList<ApiMemberDescriptor> members,
-        List<ApiParameterDescriptor> output,
+        IReadOnlyList<ApiMember> members,
+        IReadOnlyDictionary<string, ISymbol> roslynMemberSymbolsByUid,
+        List<ApiParameter> output,
         CancellationToken ct)
     {
         _ = solution;
 
-        foreach (ApiMemberDescriptor member in members)
+        ArgumentNullException.ThrowIfNull(members);
+        ArgumentNullException.ThrowIfNull(roslynMemberSymbolsByUid);
+        ArgumentNullException.ThrowIfNull(output);
+
+        foreach (ApiMember member in members)
         {
             ct.ThrowIfCancellationRequested();
 
-            if (member.Symbol is not IMethodSymbol method)
+            if (string.IsNullOrWhiteSpace(member.SemanticUid))
+            {
+                continue;
+            }
+
+            if (!roslynMemberSymbolsByUid.TryGetValue(member.SemanticUid, out ISymbol? symbol) || symbol is not IMethodSymbol method)
             {
                 continue;
             }
@@ -480,26 +484,189 @@ public abstract class RoslynHarvesterBase
                 var hasDefault = p.HasExplicitDefaultValue;
                 var defaultLiteral = hasDefault ? p.ExplicitDefaultValue?.ToString() : null;
 
-                output.Add(new ApiParameterDescriptor(
-                    member.SemanticUid,
-                    p.Name,
-                    p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                    p.NullableAnnotation.ToString(),
-                    p.Ordinal,
-                    modifier,
-                    hasDefault,
-                    defaultLiteral));
+                output.Add(new ApiParameter
+                {
+                    ApiMemberId = member.Id,
+                    Name = p.Name,
+                    TypeUid = p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                    NullableAnnotation = p.NullableAnnotation.ToString(),
+                    Position = p.Ordinal,
+                    Modifier = modifier,
+                    HasDefaultValue = hasDefault,
+                    DefaultValueLiteral = defaultLiteral,
+                });
             }
         }
 
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    ///     Walks an entire Roslyn <see cref="Solution" /> and builds a single object representing the complete extracted API surface.
+    /// </summary>
+    /// <param name="solution">The Roslyn solution to analyze.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A collection of syntax type trees covering every discovered type.</returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static async Task<ApiSyntaxTreeCollections> WalkSolutionAsync(Solution solution, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(solution);
 
+        var types = new List<ApiType>();
+        await ExtractTypesAsync(solution, types, ct).ConfigureAwait(false);
 
+        // Dedupe types by semantic uid to avoid multiple declarations (partials) across documents.
+        var uniqueTypes = types
+            .Where(t => !string.IsNullOrWhiteSpace(t.SemanticUid))
+            .GroupBy(t => t.SemanticUid, StringComparer.Ordinal)
+            .Select(g => g.OrderByDescending(x => x.SourceFilePath is not null)
+                .ThenBy(x => x.SourceFilePath, StringComparer.OrdinalIgnoreCase)
+                .First())
+            .ToList();
 
+        // Build Roslyn type symbol map once.
+        var roslynTypeSymbolsByUid = await BuildTypeSymbolMapAsync(solution, uniqueTypes.Select(t => t.SemanticUid), ct).ConfigureAwait(false);
 
+        // Assign deterministic Ids so members/parameters can link without needing a DbContext.
+        foreach (ApiType t in uniqueTypes)
+        {
+            if (t.Id == Guid.Empty)
+            {
+                t.Id = Guid.NewGuid();
+            }
+        }
 
+        var roslynMemberSymbolsByUid = new Dictionary<string, ISymbol>(StringComparer.Ordinal);
+        var members = new List<ApiMember>(capacity: Math.Max(128, uniqueTypes.Count * 8));
+        await ExtractMembersAsync(solution, uniqueTypes, roslynTypeSymbolsByUid, members, roslynMemberSymbolsByUid, ct).ConfigureAwait(false);
+
+        // Dedupe members by semantic uid.
+        var uniqueMembers = members
+            .Where(m => !string.IsNullOrWhiteSpace(m.SemanticUid))
+            .GroupBy(m => m.SemanticUid, StringComparer.Ordinal)
+            .Select(g => g.OrderByDescending(x => x.SourceFilePath is not null)
+                .ThenBy(x => x.SourceFilePath, StringComparer.OrdinalIgnoreCase)
+                .First())
+            .ToList();
+
+        foreach (ApiMember m in uniqueMembers)
+        {
+            if (m.Id == Guid.Empty)
+            {
+                m.Id = Guid.NewGuid();
+            }
+        }
+
+        var parameters = new List<ApiParameter>(capacity: Math.Max(256, uniqueMembers.Count * 2));
+        await ExtractParametersAsync(solution, uniqueMembers, roslynMemberSymbolsByUid, parameters, ct).ConfigureAwait(false);
+
+        // Group for fast assembly per type.
+        var membersByType = uniqueMembers
+            .GroupBy(m => m.ApiTypeId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<ApiMember>)g.ToList());
+
+        var parametersByMember = parameters
+            .GroupBy(p => p.ApiMemberId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<ApiParameter>)g.OrderBy(x => x.Position).ThenBy(x => x.Name, StringComparer.Ordinal).ToList());
+
+        var trees = new List<SyntaxTypeTree>(uniqueTypes.Count);
+        foreach (ApiType t in uniqueTypes.OrderBy(t => t.SemanticUid, StringComparer.Ordinal))
+        {
+            ct.ThrowIfCancellationRequested();
+
+            membersByType.TryGetValue(t.Id, out IReadOnlyList<ApiMember>? typeMembers);
+            typeMembers ??= Array.Empty<ApiMember>();
+
+            var typeParameters = new List<ApiParameter>();
+            if (typeMembers.Count > 0)
+            {
+                foreach (ApiMember m in typeMembers)
+                {
+                    if (parametersByMember.TryGetValue(m.Id, out IReadOnlyList<ApiParameter>? mp))
+                    {
+                        typeParameters.AddRange(mp);
+                    }
+                }
+            }
+
+            trees.Add(new SyntaxTypeTree(new[] { t }, typeMembers, typeParameters));
+        }
+
+        return new ApiSyntaxTreeCollections(trees);
+    }
+
+    private static async Task<Dictionary<string, INamedTypeSymbol>> BuildTypeSymbolMapAsync(
+        Solution solution,
+        IEnumerable<string> typeSemanticUids,
+        CancellationToken ct)
+    {
+        var typeUidSet = new HashSet<string>(typeSemanticUids.Where(u => !string.IsNullOrWhiteSpace(u)), StringComparer.Ordinal);
+        var result = new Dictionary<string, INamedTypeSymbol>(StringComparer.Ordinal);
+
+        if (typeUidSet.Count == 0)
+        {
+            return result;
+        }
+
+        foreach (Project project in solution.Projects)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            Compilation? compilation = await project.GetCompilationAsync(ct).ConfigureAwait(false);
+            if (compilation is null)
+            {
+                continue;
+            }
+
+            foreach (Document document in project.Documents)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                SyntaxNode? root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
+                if (root is null)
+                {
+                    continue;
+                }
+
+                SemanticModel? semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
+                if (semanticModel is null)
+                {
+                    continue;
+                }
+
+                foreach (BaseTypeDeclarationSyntax typeDecl in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    INamedTypeSymbol? symbol;
+                    try
+                    {
+                        symbol = semanticModel.GetDeclaredSymbol(typeDecl, ct);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    if (symbol is null)
+                    {
+                        continue;
+                    }
+
+                    var uid = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    if (!typeUidSet.Contains(uid))
+                    {
+                        continue;
+                    }
+
+                    // Prefer the first-seen declaration per project; higher-level dedupe happens in WalkSolutionAsync.
+                    result.TryAdd(uid, symbol);
+                }
+            }
+        }
+
+        return result;
+    }
 
     private static (string? Summary, string? Remarks) ExtractSummaryAndRemarks(string? xml)
     {
@@ -522,12 +689,6 @@ public abstract class RoslynHarvesterBase
         }
     }
 
-
-
-
-
-
-
     public static (string? FilePath, int? StartLine, int? EndLine) GetSourceSpan(SyntaxTree tree, TextSpan span)
     {
         if (tree is null)
@@ -540,12 +701,6 @@ public abstract class RoslynHarvesterBase
         var endLine = lineSpan.EndLinePosition.Line + 1;
         return (tree.FilePath, startLine, endLine);
     }
-
-
-
-
-
-
 
     public static string? BuildTypeParameterConstraintString(ITypeParameterSymbol p)
     {
@@ -587,79 +742,28 @@ public abstract class RoslynHarvesterBase
         return parts.Count == 0 ? null : $"{p.Name}:{string.Join(",", parts)}";
     }
 
+    /// <summary>
+    /// Represents a tree structure that encapsulates syntax-related information,
+    /// including types, members, and parameters extracted from source code.
+    /// </summary>
+    /// <param name="typeSymbol">A collection of type entities representing the types in the syntax tree.</param>
+    /// <param name="memberSymbols">A collection of member entities representing the members in the syntax tree.</param>
+    /// <param name="parameterSymbols">A collection of parameter entities representing the parameters in the syntax tree.</param>
+    public sealed record SyntaxTypeTree(
+        IEnumerable<ITCompanionAI.KnowledgeBase.ApiType> typeSymbol,
+        IEnumerable<ITCompanionAI.KnowledgeBase.ApiMember> memberSymbols,
+        IEnumerable<ITCompanionAI.KnowledgeBase.ApiParameter> parameterSymbols
+    );
 
+    /// <summary>
+    /// Represents a collection of syntax type trees, each containing detailed information
+    /// about types, members, and parameters extracted from source code.
+    /// </summary>
+    /// <param name="Types">
+    /// A collection of <see cref="SyntaxTypeTree"/> objects that encapsulate syntax-related
+    /// information, including types, members, and parameters.
+    /// </param>
+    public sealed record ApiSyntaxTreeCollections(
+        IEnumerable<SyntaxTypeTree> Types);
 
-
-
-
-
-    public sealed record ApiTypeDescriptor(
-        string SemanticUid,
-        string? Name,
-        string? NamespacePath,
-        string? Kind,
-        string? Accessibility,
-        bool? IsStatic,
-        bool? IsGeneric,
-        bool? IsAbstract,
-        bool? IsSealed,
-        bool? IsRecord,
-        bool? IsRefLike,
-        string? BaseTypeUid,
-        string? Interfaces,
-        string? ContainingTypeUid,
-        string? GenericParameters,
-        string? GenericConstraints,
-        string? Summary,
-        string? Remarks,
-        string? Attributes,
-        string? SourceFilePath,
-        int? SourceStartLine,
-        int? SourceEndLine,
-        INamedTypeSymbol Symbol);
-
-
-
-
-    public sealed record ApiMemberDescriptor(
-        string SemanticUid,
-        string TypeSemanticUid,
-        string? Name,
-        string? Kind,
-        string? MethodKind,
-        string? Accessibility,
-        bool? IsStatic,
-        bool? IsExtensionMethod,
-        bool? IsAsync,
-        bool? IsVirtual,
-        bool? IsOverride,
-        bool? IsAbstract,
-        bool? IsSealed,
-        bool? IsReadOnly,
-        bool? IsConst,
-        bool? IsUnsafe,
-        string? ReturnTypeUid,
-        string? ReturnNullable,
-        string? GenericParameters,
-        string? GenericConstraints,
-        string? Summary,
-        string? Remarks,
-        string? Attributes,
-        string? SourceFilePath,
-        int? SourceStartLine,
-        int? SourceEndLine,
-        ISymbol Symbol);
-
-
-
-
-    public sealed record ApiParameterDescriptor(
-        string MemberSemanticUid,
-        string Name,
-        string TypeUid,
-        string? NullableAnnotation,
-        int Position,
-        string? Modifier,
-        bool HasDefaultValue,
-        string? DefaultValueLiteral);
 }

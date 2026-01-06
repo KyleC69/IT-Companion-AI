@@ -14,7 +14,15 @@ using Microsoft.ML.Tokenizers;
 
 
 
-
+/// <summary>
+/// Represents a utility class for shaping and preparing input data for ONNX model inference.
+/// </summary>
+/// <remarks>
+/// This class is responsible for constructing the necessary inputs for the initial forward pass
+/// of an ONNX model, including token IDs, attention masks, and position IDs. It also handles
+/// zero-initialization of other required tensors and validates the provided inputs against the
+/// model's metadata.
+/// </remarks>
 public sealed class InputShaper
 {
     private readonly ModelConfig _config;
