@@ -1,18 +1,16 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+// Project Name: CompanionTests
+// File Name: ApiHarvesterMappingTests.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz KyleC69
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
-using ITCompanionAI.AgentFramework.Ingestion;
+
+using System;
+
 using ITCompanionAI.Helpers;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-
-using Microsoft.Extensions.Logging;
-using ITCompanionAI.KBCurator;
-
-using Microsoft.Extensions.Logging.Abstractions;
 
 
 
@@ -22,14 +20,9 @@ public sealed class ApiHarvesterMappingTests
 {
     private sealed class NullGitHubClientFactory : IGitHubClientFactory
     {
-        public Octokit.GitHubClient CreateClient() => throw new NotSupportedException("Network calls are not allowed in unit tests.");
+        public Octokit.GitHubClient CreateClient()
+        {
+            throw new NotSupportedException("Network calls are not allowed in unit tests.");
+        }
     }
-
-    
-    
-    
-    
-    
-    
-    
 }

@@ -13,17 +13,11 @@
 namespace ITCompanionAI.Views;
 
 
-public sealed partial class ButtonOverlay : UserControl
+public sealed class ButtonOverlay : UserControl
 {
     public ButtonOverlay()
     {
         InitializeComponent();
 
     }
-    
-    
-    
-    
-    
-    
 }

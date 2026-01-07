@@ -6,11 +6,6 @@
 // Do not remove file headers
 
 
-using Microsoft.Extensions.Configuration;
-
-using Octokit;
-
-
 namespace ITCompanionAI.Helpers;
 
 

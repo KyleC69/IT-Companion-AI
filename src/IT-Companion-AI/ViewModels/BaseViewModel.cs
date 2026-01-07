@@ -9,7 +9,7 @@
 namespace ITCompanionAI.ViewModels;
 
 
-public partial class BaseViewModel : ObservableObject
+public class BaseViewModel : ObservableObject
 {
     private string _title = string.Empty;
 

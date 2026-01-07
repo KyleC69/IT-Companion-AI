@@ -1,5 +1,5 @@
 ﻿// Project Name: SKAgent
-// File Name: KBCurator.VerifyIngestionRunResult.cs
+// File Name: KBCurator.SpVerifyIngestionRunResult.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
@@ -12,7 +12,7 @@ using System.ComponentModel;
 namespace ITCompanionAI.Entities;
 
 
-public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged
+public partial class SpVerifyIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged
 {
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
@@ -26,7 +26,7 @@ public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotify
 
 
 
-    public VerifyIngestionRunResult()
+    public SpVerifyIngestionRunResult()
     {
         OnCreated();
     }

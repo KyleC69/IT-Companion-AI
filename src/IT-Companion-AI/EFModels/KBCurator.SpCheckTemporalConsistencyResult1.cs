@@ -1,5 +1,5 @@
 ﻿// Project Name: SKAgent
-// File Name: KBCurator.SampleApiMemberLink.cs
+// File Name: KBCurator.SpCheckTemporalConsistencyResult1.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
@@ -12,23 +12,23 @@ using System.ComponentModel;
 namespace ITCompanionAI.Entities;
 
 
-public partial class SampleApiMemberLink : INotifyPropertyChanging, INotifyPropertyChanged
+public partial class SpCheckTemporalConsistencyResult1 : INotifyPropertyChanging, INotifyPropertyChanged
 {
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
     private Guid _Id;
 
-    private string _MemberUid;
+    private string _SemanticUid;
 
-    private Guid _SampleId;
-
-
+    private string _TableName;
 
 
 
 
 
-    public SampleApiMemberLink()
+
+
+    public SpCheckTemporalConsistencyResult1()
     {
         OnCreated();
     }
@@ -38,6 +38,23 @@ public partial class SampleApiMemberLink : INotifyPropertyChanging, INotifyPrope
 
 
 
+
+    [NotNullValidator()]
+    public string TableName
+    {
+        get => _TableName;
+        set
+        {
+            if (_TableName != value)
+            {
+                OnTableNameChanging(value);
+                SendPropertyChanging("TableName");
+                _TableName = value;
+                SendPropertyChanged("TableName");
+                OnTableNameChanged();
+            }
+        }
+    }
 
     [NotNullValidator()]
     public Guid Id
@@ -57,36 +74,18 @@ public partial class SampleApiMemberLink : INotifyPropertyChanging, INotifyPrope
     }
 
     [NotNullValidator()]
-    public Guid SampleId
+    public string SemanticUid
     {
-        get => _SampleId;
+        get => _SemanticUid;
         set
         {
-            if (_SampleId != value)
+            if (_SemanticUid != value)
             {
-                OnSampleIdChanging(value);
-                SendPropertyChanging("SampleId");
-                _SampleId = value;
-                SendPropertyChanged("SampleId");
-                OnSampleIdChanged();
-            }
-        }
-    }
-
-    [StringLengthValidator(0, RangeBoundaryType.Ignore, 1000, RangeBoundaryType.Inclusive)]
-    [NotNullValidator()]
-    public string MemberUid
-    {
-        get => _MemberUid;
-        set
-        {
-            if (_MemberUid != value)
-            {
-                OnMemberUidChanging(value);
-                SendPropertyChanging("MemberUid");
-                _MemberUid = value;
-                SendPropertyChanged("MemberUid");
-                OnMemberUidChanged();
+                OnSemanticUidChanging(value);
+                SendPropertyChanging("SemanticUid");
+                _SemanticUid = value;
+                SendPropertyChanged("SemanticUid");
+                OnSemanticUidChanged();
             }
         }
     }
@@ -149,15 +148,15 @@ public partial class SampleApiMemberLink : INotifyPropertyChanging, INotifyPrope
     #region Extensibility Method Definitions
 
     partial void OnCreated();
+    partial void OnTableNameChanging(string value);
+
+    partial void OnTableNameChanged();
     partial void OnIdChanging(Guid value);
 
     partial void OnIdChanged();
-    partial void OnSampleIdChanging(Guid value);
+    partial void OnSemanticUidChanging(string value);
 
-    partial void OnSampleIdChanged();
-    partial void OnMemberUidChanging(string value);
-
-    partial void OnMemberUidChanged();
+    partial void OnSemanticUidChanged();
 
     #endregion
 }

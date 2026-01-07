@@ -1,5 +1,5 @@
 ﻿// Project Name: SKAgent
-// File Name: Query.cs
+// File Name: ReconciledChunkRecord.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
@@ -7,6 +7,7 @@
 
 
 namespace ITCompanionAI.AgentFramework;
+
 
 internal class ReconciledChunkRecord
 {

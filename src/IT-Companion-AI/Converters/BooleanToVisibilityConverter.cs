@@ -6,13 +6,10 @@
 // Do not remove file headers
 
 
-using Microsoft.UI.Xaml.Data;
-
-
 namespace ITCompanionAI.Converters;
 
 
-public partial class BooleanToVisibilityConverter : IValueConverter
+public class BooleanToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {

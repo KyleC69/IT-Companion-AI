@@ -1,5 +1,5 @@
 ﻿// Project Name: SKAgent
-// File Name: KBCurator.GetChangesInIngestionRunResult.cs
+// File Name: KBCurator.SpCheckTemporalConsistencyResult2.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
@@ -12,13 +12,15 @@ using System.ComponentModel;
 namespace ITCompanionAI.Entities;
 
 
-public partial class GetChangesInIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged
+public partial class SpCheckTemporalConsistencyResult2 : INotifyPropertyChanging, INotifyPropertyChanged
 {
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
-    private string _ArtifactKind;
+    private DateTime? _NextFrom;
 
     private string _SemanticUid;
+
+    private string _TableName;
 
     private DateTime _ValidFromUtc;
 
@@ -32,7 +34,7 @@ public partial class GetChangesInIngestionRunResult : INotifyPropertyChanging, I
 
 
 
-    public GetChangesInIngestionRunResult()
+    public SpCheckTemporalConsistencyResult2()
     {
         OnCreated();
     }
@@ -44,18 +46,18 @@ public partial class GetChangesInIngestionRunResult : INotifyPropertyChanging, I
 
 
     [NotNullValidator()]
-    public string ArtifactKind
+    public string TableName
     {
-        get => _ArtifactKind;
+        get => _TableName;
         set
         {
-            if (_ArtifactKind != value)
+            if (_TableName != value)
             {
-                OnArtifactKindChanging(value);
-                SendPropertyChanging("ArtifactKind");
-                _ArtifactKind = value;
-                SendPropertyChanged("ArtifactKind");
-                OnArtifactKindChanged();
+                OnTableNameChanging(value);
+                SendPropertyChanging("TableName");
+                _TableName = value;
+                SendPropertyChanged("TableName");
+                OnTableNameChanged();
             }
         }
     }
@@ -127,6 +129,22 @@ public partial class GetChangesInIngestionRunResult : INotifyPropertyChanging, I
         }
     }
 
+    public DateTime? NextFrom
+    {
+        get => _NextFrom;
+        set
+        {
+            if (_NextFrom != value)
+            {
+                OnNextFromChanging(value);
+                SendPropertyChanging("NextFrom");
+                _NextFrom = value;
+                SendPropertyChanged("NextFrom");
+                OnNextFromChanged();
+            }
+        }
+    }
+
     public virtual event PropertyChangedEventHandler PropertyChanged;
 
     public virtual event PropertyChangingEventHandler PropertyChanging;
@@ -185,9 +203,9 @@ public partial class GetChangesInIngestionRunResult : INotifyPropertyChanging, I
     #region Extensibility Method Definitions
 
     partial void OnCreated();
-    partial void OnArtifactKindChanging(string value);
+    partial void OnTableNameChanging(string value);
 
-    partial void OnArtifactKindChanged();
+    partial void OnTableNameChanged();
     partial void OnSemanticUidChanging(string value);
 
     partial void OnSemanticUidChanged();
@@ -200,6 +218,9 @@ public partial class GetChangesInIngestionRunResult : INotifyPropertyChanging, I
     partial void OnValidToUtcChanging(DateTime? value);
 
     partial void OnValidToUtcChanged();
+    partial void OnNextFromChanging(DateTime? value);
+
+    partial void OnNextFromChanged();
 
     #endregion
 }

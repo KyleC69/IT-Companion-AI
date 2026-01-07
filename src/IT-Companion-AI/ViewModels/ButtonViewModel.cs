@@ -6,26 +6,18 @@
 // Do not remove file headers
 
 
-using ITCompanionAI.AgentFramework;
-
-using Microsoft.Extensions.Logging;
-
 using System.ComponentModel;
 
 using ITCompanionAI.AgentFramework.Ingestion;
-using ITCompanionAI.KBCurator;
-
-using Microsoft.Extensions.DependencyInjection;
+using ITCompanionAI.KCCurator;
 
 
 namespace ITCompanionAI.ViewModels;
 
 
-public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
+public class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 {
     private readonly ILogger<ButtonViewModel> logger;
-
-    public event PropertyChangedEventHandler PropertyChanged;
 
 
 
@@ -35,14 +27,22 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 
     public ButtonViewModel()
     {
-        
-        logger= App.Services.GetRequiredService<ILogger<ButtonViewModel>>();
-        
-        
+
+        logger = App.Services.GetRequiredService<ILogger<ButtonViewModel>>();
+
+
         logger.LogInformation("ButtonViewModel initialized.");
 
-         logger.LogInformation("^^^^^^^^^^^^^^^^^      Ingestion Finished    ************.");
+        logger.LogInformation("^^^^^^^^^^^^^^^^^      Ingestion Finished    ************.");
     }
+
+
+
+
+
+
+
+    public event PropertyChangedEventHandler PropertyChanged;
 
 
 
@@ -61,9 +61,9 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
         var ingester = new APIIngestion(new KBContext());
         await ingester.StartIngestionAsync().ConfigureAwait(false);
         logger.LogInformation("Ingestion Complete");
-        
-        
-        
+
+
+
     }
 
 

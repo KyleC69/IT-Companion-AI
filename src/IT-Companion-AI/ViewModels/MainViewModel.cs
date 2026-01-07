@@ -9,9 +9,6 @@
 using System.Collections.ObjectModel;
 
 
-using Microsoft.Extensions.Logging;
-
-
 namespace ITCompanionAI.ViewModels;
 
 

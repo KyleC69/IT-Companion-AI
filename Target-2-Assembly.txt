@@ -1,0 +1,16 @@
+<Target Name="GenerateBuildInfo" BeforeTargets="BeforeBuild">
+  <WriteLinesToFile
+      File="Generated/BuildInfo.cs"
+      Overwrite="true"
+      Lines="
+namespace AppVersioning {
+    public static class Versions {
+        public const string Schema = &quot;$(SchemaVersion)&quot;;
+        public const string SemanticModel = &quot;$(SemanticModelVersion)&quot;;
+        public const string IngestionPipeline = &quot;$(IngestionPipelineVersion)&quot;;
+        public const string SnapshotFormat = &quot;$(SnapshotFormatVersion)&quot;;
+        public const string TemporalModel = &quot;$(TemporalModelVersion)&quot;;
+    }
+}
+" />
+</Target>

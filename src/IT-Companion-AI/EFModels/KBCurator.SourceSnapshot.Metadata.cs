@@ -1,64 +1,42 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Project Name: SKAgent
+// File Name: KBCurator.SourceSnapshot.Metadata.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz KyleC69
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
 
-namespace ITCompanionAI.Entities
+
+using System.ComponentModel.DataAnnotations;
+
+
+namespace ITCompanionAI.Entities;
+
+
+[MetadataType(typeof(Metadata))]
+public partial class SourceSnapshot
 {
-    [MetadataType(typeof(SourceSnapshot.Metadata))]
-    public partial class SourceSnapshot
+    public class Metadata
     {
-        public partial class Metadata
-        {
-    
-            [Key]
-            [Required()]
-            public object Id { get; set; }
-    
-            [Required()]
-            public object IngestionRunId { get; set; }
-    
-            [StringLength(1000)]
-            [Required()]
-            public object SnapshotUid { get; set; }
-    
-            public object RepoUrl { get; set; }
-    
-            [StringLength(200)]
-            public object Branch { get; set; }
-    
-            [StringLength(200)]
-            public object RepoCommit { get; set; }
-    
-            [StringLength(200)]
-            public object Language { get; set; }
-    
-            [StringLength(200)]
-            public object PackageName { get; set; }
-    
-            [StringLength(200)]
-            public object PackageVersion { get; set; }
-    
-            public object ConfigJson { get; set; }
-    
-            public object SnapshotUidHash { get; set; }
-    
-            public object ApiTypes { get; set; }
-    
-            public object DocPages { get; set; }
-    
-            public object ExecutionRuns { get; set; }
-    
-            public object RagRuns { get; set; }
-    
-            public object ReviewRuns { get; set; }
-    
-            public object SampleRuns { get; set; }
-    
-            public object SnapshotDiffs_OldSnapshotId { get; set; }
-    
-            public object SnapshotDiffs_NewSnapshotId { get; set; }
-    
-            public object IngestionRun { get; set; }
-    
-            public object TruthRuns { get; set; }
-        }
+        [Key] [Required] public object Id { get; set; }
+
+        [Required] public object IngestionRunId { get; set; }
+
+        [StringLength(200)] [Required] public object SnapshotUid { get; set; }
+
+        public object RepoUrl { get; set; }
+
+        [StringLength(200)] public object Branch { get; set; }
+
+        [StringLength(200)] public object RepoCommit { get; set; }
+
+        [StringLength(200)] public object Language { get; set; }
+
+        [StringLength(200)] public object PackageName { get; set; }
+
+        [StringLength(200)] public object PackageVersion { get; set; }
+
+        public object ConfigJson { get; set; }
+
+        public object SnapshotUidHash { get; set; }
     }
 }

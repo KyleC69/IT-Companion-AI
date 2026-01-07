@@ -8,10 +8,6 @@
 
 #pragma warning disable SKEXP0110 // Agent base class is experimental
 
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-
-
 namespace ITCompanionAI.AgentFramework.Agents;
 
 

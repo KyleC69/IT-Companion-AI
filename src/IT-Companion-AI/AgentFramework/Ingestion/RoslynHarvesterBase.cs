@@ -14,15 +14,7 @@ using System.Xml.Linq;
 
 using ITCompanionAI.Entities;
 using ITCompanionAI.Helpers;
-using ITCompanionAI.KBCurator;
 using ITCompanionAI.Models;
-
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
-
-using Octokit;
 
 using Project = Microsoft.CodeAnalysis.Project;
 
@@ -33,6 +25,75 @@ namespace ITCompanionAI.AgentFramework.Ingestion;
 /// <summary>
 ///     Base class for harvesters that need to retrieve source code from GitHub and analyze it with Roslyn workspaces.
 /// </summary>
+/// <remarks>
+///     <para>
+///         This type provides a small Roslyn-based ingestion pipeline intended to extract a repository's public API
+///         surface
+///         into persistence-friendly entities (<see cref="ApiType" />, <see cref="ApiMember" />,
+///         <see cref="ApiParameter" />).
+///     </para>
+///     <para>
+///         The pipeline is typically:
+///     </para>
+///     <list type="number">
+///         <item>
+///             <description>
+///                 Acquire source (for example, via <see cref="DownloadRepositoryAsync" />).
+///             </description>
+///         </item>
+///         <item>
+///             <description>
+///                 Load a Roslyn <see cref="Solution" /> from a directory (via
+///                 <see cref="LoadSolutionFromDirectoryAsync" />).
+///             </description>
+///         </item>
+///         <item>
+///             <description>
+///                 Walk the solution and extract:
+///                 <list type="bullet">
+///                     <item>
+///                         <description>Types (<see cref="ExtractTypesAsync" />)</description>
+///                     </item>
+///                     <item>
+///                         <description>Members (<see cref="ExtractMembersAsync" />)</description>
+///                     </item>
+///                     <item>
+///                         <description>Parameters (<see cref="ExtractParametersAsync" />)</description>
+///                     </item>
+///                 </list>
+///             </description>
+///         </item>
+///         <item>
+///             <description>
+///                 Assemble per-type trees of extracted results (<see cref="WalkSolutionAsync" />).
+///             </description>
+///         </item>
+///     </list>
+///     <para>
+///         Identity is primarily based on Roslyn's <see cref="SymbolDisplayFormat.FullyQualifiedFormat" /> string, stored
+///         as
+///         <c>SemanticUid</c>. This makes extracted items stable across runs, and enables de-duplication of partial types
+///         and
+///         multi-file declarations.
+///     </para>
+///     <para>
+///         Notes:
+///         <list type="bullet">
+///             <item>
+///                 <description>
+///                     The base class inherits <see cref="CSharpSyntaxWalker" /> for potential future syntactic walking,
+///                     but the current extraction logic uses semantic information via <see cref="SemanticModel" />.
+///                 </description>
+///             </item>
+///             <item>
+///                 <description>
+///                     <see cref="LoadSolutionFromDirectoryAsync" /> uses <see cref="AdhocWorkspace" /> (no MSBuild),
+///                     so compilation is "best effort". Symbols that fail to bind are skipped.
+///                 </description>
+///             </item>
+///         </list>
+///     </para>
+/// </remarks>
 public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 {
     private readonly IGitHubClientFactory _gitHubClientFactory;
@@ -43,6 +104,13 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="RoslynHarvesterBase" /> class.
+    /// </summary>
+    /// <remarks>
+    ///     This constructor exists to support derived types that may rely on alternative initialization patterns
+    ///     (for example DI containers that set fields/properties later).
+    /// </remarks>
     public RoslynHarvesterBase()
     {
     }
@@ -57,6 +125,9 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
     ///     Initializes a new instance of the <see cref="RoslynHarvesterBase" /> class.
     /// </summary>
     /// <param name="gitHubClientFactory">Factory for creating authenticated GitHub clients.</param>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="gitHubClientFactory" /> is <c>null</c>.
+    /// </exception>
     protected RoslynHarvesterBase(IGitHubClientFactory gitHubClientFactory)
     {
         _gitHubClientFactory = gitHubClientFactory ?? throw new ArgumentNullException(nameof(gitHubClientFactory));
@@ -72,9 +143,33 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
     ///     Downloads repository contents for a given branch into a local directory.
     /// </summary>
     /// <remarks>
-    ///     This implementation uses the GitHub Contents API, traversing directories recursively.
-    ///     It is intended for small to medium repositories; for large repositories consider using archive downloads.
+    ///     <para>
+    ///         This method is intended to hydrate a local working directory that can then be parsed by Roslyn.
+    ///     </para>
+    ///     <para>
+    ///         The planned implementation uses the GitHub Contents API via <see cref="GitHubClient" /> and recursively
+    ///         traverses
+    ///         directories to download files. Callers may filter paths via <paramref name="includePath" /> to ignore
+    ///         non-source content (for example build artifacts, docs, large assets, etc.).
+    ///     </para>
+    ///     <para>
+    ///         Intended for small-to-medium repositories. For very large repositories, archive downloads or git clone are
+    ///         typically
+    ///         faster than enumerating every item using the Contents API.
+    ///     </para>
     /// </remarks>
+    /// <param name="owner">The GitHub account/organization that owns the repository.</param>
+    /// <param name="repo">The repository name.</param>
+    /// <param name="branch">The branch to download (for example <c>main</c>).</param>
+    /// <param name="destinationDirectory">Local directory where content is written.</param>
+    /// <param name="includePath">
+    ///     Predicate used to include/exclude a path relative to repository root. If <c>null</c>, all paths are included.
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when <paramref name="owner" />, <paramref name="repo" />, <paramref name="branch" />, or
+    ///     <paramref name="destinationDirectory" /> is null/empty/whitespace.
+    /// </exception>
     protected async Task DownloadRepositoryAsync(
         string owner,
         string repo,
@@ -104,13 +199,31 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
     ///     Creates a Roslyn <see cref="Solution" /> for a local repository directory.
     /// </summary>
     /// <remarks>
-    ///     This uses <see cref="AdhocWorkspace" /> to avoid requiring MSBuild tooling.
-    ///     It parses all .cs files and creates a single project with basic framework references.
+    ///     <para>
+    ///         This method builds an in-memory <see cref="Solution" /> using <see cref="AdhocWorkspace" /> and a single
+    ///         project.
+    ///         It is designed for "source only" analysis scenarios where MSBuild is unavailable or undesirable.
+    ///     </para>
+    ///     <para>
+    ///         All <c>.cs</c> files under <paramref name="repositoryDirectory" /> are added as documents. Minimal framework
+    ///         references are included (<see cref="object" />, LINQ, <see cref="Task" />).
+    ///     </para>
+    ///     <para>
+    ///         Because this is not MSBuild-backed, some symbols may remain unresolved (missing references, conditional
+    ///         compilation,
+    ///         multi-targeting, source generators, etc.). Downstream extraction methods are defensive and skip unbindable
+    ///         symbols.
+    ///     </para>
     /// </remarks>
     /// <param name="repositoryDirectory">Directory containing source files.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The created solution.</returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when <paramref name="repositoryDirectory" /> is null/empty/whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    ///     Thrown when no C# source files are found under <paramref name="repositoryDirectory" />.
+    /// </exception>
     protected static async Task<Solution> LoadSolutionFromDirectoryAsync(string repositoryDirectory,
         CancellationToken cancellationToken)
     {
@@ -173,6 +286,13 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
     /// <summary>
     ///     Computes a stable 64-char hex SHA-256 hash for uniqueness columns.
     /// </summary>
+    /// <remarks>
+    ///     This helper is used when an entity needs a deterministic fingerprint derived from stable input data.
+    ///     The returned string is lowercase hex.
+    /// </remarks>
+    /// <param name="value">Input value to hash.</param>
+    /// <returns>Lowercase SHA-256 hex string.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is <c>null</c>.</exception>
     protected static string Sha256Hex(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -188,6 +308,64 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+    /// <summary>
+    ///     Extracts type declarations from the specified Roslyn <see cref="Solution" /> and populates
+    ///     <paramref name="output" />
+    ///     with <see cref="ApiType" /> entities.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         For each project/document, the syntax tree is scanned for <see cref="BaseTypeDeclarationSyntax" /> nodes
+    ///         (classes, structs, interfaces, enums, records). Each declaration is bound to an <see cref="INamedTypeSymbol" />
+    ///         using the document's <see cref="SemanticModel" />.
+    ///     </para>
+    ///     <para>
+    ///         Symbols that fail to bind (exceptions from Roslyn, null symbols) or bind to <see cref="TypeKind.Error" /> are
+    ///         skipped.
+    ///     </para>
+    ///     <para>
+    ///         The resulting <see cref="ApiType" /> includes:
+    ///         <list type="bullet">
+    ///             <item>
+    ///                 <description><c>SemanticUid</c>: fully-qualified Roslyn display string used as the dedupe key</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Kind/accessibility and common modifiers (static/generic/abstract/etc.)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Base type and implemented interfaces (as fully-qualified UIDs)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Containing type UID (for nested types)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Generic parameters and constraints (stored as delimited strings)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Attribute types present on the declaration</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>XML doc <c>&lt;summary&gt;</c> / <c>&lt;remarks&gt;</c> (best-effort)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Source location (file path + 1-based start/end lines)</description>
+    ///             </item>
+    ///         </list>
+    ///     </para>
+    ///     <para>
+    ///         This method does not de-duplicate partial types; that is handled by <see cref="WalkSolutionAsync" />.
+    ///     </para>
+    /// </remarks>
+    /// <param name="solution">The Roslyn <see cref="Solution" /> to analyze.</param>
+    /// <param name="output">The list to populate with extracted types.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown if <paramref name="solution" /> or <paramref name="output" /> is <c>null</c>.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    ///     Thrown if cancellation is requested via <paramref name="ct" />.
+    /// </exception>
     public static async Task ExtractTypesAsync(
         Solution solution,
         List<ApiType> output,
@@ -297,7 +475,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
                     Debug.Assert(filePath != null, nameof(filePath) + " != null");
                     output.Add(new ApiType
                     {
-                        Id = default,
+                        //  Id = default,   autogegen
                         SemanticUid = semanticUid,
                         SourceSnapshotId = default,
                         Name = name,
@@ -334,10 +512,8 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
                         SemanticUidHash = new byte[]
                         {
                         },
-                        SourceSnapshot = null,
-                        IngestionRun_CreatedIngestionRunId = null,
-                        IngestionRun_UpdatedIngestionRunId = null,
-                        IngestionRun_RemovedIngestionRunId = null
+                        IngestionRun = null
+
                     });
                 }
             }
@@ -351,9 +527,73 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
     /// <summary>
-    ///     Reinstate the correct ExtractMembersAsync overload signature that accepts the `types` list explicitly;
-    ///     this matches existing call sites and fixes the undefined `types` usage.
+    ///     Extracts member declarations for the provided <paramref name="types" /> and populates <paramref name="output" />
+    ///     with
+    ///     <see cref="ApiMember" /> entities.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         This method requires a pre-built mapping of type UID to Roslyn symbol
+    ///         (<paramref name="roslynTypeSymbolsByUid" />), typically created by <see cref="BuildTypeSymbolMapAsync" />.
+    ///     </para>
+    ///     <para>
+    ///         For each resolved type symbol:
+    ///         <list type="bullet">
+    ///             <item>
+    ///                 <description>Enumerates members via <see cref="INamedTypeSymbol.GetMembers()" /></description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Skips implicit members and accessor methods (get/set/add/remove)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Skips backing fields associated with properties/events</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Skips members with <see cref="Accessibility.NotApplicable" /></description>
+    ///             </item>
+    ///         </list>
+    ///     </para>
+    ///     <para>
+    ///         For each included member, this method captures:
+    ///         <list type="bullet">
+    ///             <item>
+    ///                 <description><c>SemanticUid</c> as a fully-qualified symbol display string</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Member kind/method kind/accessibility and common modifiers</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Return type UID + nullable annotation (methods/properties only)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Generic parameters/constraints for generic methods (stored as delimited strings)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Attributes and XML doc summary/remarks (best-effort)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Source location if syntax is available (file path + 1-based start/end lines)</description>
+    ///             </item>
+    ///         </list>
+    ///     </para>
+    ///     <para>
+    ///         Additionally, a Roslyn symbol map is built in <paramref name="roslynMemberSymbolsByUid" /> so that parameters
+    ///         can be
+    ///         extracted later without needing another semantic walk.
+    ///     </para>
+    /// </remarks>
+    /// <param name="solution">The solution being analyzed (currently not used beyond project enumeration).</param>
+    /// <param name="types">Types to extract members for.</param>
+    /// <param name="roslynTypeSymbolsByUid">Map of type semantic UID to Roslyn type symbol.</param>
+    /// <param name="output">List to populate with extracted members.</param>
+    /// <param name="roslynMemberSymbolsByUid">Map of member semantic UID to Roslyn symbol.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when any required argument is <c>null</c>.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    ///     Thrown when cancellation is requested via <paramref name="ct" />.
+    /// </exception>
     public static async Task ExtractMembersAsync(
         Solution solution,
         IReadOnlyList<ApiType> types,
@@ -480,7 +720,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
                     var efMember = new ApiMember
                     {
                         SemanticUid = semanticUid,
-                        ApiTypeId = type.Id,
+                        ApiFeatureId = type.Id,
                         Name = name,
                         Kind = kind,
                         MethodKind = methodKind,
@@ -520,6 +760,41 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+    /// <summary>
+    ///     Extracts method parameters for the provided <paramref name="members" /> list and populates
+    ///     <paramref name="output" /> with
+    ///     <see cref="ApiParameter" /> entities.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         This method uses <paramref name="roslynMemberSymbolsByUid" /> to resolve a member's Roslyn symbol by its
+    ///         <c>SemanticUid</c>. Only members whose symbol is an <see cref="IMethodSymbol" /> participate in parameter
+    ///         extraction.
+    ///     </para>
+    ///     <para>
+    ///         For each parameter, this records its position, type UID, nullability, ref-kind modifier (ref/out/in),
+    ///         and default value literal (if present).
+    ///     </para>
+    ///     <para>
+    ///         The <paramref name="solution" /> parameter is currently unused; it is accepted for signature symmetry with
+    ///         other
+    ///         extraction steps and potential future expansion.
+    ///     </para>
+    /// </remarks>
+    /// <param name="solution">The solution being analyzed (currently unused).</param>
+    /// <param name="members">Members to extract parameters for.</param>
+    /// <param name="roslynMemberSymbolsByUid">Map of member semantic UID to Roslyn symbol.</param>
+    /// <param name="output">List to populate with extracted parameters.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A completed task.</returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="members" />, <paramref name="roslynMemberSymbolsByUid" />, or
+    ///     <paramref name="output" />
+    ///     is <c>null</c>.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    ///     Thrown when cancellation is requested via <paramref name="ct" />.
+    /// </exception>
     public static Task ExtractParametersAsync(
         Solution solution,
         IReadOnlyList<ApiMember> members,
@@ -584,13 +859,64 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
     /// <summary>
-    ///     Walks an entire Roslyn <see cref="Solution" /> and builds a single object representing the complete extracted API
-    ///     surface.
+    ///     Walks an entire Roslyn <see cref="Solution" /> and builds a collection of <see cref="SyntaxTypeTree" /> objects
+    ///     representing the extracted API surface.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         This is the high-level orchestrator for extraction. It:
+    ///     </para>
+    ///     <list type="number">
+    ///         <item>
+    ///             <description>
+    ///                 Extracts all types via <see cref="ExtractTypesAsync" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 De-duplicates types by <c>SemanticUid</c> (helps handle partial types and duplicates across documents).
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Builds a type symbol map via <see cref="BuildTypeSymbolMapAsync" /> for efficient member extraction.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Assigns deterministic runtime <see cref="Guid" /> IDs for linking members/parameters without a database
+    ///                 context.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Extracts members via <see cref="ExtractMembersAsync" />, then de-duplicates members by
+    ///                 <c>SemanticUid</c>.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Extracts parameters via <see cref="ExtractParametersAsync" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Groups members/parameters and assembles a <see cref="SyntaxTypeTree" /> per type.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    ///     <para>
+    ///         De-duplication prefers entries that have source information (file path) and then sorts by file path to keep
+    ///         selection stable across runs.
+    ///     </para>
+    /// </remarks>
     /// <param name="solution">The Roslyn solution to analyze.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A collection of syntax type trees covering every discovered type.</returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="solution" /> is <c>null</c>.</exception>
+    /// <exception cref="OperationCanceledException">
+    ///     Thrown when cancellation is requested via <paramref name="ct" />.
+    /// </exception>
     public static async Task<IEnumerable<SyntaxTypeTree>> WalkSolutionAsync(Solution solution, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(solution);
@@ -641,7 +967,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
         // Group for fast assembly per type.
         Dictionary<Guid, IReadOnlyList<ApiMember>> membersByType = uniqueMembers
-            .GroupBy(m => m.ApiTypeId)
+            .GroupBy(m => m.ApiFeatureId)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<ApiMember>)g.ToList());
 
         Dictionary<Guid, IReadOnlyList<ApiParameter>> parametersByMember = parameters
@@ -678,6 +1004,33 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+    /// <summary>
+    ///     Builds a lookup of Roslyn type symbols keyed by the fully-qualified semantic UID string.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         This method scans each document in the solution for type declarations and binds them to
+    ///         <see cref="INamedTypeSymbol" /> instances. Only symbols whose UID is present in
+    ///         <paramref name="typeSemanticUids" />
+    ///         are retained.
+    ///     </para>
+    ///     <para>
+    ///         The returned map is used by <see cref="ExtractMembersAsync" /> to avoid re-binding type symbols per member
+    ///         extraction pass. When multiple declarations exist (e.g., partial types), the first-seen symbol is retained;
+    ///         higher-level dedupe/selection occurs in <see cref="WalkSolutionAsync" />.
+    ///     </para>
+    /// </remarks>
+    /// <param name="solution">The Roslyn solution to scan.</param>
+    /// <param name="typeSemanticUids">Type semantic UIDs to include in the result.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>
+    ///     A dictionary that maps type semantic UID strings to Roslyn <see cref="INamedTypeSymbol" /> instances.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="solution" /> or
+    ///     <paramref name="typeSemanticUids" /> is <c>null</c>.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">Thrown when cancellation is requested via <paramref name="ct" />.</exception>
     public static async Task<Dictionary<string, INamedTypeSymbol>> BuildTypeSymbolMapAsync(
         Solution solution,
         IEnumerable<string> typeSemanticUids,
@@ -757,6 +1110,15 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+    /// <summary>
+    ///     Extracts <c>&lt;summary&gt;</c> and <c>&lt;remarks&gt;</c> values from Roslyn XML documentation (best-effort).
+    /// </summary>
+    /// <remarks>
+    ///     Roslyn returns XML documentation as a fragment string. This helper parses the XML and returns trimmed text values.
+    ///     If parsing fails or tags are missing, <c>null</c> values are returned.
+    /// </remarks>
+    /// <param name="xml">XML documentation string as returned by Roslyn.</param>
+    /// <returns>A tuple of extracted summary and remarks.</returns>
     private static (string? Summary, string? Remarks) ExtractSummaryAndRemarks(string? xml)
     {
         if (string.IsNullOrWhiteSpace(xml))
@@ -784,6 +1146,15 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+    /// <summary>
+    ///     Converts a syntax <see cref="TextSpan" /> to source file/line information.
+    /// </summary>
+    /// <remarks>
+    ///     Start/end line numbers are 1-based to align with typical editor line numbering.
+    /// </remarks>
+    /// <param name="tree">Syntax tree owning <paramref name="span" />.</param>
+    /// <param name="span">Text span to translate.</param>
+    /// <returns>The file path and 1-based start/end line numbers, or <c>null</c> values when unavailable.</returns>
     public static (string? FilePath, int? StartLine, int? EndLine) GetSourceSpan(SyntaxTree tree, TextSpan span)
     {
         if (tree is null)
@@ -803,6 +1174,26 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+    /// <summary>
+    ///     Builds a compact, persistence-friendly constraint string for a generic type parameter.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         The returned format is: <c>{Name}:{constraint1},{constraint2},...</c>.
+    ///     </para>
+    ///     <para>
+    ///         Constraints include known keywords (<c>class</c>, <c>struct</c>, <c>notnull</c>, <c>unmanaged</c>, <c>new()</c>
+    ///         )
+    ///         and any explicit constraint types (fully-qualified).
+    ///     </para>
+    ///     <para>
+    ///         If the parameter has no constraints, <c>null</c> is returned.
+    ///     </para>
+    /// </remarks>
+    /// <param name="p">The Roslyn type parameter symbol.</param>
+    /// <returns>
+    ///     A constraint string, or <c>null</c> when <paramref name="p" /> is <c>null</c> or has no constraints.
+    /// </returns>
     public static string? BuildTypeParameterConstraintString(ITypeParameterSymbol p)
     {
         if (p is null)
@@ -847,6 +1238,14 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+/// <summary>
+///     Simple wrapper over a list of <see cref="SyntaxTypeTree" /> that exposes it as an <see cref="IReadOnlyList{T}" />.
+/// </summary>
+/// <remarks>
+///     This provides a dedicated type to represent a collection of extracted syntax/type trees and keeps callers from
+///     relying on
+///     the underlying concrete list type.
+/// </remarks>
 public class ApiSyntaxTreeCollections : IReadOnlyList<SyntaxTypeTree>
 {
     private readonly List<SyntaxTypeTree> _trees;
@@ -857,8 +1256,14 @@ public class ApiSyntaxTreeCollections : IReadOnlyList<SyntaxTypeTree>
 
 
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ApiSyntaxTreeCollections" /> class.
+    /// </summary>
+    /// <param name="trees">The trees to wrap.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="trees" /> is <c>null</c>.</exception>
     public ApiSyntaxTreeCollections(IEnumerable<SyntaxTypeTree> trees)
     {
+        ArgumentNullException.ThrowIfNull(trees);
         _trees = trees.ToList();
     }
 
@@ -868,8 +1273,15 @@ public class ApiSyntaxTreeCollections : IReadOnlyList<SyntaxTypeTree>
 
 
 
+    /// <summary>
+    ///     Gets the <see cref="SyntaxTypeTree" /> at the given index.
+    /// </summary>
+    /// <param name="index">Zero-based index.</param>
     public SyntaxTypeTree this[int index] => _trees[index];
 
+    /// <summary>
+    ///     Gets the number of trees in the collection.
+    /// </summary>
     public int Count => _trees.Count;
 
 
@@ -878,6 +1290,9 @@ public class ApiSyntaxTreeCollections : IReadOnlyList<SyntaxTypeTree>
 
 
 
+    /// <summary>
+    ///     Returns an enumerator that iterates through the contained trees.
+    /// </summary>
     public IEnumerator<SyntaxTypeTree> GetEnumerator()
     {
         return _trees.GetEnumerator();
@@ -889,6 +1304,9 @@ public class ApiSyntaxTreeCollections : IReadOnlyList<SyntaxTypeTree>
 
 
 
+    /// <summary>
+    ///     Returns a non-generic enumerator that iterates through the contained trees.
+    /// </summary>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();

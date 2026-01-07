@@ -1,5 +1,5 @@
 ﻿// Project Name: SKAgent
-// File Name: KBCurator.VerifyIngestionRunResult.cs
+// File Name: KBCurator.SpUpsertApiParameterResult.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
@@ -12,13 +12,11 @@ using System.ComponentModel;
 namespace ITCompanionAI.Entities;
 
 
-public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged
+public partial class SpUpsertApiParameterResult : INotifyPropertyChanging, INotifyPropertyChanged
 {
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
-    private string _Category;
-
-    private string _Detail;
+    private Guid? _Id;
 
 
 
@@ -26,7 +24,7 @@ public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotify
 
 
 
-    public VerifyIngestionRunResult()
+    public SpUpsertApiParameterResult()
     {
         OnCreated();
     }
@@ -37,34 +35,18 @@ public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotify
 
 
 
-    public string Category
+    public Guid? Id
     {
-        get => _Category;
+        get => _Id;
         set
         {
-            if (_Category != value)
+            if (_Id != value)
             {
-                OnCategoryChanging(value);
-                SendPropertyChanging("Category");
-                _Category = value;
-                SendPropertyChanged("Category");
-                OnCategoryChanged();
-            }
-        }
-    }
-
-    public string Detail
-    {
-        get => _Detail;
-        set
-        {
-            if (_Detail != value)
-            {
-                OnDetailChanging(value);
-                SendPropertyChanging("Detail");
-                _Detail = value;
-                SendPropertyChanged("Detail");
-                OnDetailChanged();
+                OnIdChanging(value);
+                SendPropertyChanging("Id");
+                _Id = value;
+                SendPropertyChanged("Id");
+                OnIdChanged();
             }
         }
     }
@@ -127,12 +109,9 @@ public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotify
     #region Extensibility Method Definitions
 
     partial void OnCreated();
-    partial void OnCategoryChanging(string value);
+    partial void OnIdChanging(Guid? value);
 
-    partial void OnCategoryChanged();
-    partial void OnDetailChanging(string value);
-
-    partial void OnDetailChanged();
+    partial void OnIdChanged();
 
     #endregion
 }

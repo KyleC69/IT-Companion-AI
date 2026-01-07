@@ -6,18 +6,8 @@
 // Do not remove file headers
 
 
-using System.Data;
-
 using ITCompanionAI.Entities;
-using ITCompanionAI.Helpers;
-using ITCompanionAI.KBCurator;
-using ITCompanionAI.Models;
-using ITCompanionAI.ViewModels;
-
-using Microsoft.CodeAnalysis;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using ITCompanionAI.KCCurator;
 
 
 namespace ITCompanionAI.AgentFramework.Ingestion;
@@ -29,16 +19,28 @@ public class APIIngestion : RoslynHarvesterBase
 {
     private readonly KBContext _db;
 
-    private Guid? runid = null;
+    private Guid? runid;
+
+
+
+
+
+
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="APIIngestion"/> class.
+    ///     Initializes a new instance of the <see cref="APIIngestion" /> class.
     /// </summary>
     /// <param name="db">Database context used for persistence.</param>
     public APIIngestion(KBContext db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
+
+
+
+
+
+
 
     public async Task StartIngestionAsync()
     {
@@ -52,7 +54,7 @@ public class APIIngestion : RoslynHarvesterBase
         // Begin ingestion run.
         Guid ingestionRunId;
         {
-            var ingestionRunIdResult = await _db.SpBeginIngestionRunAsync(schemaVersion, notes, Guid.NewGuid()).ConfigureAwait(false);
+            Tuple<Guid?> ingestionRunIdResult = await _db.SpBeginIngestionRunAsync(schemaVersion, notes, Guid.NewGuid()).ConfigureAwait(false);
             ingestionRunId = ingestionRunIdResult.Item1 ?? throw new InvalidOperationException("sp_BeginIngestionRun did not return an ingestion run id.");
             runid = ingestionRunId;
         }
@@ -69,7 +71,7 @@ public class APIIngestion : RoslynHarvesterBase
             var packageVersion = "";
             var configJson = "{}";
 
-            var snapshotIdResult = await _db.CreateSourceSnapshotAsync(
+            Tuple<Guid?> snapshotIdResult = await _db.SpCreateSourceSnapshotAsync(
                     ingestionRunId,
                     snapshotUid,
                     repoUrl,
@@ -79,27 +81,27 @@ public class APIIngestion : RoslynHarvesterBase
                     packageName,
                     packageVersion,
                     configJson,
-                    (Guid?)Guid.NewGuid())
+                    Guid.NewGuid())
                 .ConfigureAwait(false);
 
             sourceSnapshotId = snapshotIdResult.Item1 ?? throw new InvalidOperationException("CreateSourceSnapshot did not return a snapshot id.");
         }
 
         // Harvest symbols.
-        var apiTypes = new List<ApiType>();
+        List<ApiType> apiTypes = new();
         await ExtractTypesAsync(solution, apiTypes, CancellationToken.None).ConfigureAwait(false);
 
         // Build type symbol map now that types are extracted.
-        var roslynTypeSymbolsByUid = await RoslynHarvesterBase.BuildTypeSymbolMapAsync(
+        var roslynTypeSymbolsByUid = await BuildTypeSymbolMapAsync(
                 solution,
                 apiTypes.Select(t => t.SemanticUid),
                 CancellationToken.None)
             .ConfigureAwait(false);
 
         // Members are the functional components of the API.
-        var apiMembers = new List<ApiMember>();
+        List<ApiMember> apiMembers = new();
         var roslynMemberSymbolsByUid = new Dictionary<string, ISymbol>(StringComparer.Ordinal);
-        await RoslynHarvesterBase.ExtractMembersAsync(
+        await ExtractMembersAsync(
                 solution,
                 apiTypes,
                 roslynTypeSymbolsByUid,
@@ -109,8 +111,8 @@ public class APIIngestion : RoslynHarvesterBase
             .ConfigureAwait(false);
 
         // Parameters define the inputs required by API members (primarily methods).
-        var apiParameters = new List<ApiParameter>();
-        await RoslynHarvesterBase.ExtractParametersAsync(
+        List<ApiParameter> apiParameters = new();
+        await ExtractParametersAsync(
                 solution,
                 apiMembers,
                 roslynMemberSymbolsByUid,
@@ -120,8 +122,8 @@ public class APIIngestion : RoslynHarvesterBase
 
         // Persist (types -> members -> parameters) in parent-first order.
         // Use the DB upsert sprocs as the canonical persistence API.
-        var typeIdBySemanticUid = new Dictionary<string, Guid>(StringComparer.Ordinal);
-        var memberIdBySemanticUid = new Dictionary<string, Guid>(StringComparer.Ordinal);
+        Dictionary<string, Guid> typeIdBySemanticUid = new(StringComparer.Ordinal);
+        Dictionary<string, Guid> memberIdBySemanticUid = new(StringComparer.Ordinal);
 
         foreach (ApiType type in apiTypes)
         {
@@ -143,7 +145,7 @@ public class APIIngestion : RoslynHarvesterBase
             type.ValidFromUtc = type.ValidFromUtc == default ? DateTime.UtcNow : type.ValidFromUtc;
             type.IsActive = true;
 
-            await _db.UpsertApiTypeAsync(
+            await _db.SpUpsertApiTypeAsync(
                     type.SemanticUid,
                     type.SourceSnapshotId,
                     ingestionRunId,
@@ -185,8 +187,8 @@ public class APIIngestion : RoslynHarvesterBase
                 member.Id = Guid.NewGuid();
             }
 
-            // Ensure the member's ApiTypeId references the type we just upserted.
-            if (member.ApiTypeId == Guid.Empty && !string.IsNullOrWhiteSpace(member.SemanticUid))
+            // Ensure the member's ApiFeatureId references the type we just upserted.
+            if (member.ApiFeatureId == Guid.Empty && !string.IsNullOrWhiteSpace(member.SemanticUid))
             {
                 // ExtractMembersAsync set ApiTypeId from the type's Id; but if that's not stable, re-map via semantic uid.
                 // (No additional Roslyn work here; just ensure the id is not empty.)
@@ -206,9 +208,9 @@ public class APIIngestion : RoslynHarvesterBase
                 member.MemberUidHash = await _db.FnComputeContentHash256Async(member.SemanticUid).ConfigureAwait(false);
             }
 
-            await _db.UpsertApiMemberAsync(
+            await _db.SpUpsertApiMemberAsync(
                     member.SemanticUid,
-                    member.ApiTypeId,
+                    member.ApiFeatureId,
                     ingestionRunId,
                     member.Name,
                     member.Kind,
@@ -257,7 +259,7 @@ public class APIIngestion : RoslynHarvesterBase
             p.ValidFromUtc = p.ValidFromUtc == default ? DateTime.UtcNow : p.ValidFromUtc;
             p.IsActive = true;
 
-            await _db.UpsertApiParameterAsync(
+            await _db.SpUpsertApiParameterAsync(
                     p.ApiMemberId,
                     p.Name,
                     p.TypeUid,
@@ -276,31 +278,6 @@ public class APIIngestion : RoslynHarvesterBase
         // - DocPage (+ DocSection + CodeBlock)
         // Implement after the symbol->feature/doc mapping rules are finalized.
 
-        await _db.EndIngestionRunAsync(ingestionRunId).ConfigureAwait(false);
+        await _db.SpEndIngestionRunAsync(ingestionRunId).ConfigureAwait(false);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -9,18 +9,8 @@
 using Windows.Graphics;
 
 using ITCompanionAI.AgentFramework;
-using ITCompanionAI.AgentFramework.Ingestion;
 using ITCompanionAI.Helpers;
-using ITCompanionAI.KBCurator;
-using ITCompanionAI.Entities;
-using ITCompanionAI.Views;
-
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.UI.Xaml.Navigation;
+using ITCompanionAI.KCCurator;
 
 
 namespace ITCompanionAI;
@@ -29,7 +19,7 @@ namespace ITCompanionAI;
 /// <summary>
 ///     Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public class App : Application
 {
     private Window window = Window.Current;
 
@@ -53,19 +43,19 @@ public partial class App : Application
             config.AddUserSecrets<App>(true);
         }).ConfigureServices((context, services) =>
         {
-     //       services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
+            //       services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
             services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
-      //      services.AddSingleton<IPlannerAgent, PlannerAgent>();
-     //       services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
+            //      services.AddSingleton<IPlannerAgent, PlannerAgent>();
+            //       services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
 
             services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
 
             services.AddDbContext<KBContext>();
             //   services.AddSingleton<ApiHarvester>();
 
-     /*       PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=KnowledgeBase", 1536);
-            //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
-            services.AddSingleton<IVectorStore>(sp => { return store; });*/
+            /*       PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=KnowledgeBase", 1536);
+                   //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
+                   services.AddSingleton<IVectorStore>(sp => { return store; });*/
             services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConsole();

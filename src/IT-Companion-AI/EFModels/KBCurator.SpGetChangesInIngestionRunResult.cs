@@ -1,5 +1,5 @@
 ﻿// Project Name: SKAgent
-// File Name: KBCurator.GetChangesInIngestionRunResult.cs
+// File Name: KBCurator.SpGetChangesInIngestionRunResult.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
@@ -12,7 +12,7 @@ using System.ComponentModel;
 namespace ITCompanionAI.Entities;
 
 
-public partial class GetChangesInIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged
+public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged
 {
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
@@ -32,7 +32,7 @@ public partial class GetChangesInIngestionRunResult : INotifyPropertyChanging, I
 
 
 
-    public GetChangesInIngestionRunResult()
+    public SpGetChangesInIngestionRunResult()
     {
         OnCreated();
     }

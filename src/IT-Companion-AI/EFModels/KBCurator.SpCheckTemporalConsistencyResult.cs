@@ -1,5 +1,5 @@
 ﻿// Project Name: SKAgent
-// File Name: KBCurator.VerifyIngestionRunResult.cs
+// File Name: KBCurator.SpCheckTemporalConsistencyResult.cs
 // Author: Kyle Crowder
 // Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
@@ -12,21 +12,21 @@ using System.ComponentModel;
 namespace ITCompanionAI.Entities;
 
 
-public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged
+public partial class SpCheckTemporalConsistencyResult : INotifyPropertyChanging, INotifyPropertyChanged
 {
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
-    private string _Category;
+    private string _SemanticUid;
 
-    private string _Detail;
-
-
+    private string _TableName;
 
 
 
 
 
-    public VerifyIngestionRunResult()
+
+
+    public SpCheckTemporalConsistencyResult()
     {
         OnCreated();
     }
@@ -37,34 +37,36 @@ public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotify
 
 
 
-    public string Category
+    [NotNullValidator()]
+    public string TableName
     {
-        get => _Category;
+        get => _TableName;
         set
         {
-            if (_Category != value)
+            if (_TableName != value)
             {
-                OnCategoryChanging(value);
-                SendPropertyChanging("Category");
-                _Category = value;
-                SendPropertyChanged("Category");
-                OnCategoryChanged();
+                OnTableNameChanging(value);
+                SendPropertyChanging("TableName");
+                _TableName = value;
+                SendPropertyChanged("TableName");
+                OnTableNameChanged();
             }
         }
     }
 
-    public string Detail
+    [NotNullValidator()]
+    public string SemanticUid
     {
-        get => _Detail;
+        get => _SemanticUid;
         set
         {
-            if (_Detail != value)
+            if (_SemanticUid != value)
             {
-                OnDetailChanging(value);
-                SendPropertyChanging("Detail");
-                _Detail = value;
-                SendPropertyChanged("Detail");
-                OnDetailChanged();
+                OnSemanticUidChanging(value);
+                SendPropertyChanging("SemanticUid");
+                _SemanticUid = value;
+                SendPropertyChanged("SemanticUid");
+                OnSemanticUidChanged();
             }
         }
     }
@@ -127,12 +129,12 @@ public partial class VerifyIngestionRunResult : INotifyPropertyChanging, INotify
     #region Extensibility Method Definitions
 
     partial void OnCreated();
-    partial void OnCategoryChanging(string value);
+    partial void OnTableNameChanging(string value);
 
-    partial void OnCategoryChanged();
-    partial void OnDetailChanging(string value);
+    partial void OnTableNameChanged();
+    partial void OnSemanticUidChanging(string value);
 
-    partial void OnDetailChanged();
+    partial void OnSemanticUidChanged();
 
     #endregion
 }

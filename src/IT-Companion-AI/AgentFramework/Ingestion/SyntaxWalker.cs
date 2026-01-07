@@ -6,11 +6,6 @@
 // Do not remove file headers
 
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-
 namespace ITCompanionAI.AgentFramework.Ingestion;
 
 
