@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.Windows.AI.MachineLearning;
 
 
 #pragma warning disable SKEXP0110
@@ -100,7 +101,7 @@ public static class KernelFactory
                 "GITHUB_TOKEN environment variable is required to construct the kernel.");
         }
 
-        foreach (ModelDefinition definition in ModelCatalog.AllModels) RegisterModel(builder, definition, apiKey);
+    //    foreach (ModelDefinition definition in ModelCatalog.AllModels) RegisterModel(builder, definition, apiKey);
 
         return builder.Build();
     }

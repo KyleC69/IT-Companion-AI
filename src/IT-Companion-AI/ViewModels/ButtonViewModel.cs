@@ -7,30 +7,63 @@
 
 
 using ITCompanionAI.AgentFramework;
-using ITCompanionAI.KnowledgeBase;
+
+using Microsoft.Extensions.Logging;
+
+using System.ComponentModel;
+
+using ITCompanionAI.AgentFramework.Ingestion;
+using ITCompanionAI.KBCurator;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 
 namespace ITCompanionAI.ViewModels;
 
 
-public partial class ButtonViewModel : BaseViewModel
+public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 {
-    /// <summary>
-    ///     Executes the action behind the "Harvest Api" button.
+    private readonly ILogger<ButtonViewModel> logger;
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+
+
+
+
+
+
+    public ButtonViewModel()
+    {
+        
+        logger= App.Services.GetRequiredService<ILogger<ButtonViewModel>>();
+        
+        
+        logger.LogInformation("ButtonViewModel initialized.");
+
+         logger.LogInformation("^^^^^^^^^^^^^^^^^      Ingestion Finished    ************.");
+    }
+
+
+
+
+
+
+
+    /// Executes the action behind the "Harvest Api" button.
     /// </summary>
     [RelayCommand]
-    private async Task HarvestApiAsync()
+    public async Task HarvestApiAsync()
     {
         var path = "d:\\SKAPIRepo\\semantic-kernel\\dotnet\\src";
-        App.Services.GetRequiredService<ILogger<App>>().LogInformation("Application Starting Up");
+        logger.LogInformation("Application Starting Up");
 
-        var ingester = new APIIngestion(new KnowledgeBaseContext());
-        await ingester.StartIngestionAsync(Guid.NewGuid(),CancellationToken.None).ConfigureAwait(false);
-
-        App.Services.GetRequiredService<ILogger<App>>().LogInformation("Ingestion Complete");
+        var ingester = new APIIngestion(new KBContext());
+        await ingester.StartIngestionAsync().ConfigureAwait(false);
+        logger.LogInformation("Ingestion Complete");
+        
+        
+        
     }
 
 

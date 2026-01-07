@@ -10,10 +10,9 @@ using Windows.Graphics;
 
 using ITCompanionAI.AgentFramework;
 using ITCompanionAI.AgentFramework.Ingestion;
-using ITCompanionAI.AgentFramework.Planning;
-using ITCompanionAI.AgentFramework.Storage;
 using ITCompanionAI.Helpers;
-using ITCompanionAI.KnowledgeBase;
+using ITCompanionAI.KBCurator;
+using ITCompanionAI.Entities;
 using ITCompanionAI.Views;
 
 using Microsoft.Extensions.Configuration;
@@ -54,21 +53,26 @@ public partial class App : Application
             config.AddUserSecrets<App>(true);
         }).ConfigureServices((context, services) =>
         {
-            services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
+     //       services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
             services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
-            services.AddSingleton<IPlannerAgent, PlannerAgent>();
-            services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
+      //      services.AddSingleton<IPlannerAgent, PlannerAgent>();
+     //       services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
 
             services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
 
-            services.AddDbContext<KnowledgeBaseContext>();
+            services.AddDbContext<KBContext>();
             //   services.AddSingleton<ApiHarvester>();
 
-            PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", 1536);
+     /*       PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=KnowledgeBase", 1536);
             //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
+            services.AddSingleton<IVectorStore>(sp => { return store; });*/
+            services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.AddConsole();
+                loggingBuilder.AddDebug();
+                loggingBuilder.SetMinimumLevel(LogLevel.Trace);
 
-            services.AddSingleton<IVectorStore>(sp => { return store; });
-
+            });
 
 
         }).Build();

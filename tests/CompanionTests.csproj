@@ -35,4 +35,10 @@
   </ItemGroup>
 
 
+
+  <ItemGroup>
+    <Folder Include="Planning\" />
+  </ItemGroup>
+
+
 </Project>

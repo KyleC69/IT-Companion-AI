@@ -59,6 +59,16 @@
 
     <ItemGroup>
   
+      <Compile Remove="AgentFramework\Agents\ReconciliationAgent.cs" />
+  
+      <Compile Remove="AgentFramework\Agents\VerificationAgent.cs" />
+  
+      <Compile Remove="AgentFramework\Planning\KnowledgeIngestionOrchestrator.cs" />
+  
+      <Compile Remove="AgentFramework\Planning\PlannerAgent.cs" />
+  
+      <Compile Remove="AgentFramework\Storage\Storage.cs" />
+  
       <Compile Remove="Sample.cs" />
       <Compile Remove="SampleRun.cs" />
     </ItemGroup>
@@ -129,11 +139,11 @@
 
     <ItemGroup>
         <PackageReference Include="EnterpriseLibrary.Validation" Version="6.0.1304" />
+        <PackageReference Include="EnterpriseLibrary.Validation.NetCore" Version="6.1.4-rc" />
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
         <PackageReference Include="Markdig" Version="0.44.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
           <PrivateAssets>all</PrivateAssets>
@@ -159,7 +169,7 @@
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.0-experimental3" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1-RTM" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0-preview3.25342.7" />
         <PackageReference Include="Tokenizers.HuggingFace" Version="2.21.4" />
 
         <PackageReference Include="Octokit" Version="13.0.1" />
@@ -169,6 +179,8 @@
 
 
     <ItemGroup>
+      <Folder Include="AgentFramework\Planning\" />
+      <Folder Include="AgentFramework\Storage\" />
       <Folder Include="Contracts\" />
       <Folder Include="EFModels\" />
     </ItemGroup>

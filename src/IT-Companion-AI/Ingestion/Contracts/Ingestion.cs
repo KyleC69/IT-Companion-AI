@@ -8,6 +8,7 @@
 
 namespace ITCompanionAI.Ingestion.Contracts;
 
+
 public sealed class IngestionArtifact
 {
     public IngestionRunInfo IngestionRun { get; set; } = default!;

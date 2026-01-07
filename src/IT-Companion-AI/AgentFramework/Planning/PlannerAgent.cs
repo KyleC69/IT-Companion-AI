@@ -362,3 +362,17 @@ public sealed class PlannerAgent : Agent, IPlannerAgent
         [JsonPropertyName("version")] public string? Version { get; set; }
     }
 }
+
+
+
+
+internal class IngestionTarget
+{
+}
+
+
+
+
+public interface IngestionPlan
+{
+}

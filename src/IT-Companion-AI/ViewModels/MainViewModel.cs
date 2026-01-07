@@ -8,7 +8,6 @@
 
 using System.Collections.ObjectModel;
 
-using ITCompanionAI.AgentFramework.Planning;
 
 using Microsoft.Extensions.Logging;
 
@@ -146,14 +145,6 @@ public partial class MainViewModel : BaseViewModel
 
         try
         {
-
-            IKnowledgeIngestionOrchestrator orchestrator = App.GetService<IKnowledgeIngestionOrchestrator>();
-
-            IPlannerAgent planner = App.GetService<IPlannerAgent>();
-
-            IngestionPlan plan =
-                await planner.CreatePlanAsync("Ingest the Semantic Kernel API signatures and usage documentation.",
-                    _cts.Token);
 
 
             //var ingestion = App.GetService<IngestionAgent>();
