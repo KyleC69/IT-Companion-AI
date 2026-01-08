@@ -5,14 +5,13 @@
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
-
+using System;
 using System.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Data.Common;
 
-using ITCompanionAI.Entities;
-
-
-namespace ITCompanionAI.KCCurator;
+namespace ITCompanionAI.KBCurator;
 
 
 public partial class KBContext : DbContext

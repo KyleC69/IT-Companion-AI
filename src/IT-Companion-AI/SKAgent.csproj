@@ -11,6 +11,7 @@
 		<!-- <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion> -->
 
 		<!-- Project Options -->
+		<EnableDefaultCompileItems>true</EnableDefaultCompileItems>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
@@ -28,28 +29,11 @@
 		<AccelerateBuildsInIde>false</AccelerateBuildsInIde>
 	</PropertyGroup>
 
-	<!-- ####################################################### -->
 
-	<PropertyGroup Label="Gropup Used for versioning of app internals">
-		<EFCoreModelsVersion>1.25.0</EFCoreModelsVersion>
-		<DocumentationHarvesterVersion>1.0.0</DocumentationHarvesterVersion>
-		<IngestionContractVersion>1.0.0</IngestionContractVersion>
-		<AgentAssisstantVersion>1.0.0</AgentAssisstantVersion>
-		<AIModelsType>phi3-mini-4k-onnx</AIModelsType>
-
-		<Version>1.50.0</Version><!-- The '*' will auto-increment the build number -->
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
-		<FileVersion>1.0.0.0</FileVersion>
-
-
-	</PropertyGroup>
-
-	<!-- ####################################################### -->
 
 
 	<PropertyGroup>
-		<NoWarn>$(NoWarn);CA2007;IDE1006;SKEXP0001;SKEXP0110;OPENAI001</NoWarn>
-
+		<NoWarn>$(NoWarn);CA2007;IDE1006;SKEXP0001;SKEXP0110;OPENAI001;CS8625;CS8629;CS8601;CS8605</NoWarn>
 	</PropertyGroup>
 
 
@@ -89,28 +73,21 @@
 	</ItemGroup>
 
 
-	<ItemGroup>
-		<Content Include="Assets\SplashScreen.scale-200.png" />
-		<Content Include="Assets\LockScreenLogo.scale-200.png" />
-		<Content Include="Assets\Square150x150Logo.scale-200.png" />
-		<Content Include="Assets\Square44x44Logo.scale-200.png" />
-		<Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-		<Content Include="Assets\StoreLogo.png" />
-		<Content Include="Assets\Wide310x150Logo.scale-200.png" />
-	</ItemGroup>
+
 
 
 	<ItemGroup>
+
 		<PackageReference Include="EnterpriseLibrary.Validation" Version="6.0.1304" />
-		<PackageReference Include="EnterpriseLibrary.Validation.NetCore" Version="6.1.4-rc" />
+
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
 		<PackageReference Include="Markdig" Version="0.44.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="5.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
@@ -118,10 +95,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
 		<PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.7.0" />
 		<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
-		<PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
 		<PackageReference Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.68.0-preview" />
 		<PackageReference Include="Microsoft.SemanticKernel" Version="1.68.0" />
@@ -129,17 +104,18 @@
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" Version="1.68.0-preview" />
 		<PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
 		<PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.68.0-preview" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.0-experimental3" />
-		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1-RTM" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
+		
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0-preview3.25342.7" />
 		<PackageReference Include="Tokenizers.HuggingFace" Version="2.21.4" />
-
 		<PackageReference Include="Octokit" Version="13.0.1" />
 
 		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>
-
+	<ItemGroup>
+		<PackageReference Update="Microsoft.Identity.Client" Version="4.78.0" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="AgentFramework\Planning\" />

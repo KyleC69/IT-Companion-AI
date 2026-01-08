@@ -6,12 +6,15 @@
 // Do not remove file headers
 
 
-using System.Text;
+
 
 
 // ============================================================================
 // HTML / MARKDOWN PARSING
 // ============================================================================
+
+
+using HtmlAgilityPack;
 
 
 namespace ITCompanionAI.AgentFramework;

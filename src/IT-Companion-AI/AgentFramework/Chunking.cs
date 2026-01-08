@@ -14,6 +14,9 @@
 // ============================================================================
 
 
+using Tokenizers.HuggingFace.Tokenizer;
+
+
 namespace ITCompanionAI.AgentFramework;
 
 

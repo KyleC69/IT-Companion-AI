@@ -6,9 +6,6 @@
 // Do not remove file headers
 
 
-using System.ComponentModel.DataAnnotations;
-
-
 namespace ITCompanionAI.Entities;
 
 

@@ -9,15 +9,14 @@
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
+using Microsoft.UI.Xaml.Controls;
 
 namespace ITCompanionAI.Views;
 
-
-public sealed class ButtonOverlay : UserControl
+public partial class ButtonOverlay : UserControl
 {
     public ButtonOverlay()
     {
         InitializeComponent();
-
     }
 }

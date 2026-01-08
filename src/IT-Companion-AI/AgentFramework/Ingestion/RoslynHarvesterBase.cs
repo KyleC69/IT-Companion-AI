@@ -6,16 +6,20 @@
 // Do not remove file headers
 
 
-using System.Collections;
-using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
-using System.Text;
-using System.Xml.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-using ITCompanionAI.Entities;
-using ITCompanionAI.Helpers;
-using ITCompanionAI.Models;
+using RDocument= Microsoft.CodeAnalysis.Document;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
+using Octokit;
+
+using Encoding = System.Text.Encoding;
 using Project = Microsoft.CodeAnalysis.Project;
 
 
@@ -81,7 +85,7 @@ namespace ITCompanionAI.AgentFramework.Ingestion;
 ///         <list type="bullet">
 ///             <item>
 ///                 <description>
-///                     The base class inherits <see cref="CSharpSyntaxWalker" /> for potential future syntactic walking,
+///                     The base class inherits <see cref="Microsoft.CodeAnalysis.CSharp.CSharpSyntaxWalker" /> for potential future syntactic walking,
 ///                     but the current extraction logic uses semantic information via <see cref="SemanticModel" />.
 ///                 </description>
 ///             </item>
@@ -269,7 +273,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
             solution = solution.AddDocument(DocumentInfo.Create(
                 docId,
                 Path.GetFileName(file),
-                loader: TextLoader.From(TextAndVersion.Create(SourceText.From(text, Encoding.UTF8),
+                loader: TextLoader.From(TextAndVersion.Create(SourceText.From(text, System.Text.Encoding.UTF8),
                     VersionStamp.Create(), file)),
                 filePath: file));
         }
@@ -280,6 +284,41 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
+
+
+
+
+
+
+
+
+
+
+    public static class ContentHashGenerator
+    {
+        public static string ComputeHash(object dto)
+        {
+            // 1. Deterministic JSON serialization
+            var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            });
+
+            // 2. Your existing hash routine
+            return YourHashRoutine(json);
+        }
+
+        private static string YourHashRoutine(string input)
+        {
+            // Drop your existing code here.
+            // Example placeholder:
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
+            return Convert.ToHexString(bytes);
+        }
+    }
 
 
 
@@ -297,7 +336,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var bytes = Encoding.UTF8.GetBytes(value);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
         var hash = SHA256.HashData(bytes);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
@@ -384,7 +423,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
                 continue;
             }
 
-            foreach (Document document in project.Documents)
+            foreach (RDocument document in project.Documents)
             {
                 ct.ThrowIfCancellationRequested();
 
@@ -408,7 +447,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
                     INamedTypeSymbol? symbol;
                     try
                     {
-                        symbol = semanticModel.GetDeclaredSymbol(typeDecl, ct);
+                        symbol = (INamedTypeSymbol?)ModelExtensions.GetDeclaredSymbol(semanticModel, typeDecl, ct);
                     }
                     catch
                     {
@@ -1054,7 +1093,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
                 continue;
             }
 
-            foreach (Document document in project.Documents)
+            foreach (RDocument document in project.Documents)
             {
                 ct.ThrowIfCancellationRequested();
 
@@ -1077,7 +1116,7 @@ public abstract class RoslynHarvesterBase : CSharpSyntaxWalker
                     INamedTypeSymbol? symbol;
                     try
                     {
-                        symbol = semanticModel.GetDeclaredSymbol(typeDecl, ct);
+                        symbol = (INamedTypeSymbol?)ModelExtensions.GetDeclaredSymbol(semanticModel, typeDecl, ct);
                     }
                     catch
                     {

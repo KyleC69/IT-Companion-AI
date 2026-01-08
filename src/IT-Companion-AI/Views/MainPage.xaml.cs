@@ -12,7 +12,7 @@ using ITCompanionAI.ViewModels;
 namespace ITCompanionAI.Views;
 
 
-public sealed class MainPage : Page
+public partial class MainPage : Page
 {
     public MainPage()
     {

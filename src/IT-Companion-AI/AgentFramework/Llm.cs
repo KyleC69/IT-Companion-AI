@@ -8,7 +8,8 @@
 
 using System.Globalization;
 
-using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
 
 
 // ============================================================================
@@ -331,12 +332,18 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         // Encode prompt
-        List<int> promptTokenIds = _tokenizer.EncodeToIds(prompt).ToList();
+        HFTokenizer.Encoding? promptEncoding = ((HFTokenizer.Tokenizer)_tokenizer).Encode(prompt, false).FirstOrDefault();
+        if (promptEncoding is null)
+        {
+            throw new InvalidOperationException("Tokenizer produced no encoding for the given prompt.");
+        }
+
+        List<uint> promptTokenIds = promptEncoding.Ids.ToList();
         List<int> tokens = new(promptTokenIds.Count + _maxNewTokens);
-        tokens.AddRange(promptTokenIds);
+        tokens.AddRange(promptTokenIds.Select(static id => unchecked((int)id)));
 
         // Build completion separately to avoid TrimCompletion/tokenizer round-trip issues
-        List<int> completionTokenIds = new(_maxNewTokens);
+        List<uint> completionTokenIds = new(_maxNewTokens);
 
         // Persist KV cache across steps
         List<DenseTensor<float>> pastKeysFloat = new();
@@ -373,7 +380,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             var nextId = SelectNextToken(results);
 
             tokens.Add(nextId);
-            completionTokenIds.Add(nextId);
+            completionTokenIds.Add(unchecked((uint)nextId));
 
             UpdateKvCache(results, pastKeysFloat, pastValuesFloat, pastKeysHalf, pastValuesHalf);
 
@@ -385,7 +392,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             }
         }
 
-        var completionText = _tokenizer.Decode(completionTokenIds);
+        var completionText = _tokenizer.Decode(completionTokenIds, true);
         return Task.FromResult(completionText.Trim());
     }
 

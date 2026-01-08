@@ -9,9 +9,14 @@
 using Windows.Graphics;
 
 using ITCompanionAI.AgentFramework;
-using ITCompanionAI.Helpers;
-using ITCompanionAI.KCCurator;
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Xaml.Navigation;
+using Microsoft.EntityFrameworkCore;
+using ITCompanionAI.Views;
+using Microsoft.UI.Xaml;
 
 namespace ITCompanionAI;
 
@@ -19,7 +24,7 @@ namespace ITCompanionAI;
 /// <summary>
 ///     Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public class App : Application
+public partial class App : Application
 {
     private Window window = Window.Current;
 

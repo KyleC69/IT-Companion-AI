@@ -6,6 +6,9 @@
 // Do not remove file headers
 
 
+using Microsoft.Practices.EnterpriseLibrary.Validation.Validators;
+
+
 namespace ITCompanionAI.Entities;
 
 

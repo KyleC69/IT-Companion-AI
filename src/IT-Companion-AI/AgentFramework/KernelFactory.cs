@@ -6,6 +6,10 @@
 // Do not remove file headers
 
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Agents;
+
+
 #pragma warning disable SKEXP0110
 
 

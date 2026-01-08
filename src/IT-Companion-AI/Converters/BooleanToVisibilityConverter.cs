@@ -6,6 +6,9 @@
 // Do not remove file headers
 
 
+using Microsoft.UI.Xaml.Data;
+
+
 namespace ITCompanionAI.Converters;
 
 

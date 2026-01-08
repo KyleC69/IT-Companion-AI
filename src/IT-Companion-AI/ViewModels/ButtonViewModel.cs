@@ -6,16 +6,15 @@
 // Do not remove file headers
 
 
-using System.ComponentModel;
-
 using ITCompanionAI.AgentFramework.Ingestion;
-using ITCompanionAI.KCCurator;
+
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace ITCompanionAI.ViewModels;
 
 
-public class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
+public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 {
     private readonly ILogger<ButtonViewModel> logger;
 

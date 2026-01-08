@@ -6,8 +6,7 @@
 // Do not remove file headers
 
 
-using ITCompanionAI.Entities;
-using ITCompanionAI.KCCurator;
+using Microsoft.CodeAnalysis;
 
 
 namespace ITCompanionAI.AgentFramework.Ingestion;
