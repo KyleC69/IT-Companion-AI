@@ -8,264 +8,254 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class Sample : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class Sample : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private Guid _SampleRunId;
+    private Guid _SampleRunId;
 
-        private string _SampleUid;
+    private string _SampleUid;
 
-        private string _FeatureUid;
+    private string _FeatureUid;
 
-        private string _Language;
+    private string _Language;
 
-        private string _Code;
+    private string _Code;
 
-        private string _EntryPoint;
+    private string _EntryPoint;
 
-        private string _TargetFramework;
+    private string _TargetFramework;
 
-        private string _PackageReferences;
+    private string _PackageReferences;
 
-        private string _DerivedFromCodeUid;
+    private string _DerivedFromCodeUid;
 
-        private string _Tags;
+    private string _Tags;
 
-        public Sample()
+    public Sample()
+    {
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public Guid SampleRunId
-        {
-            get
-            {
-                return this._SampleRunId;
-            }
-            set
-            {
-                if (this._SampleRunId != value)
-                {
-                    this.SendPropertyChanging("SampleRunId");
-                    this._SampleRunId = value;
-                    this.SendPropertyChanged("SampleRunId");
-                }
-            }
-        }
-
-        public string SampleUid
-        {
-            get
-            {
-                return this._SampleUid;
-            }
-            set
-            {
-                if (this._SampleUid != value)
-                {
-                    this.SendPropertyChanging("SampleUid");
-                    this._SampleUid = value;
-                    this.SendPropertyChanged("SampleUid");
-                }
-            }
-        }
-
-        public string FeatureUid
-        {
-            get
-            {
-                return this._FeatureUid;
-            }
-            set
-            {
-                if (this._FeatureUid != value)
-                {
-                    this.SendPropertyChanging("FeatureUid");
-                    this._FeatureUid = value;
-                    this.SendPropertyChanged("FeatureUid");
-                }
-            }
-        }
-
-        public string Language
-        {
-            get
-            {
-                return this._Language;
-            }
-            set
-            {
-                if (this._Language != value)
-                {
-                    this.SendPropertyChanging("Language");
-                    this._Language = value;
-                    this.SendPropertyChanged("Language");
-                }
-            }
-        }
-
-        public string Code
-        {
-            get
-            {
-                return this._Code;
-            }
-            set
-            {
-                if (this._Code != value)
-                {
-                    this.SendPropertyChanging("Code");
-                    this._Code = value;
-                    this.SendPropertyChanged("Code");
-                }
-            }
-        }
-
-        public string EntryPoint
-        {
-            get
-            {
-                return this._EntryPoint;
-            }
-            set
-            {
-                if (this._EntryPoint != value)
-                {
-                    this.SendPropertyChanging("EntryPoint");
-                    this._EntryPoint = value;
-                    this.SendPropertyChanged("EntryPoint");
-                }
-            }
-        }
-
-        public string TargetFramework
-        {
-            get
-            {
-                return this._TargetFramework;
-            }
-            set
-            {
-                if (this._TargetFramework != value)
-                {
-                    this.SendPropertyChanging("TargetFramework");
-                    this._TargetFramework = value;
-                    this.SendPropertyChanged("TargetFramework");
-                }
-            }
-        }
-
-        public string PackageReferences
-        {
-            get
-            {
-                return this._PackageReferences;
-            }
-            set
-            {
-                if (this._PackageReferences != value)
-                {
-                    this.SendPropertyChanging("PackageReferences");
-                    this._PackageReferences = value;
-                    this.SendPropertyChanged("PackageReferences");
-                }
-            }
-        }
-
-        public string DerivedFromCodeUid
-        {
-            get
-            {
-                return this._DerivedFromCodeUid;
-            }
-            set
-            {
-                if (this._DerivedFromCodeUid != value)
-                {
-                    this.SendPropertyChanging("DerivedFromCodeUid");
-                    this._DerivedFromCodeUid = value;
-                    this.SendPropertyChanged("DerivedFromCodeUid");
-                }
-            }
-        }
-
-        public string Tags
-        {
-            get
-            {
-                return this._Tags;
-            }
-            set
-            {
-                if (this._Tags != value)
-                {
-                    this.SendPropertyChanging("Tags");
-                    this._Tags = value;
-                    this.SendPropertyChanged("Tags");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid SampleRunId
+    {
+        get
+        {
+            return this._SampleRunId;
+        }
+        set
+        {
+            if (this._SampleRunId != value)
+            {
+                this.SendPropertyChanging("SampleRunId");
+                this._SampleRunId = value;
+                this.SendPropertyChanged("SampleRunId");
+            }
+        }
+    }
+
+    public string SampleUid
+    {
+        get
+        {
+            return this._SampleUid;
+        }
+        set
+        {
+            if (this._SampleUid != value)
+            {
+                this.SendPropertyChanging("SampleUid");
+                this._SampleUid = value;
+                this.SendPropertyChanged("SampleUid");
+            }
+        }
+    }
+
+    public string FeatureUid
+    {
+        get
+        {
+            return this._FeatureUid;
+        }
+        set
+        {
+            if (this._FeatureUid != value)
+            {
+                this.SendPropertyChanging("FeatureUid");
+                this._FeatureUid = value;
+                this.SendPropertyChanged("FeatureUid");
+            }
+        }
+    }
+
+    public string Language
+    {
+        get
+        {
+            return this._Language;
+        }
+        set
+        {
+            if (this._Language != value)
+            {
+                this.SendPropertyChanging("Language");
+                this._Language = value;
+                this.SendPropertyChanged("Language");
+            }
+        }
+    }
+
+    public string Code
+    {
+        get
+        {
+            return this._Code;
+        }
+        set
+        {
+            if (this._Code != value)
+            {
+                this.SendPropertyChanging("Code");
+                this._Code = value;
+                this.SendPropertyChanged("Code");
+            }
+        }
+    }
+
+    public string EntryPoint
+    {
+        get
+        {
+            return this._EntryPoint;
+        }
+        set
+        {
+            if (this._EntryPoint != value)
+            {
+                this.SendPropertyChanging("EntryPoint");
+                this._EntryPoint = value;
+                this.SendPropertyChanged("EntryPoint");
+            }
+        }
+    }
+
+    public string TargetFramework
+    {
+        get
+        {
+            return this._TargetFramework;
+        }
+        set
+        {
+            if (this._TargetFramework != value)
+            {
+                this.SendPropertyChanging("TargetFramework");
+                this._TargetFramework = value;
+                this.SendPropertyChanged("TargetFramework");
+            }
+        }
+    }
+
+    public string PackageReferences
+    {
+        get
+        {
+            return this._PackageReferences;
+        }
+        set
+        {
+            if (this._PackageReferences != value)
+            {
+                this.SendPropertyChanging("PackageReferences");
+                this._PackageReferences = value;
+                this.SendPropertyChanged("PackageReferences");
+            }
+        }
+    }
+
+    public string DerivedFromCodeUid
+    {
+        get
+        {
+            return this._DerivedFromCodeUid;
+        }
+        set
+        {
+            if (this._DerivedFromCodeUid != value)
+            {
+                this.SendPropertyChanging("DerivedFromCodeUid");
+                this._DerivedFromCodeUid = value;
+                this.SendPropertyChanged("DerivedFromCodeUid");
+            }
+        }
+    }
+
+    public string Tags
+    {
+        get
+        {
+            return this._Tags;
+        }
+        set
+        {
+            if (this._Tags != value)
+            {
+                this.SendPropertyChanging("Tags");
+                this._Tags = value;
+                this.SendPropertyChanged("Tags");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

@@ -8,150 +8,140 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class ApiTypeDiff : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class ApiTypeDiff : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private Guid _SnapshotDiffId;
+    private Guid _SnapshotDiffId;
 
-        private string _TypeUid;
+    private string _TypeUid;
 
-        private string _ChangeKind;
+    private string _ChangeKind;
 
-        private string _DetailJson;
+    private string _DetailJson;
 
-        public ApiTypeDiff()
+    public ApiTypeDiff()
+    {
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public Guid SnapshotDiffId
-        {
-            get
-            {
-                return this._SnapshotDiffId;
-            }
-            set
-            {
-                if (this._SnapshotDiffId != value)
-                {
-                    this.SendPropertyChanging("SnapshotDiffId");
-                    this._SnapshotDiffId = value;
-                    this.SendPropertyChanged("SnapshotDiffId");
-                }
-            }
-        }
-
-        public string TypeUid
-        {
-            get
-            {
-                return this._TypeUid;
-            }
-            set
-            {
-                if (this._TypeUid != value)
-                {
-                    this.SendPropertyChanging("TypeUid");
-                    this._TypeUid = value;
-                    this.SendPropertyChanged("TypeUid");
-                }
-            }
-        }
-
-        public string ChangeKind
-        {
-            get
-            {
-                return this._ChangeKind;
-            }
-            set
-            {
-                if (this._ChangeKind != value)
-                {
-                    this.SendPropertyChanging("ChangeKind");
-                    this._ChangeKind = value;
-                    this.SendPropertyChanged("ChangeKind");
-                }
-            }
-        }
-
-        public string DetailJson
-        {
-            get
-            {
-                return this._DetailJson;
-            }
-            set
-            {
-                if (this._DetailJson != value)
-                {
-                    this.SendPropertyChanging("DetailJson");
-                    this._DetailJson = value;
-                    this.SendPropertyChanged("DetailJson");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid SnapshotDiffId
+    {
+        get
+        {
+            return this._SnapshotDiffId;
+        }
+        set
+        {
+            if (this._SnapshotDiffId != value)
+            {
+                this.SendPropertyChanging("SnapshotDiffId");
+                this._SnapshotDiffId = value;
+                this.SendPropertyChanged("SnapshotDiffId");
+            }
+        }
+    }
+
+    public string TypeUid
+    {
+        get
+        {
+            return this._TypeUid;
+        }
+        set
+        {
+            if (this._TypeUid != value)
+            {
+                this.SendPropertyChanging("TypeUid");
+                this._TypeUid = value;
+                this.SendPropertyChanged("TypeUid");
+            }
+        }
+    }
+
+    public string ChangeKind
+    {
+        get
+        {
+            return this._ChangeKind;
+        }
+        set
+        {
+            if (this._ChangeKind != value)
+            {
+                this.SendPropertyChanging("ChangeKind");
+                this._ChangeKind = value;
+                this.SendPropertyChanged("ChangeKind");
+            }
+        }
+    }
+
+    public string DetailJson
+    {
+        get
+        {
+            return this._DetailJson;
+        }
+        set
+        {
+            if (this._DetailJson != value)
+            {
+                this.SendPropertyChanging("DetailJson");
+                this._DetailJson = value;
+                this.SendPropertyChanged("DetailJson");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

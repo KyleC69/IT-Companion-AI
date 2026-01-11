@@ -5,8 +5,7 @@
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
-
-namespace ITCompanionAI.AgentFramework.Ingestion;
+namespace ITCompanionAI.Ingestion.Docs;
 
 
 public class ApiDocParser

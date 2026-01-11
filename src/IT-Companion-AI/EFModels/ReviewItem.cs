@@ -8,169 +8,159 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class ReviewItem : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class ReviewItem : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private Guid _ReviewRunId;
+    private Guid _ReviewRunId;
 
-        private string _TargetKind;
+    private string _TargetKind;
 
-        private string _TargetUid;
+    private string _TargetUid;
 
-        private string _Status;
+    private string _Status;
 
-        private string _Summary;
+    private string _Summary;
 
-        public ReviewItem()
+    public ReviewItem()
+    {
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public Guid ReviewRunId
-        {
-            get
-            {
-                return this._ReviewRunId;
-            }
-            set
-            {
-                if (this._ReviewRunId != value)
-                {
-                    this.SendPropertyChanging("ReviewRunId");
-                    this._ReviewRunId = value;
-                    this.SendPropertyChanged("ReviewRunId");
-                }
-            }
-        }
-
-        public string TargetKind
-        {
-            get
-            {
-                return this._TargetKind;
-            }
-            set
-            {
-                if (this._TargetKind != value)
-                {
-                    this.SendPropertyChanging("TargetKind");
-                    this._TargetKind = value;
-                    this.SendPropertyChanged("TargetKind");
-                }
-            }
-        }
-
-        public string TargetUid
-        {
-            get
-            {
-                return this._TargetUid;
-            }
-            set
-            {
-                if (this._TargetUid != value)
-                {
-                    this.SendPropertyChanging("TargetUid");
-                    this._TargetUid = value;
-                    this.SendPropertyChanged("TargetUid");
-                }
-            }
-        }
-
-        public string Status
-        {
-            get
-            {
-                return this._Status;
-            }
-            set
-            {
-                if (this._Status != value)
-                {
-                    this.SendPropertyChanging("Status");
-                    this._Status = value;
-                    this.SendPropertyChanged("Status");
-                }
-            }
-        }
-
-        public string Summary
-        {
-            get
-            {
-                return this._Summary;
-            }
-            set
-            {
-                if (this._Summary != value)
-                {
-                    this.SendPropertyChanging("Summary");
-                    this._Summary = value;
-                    this.SendPropertyChanged("Summary");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid ReviewRunId
+    {
+        get
+        {
+            return this._ReviewRunId;
+        }
+        set
+        {
+            if (this._ReviewRunId != value)
+            {
+                this.SendPropertyChanging("ReviewRunId");
+                this._ReviewRunId = value;
+                this.SendPropertyChanged("ReviewRunId");
+            }
+        }
+    }
+
+    public string TargetKind
+    {
+        get
+        {
+            return this._TargetKind;
+        }
+        set
+        {
+            if (this._TargetKind != value)
+            {
+                this.SendPropertyChanging("TargetKind");
+                this._TargetKind = value;
+                this.SendPropertyChanged("TargetKind");
+            }
+        }
+    }
+
+    public string TargetUid
+    {
+        get
+        {
+            return this._TargetUid;
+        }
+        set
+        {
+            if (this._TargetUid != value)
+            {
+                this.SendPropertyChanging("TargetUid");
+                this._TargetUid = value;
+                this.SendPropertyChanged("TargetUid");
+            }
+        }
+    }
+
+    public string Status
+    {
+        get
+        {
+            return this._Status;
+        }
+        set
+        {
+            if (this._Status != value)
+            {
+                this.SendPropertyChanging("Status");
+                this._Status = value;
+                this.SendPropertyChanged("Status");
+            }
+        }
+    }
+
+    public string Summary
+    {
+        get
+        {
+            return this._Summary;
+        }
+        set
+        {
+            if (this._Summary != value)
+            {
+                this.SendPropertyChanging("Summary");
+                this._Summary = value;
+                this.SendPropertyChanged("Summary");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

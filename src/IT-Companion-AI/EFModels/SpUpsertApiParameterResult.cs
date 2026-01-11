@@ -8,74 +8,64 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class SpUpsertApiParameterResult : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class SpUpsertApiParameterResult : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid? _Id;
+    private Guid? _Id;
 
-        public SpUpsertApiParameterResult()
+    public SpUpsertApiParameterResult()
+    {
+        OnCreated();
+    }
+
+    public Guid? Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid? Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

@@ -8,227 +8,217 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class IngestionRun : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class IngestionRun : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private DateTime _TimestampUtc;
+    private DateTime _TimestampUtc;
 
-        private string _SchemaVersion;
+    private string _SchemaVersion;
 
-        private string _Notes;
+    private string _Notes;
 
-        private IList<ApiFeature> _ApiFeatures;
+    private IList<ApiFeature> _ApiFeatures;
 
-        private IList<ApiMember> _ApiMembers;
+    private IList<ApiMember> _ApiMembers;
 
-        private IList<ApiParameter> _ApiParameters;
+    private IList<ApiParameter> _ApiParameters;
 
-        private IList<ApiType> _ApiTypes;
+    private IList<ApiType> _ApiTypes;
 
-        private IList<DocPage> _DocPages;
+    private IList<DocPage> _DocPages;
 
-        private IList<DocSection> _DocSections;
+    private IList<DocSection> _DocSections;
 
-        public IngestionRun()
+    public IngestionRun()
+    {
+        this._ApiFeatures = new List<ApiFeature>();
+        this._ApiMembers = new List<ApiMember>();
+        this._ApiParameters = new List<ApiParameter>();
+        this._ApiTypes = new List<ApiType>();
+        this._DocPages = new List<DocPage>();
+        this._DocSections = new List<DocSection>();
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            this._ApiFeatures = new List<ApiFeature>();
-            this._ApiMembers = new List<ApiMember>();
-            this._ApiParameters = new List<ApiParameter>();
-            this._ApiTypes = new List<ApiType>();
-            this._DocPages = new List<DocPage>();
-            this._DocSections = new List<DocSection>();
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public DateTime TimestampUtc
-        {
-            get
-            {
-                return this._TimestampUtc;
-            }
-            set
-            {
-                if (this._TimestampUtc != value)
-                {
-                    this.SendPropertyChanging("TimestampUtc");
-                    this._TimestampUtc = value;
-                    this.SendPropertyChanged("TimestampUtc");
-                }
-            }
-        }
-
-        public string SchemaVersion
-        {
-            get
-            {
-                return this._SchemaVersion;
-            }
-            set
-            {
-                if (this._SchemaVersion != value)
-                {
-                    this.SendPropertyChanging("SchemaVersion");
-                    this._SchemaVersion = value;
-                    this.SendPropertyChanged("SchemaVersion");
-                }
-            }
-        }
-
-        public string Notes
-        {
-            get
-            {
-                return this._Notes;
-            }
-            set
-            {
-                if (this._Notes != value)
-                {
-                    this.SendPropertyChanging("Notes");
-                    this._Notes = value;
-                    this.SendPropertyChanged("Notes");
-                }
-            }
-        }
-
-
-        public virtual IList<ApiFeature> ApiFeatures
-        {
-            get
-            {
-                return this._ApiFeatures;
-            }
-            set
-            {
-                this._ApiFeatures = value;
-            }
-        }
-
-
-        public virtual IList<ApiMember> ApiMembers
-        {
-            get
-            {
-                return this._ApiMembers;
-            }
-            set
-            {
-                this._ApiMembers = value;
-            }
-        }
-
-
-        public virtual IList<ApiParameter> ApiParameters
-        {
-            get
-            {
-                return this._ApiParameters;
-            }
-            set
-            {
-                this._ApiParameters = value;
-            }
-        }
-
-
-        public virtual IList<ApiType> ApiTypes
-        {
-            get
-            {
-                return this._ApiTypes;
-            }
-            set
-            {
-                this._ApiTypes = value;
-            }
-        }
-
-
-        public virtual IList<DocPage> DocPages
-        {
-            get
-            {
-                return this._DocPages;
-            }
-            set
-            {
-                this._DocPages = value;
-            }
-        }
-
-
-        public virtual IList<DocSection> DocSections
-        {
-            get
-            {
-                return this._DocSections;
-            }
-            set
-            {
-                this._DocSections = value;
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public DateTime TimestampUtc
+    {
+        get
+        {
+            return this._TimestampUtc;
+        }
+        set
+        {
+            if (this._TimestampUtc != value)
+            {
+                this.SendPropertyChanging("TimestampUtc");
+                this._TimestampUtc = value;
+                this.SendPropertyChanged("TimestampUtc");
+            }
+        }
+    }
+
+    public string SchemaVersion
+    {
+        get
+        {
+            return this._SchemaVersion;
+        }
+        set
+        {
+            if (this._SchemaVersion != value)
+            {
+                this.SendPropertyChanging("SchemaVersion");
+                this._SchemaVersion = value;
+                this.SendPropertyChanged("SchemaVersion");
+            }
+        }
+    }
+
+    public string Notes
+    {
+        get
+        {
+            return this._Notes;
+        }
+        set
+        {
+            if (this._Notes != value)
+            {
+                this.SendPropertyChanging("Notes");
+                this._Notes = value;
+                this.SendPropertyChanged("Notes");
+            }
+        }
+    }
+
+
+    public virtual IList<ApiFeature> ApiFeatures
+    {
+        get
+        {
+            return this._ApiFeatures;
+        }
+        set
+        {
+            this._ApiFeatures = value;
+        }
+    }
+
+
+    public virtual IList<ApiMember> ApiMembers
+    {
+        get
+        {
+            return this._ApiMembers;
+        }
+        set
+        {
+            this._ApiMembers = value;
+        }
+    }
+
+
+    public virtual IList<ApiParameter> ApiParameters
+    {
+        get
+        {
+            return this._ApiParameters;
+        }
+        set
+        {
+            this._ApiParameters = value;
+        }
+    }
+
+
+    public virtual IList<ApiType> ApiTypes
+    {
+        get
+        {
+            return this._ApiTypes;
+        }
+        set
+        {
+            this._ApiTypes = value;
+        }
+    }
+
+
+    public virtual IList<DocPage> DocPages
+    {
+        get
+        {
+            return this._DocPages;
+        }
+        set
+        {
+            this._DocPages = value;
+        }
+    }
+
+
+    public virtual IList<DocSection> DocSections
+    {
+        get
+        {
+            return this._DocSections;
+        }
+        set
+        {
+            this._DocSections = value;
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

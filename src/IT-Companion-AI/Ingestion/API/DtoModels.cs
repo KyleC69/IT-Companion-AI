@@ -1,4 +1,4 @@
-﻿namespace ITCompanionAI.AgentFramework.Ingestion; 
+﻿namespace ITCompanionAI.Ingestion.API; 
 
 public sealed class ApiTypeExtraction
 {

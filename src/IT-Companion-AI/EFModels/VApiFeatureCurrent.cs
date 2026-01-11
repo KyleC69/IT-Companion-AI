@@ -8,378 +8,368 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class VApiFeatureCurrent : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class VApiFeatureCurrent : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private Guid? _ApiTypeId;
+    private Guid? _ApiTypeId;
 
-        private string _SemanticUid;
+    private string _SemanticUid;
 
-        private Guid _TruthRunId;
+    private Guid _TruthRunId;
 
-        private string _Name;
+    private string _Name;
 
-        private string _Language;
+    private string _Language;
 
-        private string _Description;
+    private string _Description;
 
-        private string _Tags;
+    private string _Tags;
 
-        private int _VersionNumber;
+    private int _VersionNumber;
 
-        private Guid _CreatedIngestionRunId;
+    private Guid _CreatedIngestionRunId;
 
-        private Guid _UpdatedIngestionRunId;
+    private Guid _UpdatedIngestionRunId;
 
-        private Guid? _RemovedIngestionRunId;
+    private Guid? _RemovedIngestionRunId;
 
-        private DateTime _ValidFromUtc;
+    private DateTime _ValidFromUtc;
 
-        private DateTime? _ValidToUtc;
+    private DateTime? _ValidToUtc;
 
-        private bool _IsActive;
+    private bool _IsActive;
 
-        private byte[] _ContentHash;
+    private byte[] _ContentHash;
 
-        private byte[] _SemanticUidHash;
+    private byte[] _SemanticUidHash;
 
-        public VApiFeatureCurrent()
+    public VApiFeatureCurrent()
+    {
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public Guid? ApiTypeId
-        {
-            get
-            {
-                return this._ApiTypeId;
-            }
-            set
-            {
-                if (this._ApiTypeId != value)
-                {
-                    this.SendPropertyChanging("ApiTypeId");
-                    this._ApiTypeId = value;
-                    this.SendPropertyChanged("ApiTypeId");
-                }
-            }
-        }
-
-        public string SemanticUid
-        {
-            get
-            {
-                return this._SemanticUid;
-            }
-            set
-            {
-                if (this._SemanticUid != value)
-                {
-                    this.SendPropertyChanging("SemanticUid");
-                    this._SemanticUid = value;
-                    this.SendPropertyChanged("SemanticUid");
-                }
-            }
-        }
-
-        public Guid TruthRunId
-        {
-            get
-            {
-                return this._TruthRunId;
-            }
-            set
-            {
-                if (this._TruthRunId != value)
-                {
-                    this.SendPropertyChanging("TruthRunId");
-                    this._TruthRunId = value;
-                    this.SendPropertyChanged("TruthRunId");
-                }
-            }
-        }
-
-        public string Name
-        {
-            get
-            {
-                return this._Name;
-            }
-            set
-            {
-                if (this._Name != value)
-                {
-                    this.SendPropertyChanging("Name");
-                    this._Name = value;
-                    this.SendPropertyChanged("Name");
-                }
-            }
-        }
-
-        public string Language
-        {
-            get
-            {
-                return this._Language;
-            }
-            set
-            {
-                if (this._Language != value)
-                {
-                    this.SendPropertyChanging("Language");
-                    this._Language = value;
-                    this.SendPropertyChanged("Language");
-                }
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return this._Description;
-            }
-            set
-            {
-                if (this._Description != value)
-                {
-                    this.SendPropertyChanging("Description");
-                    this._Description = value;
-                    this.SendPropertyChanged("Description");
-                }
-            }
-        }
-
-        public string Tags
-        {
-            get
-            {
-                return this._Tags;
-            }
-            set
-            {
-                if (this._Tags != value)
-                {
-                    this.SendPropertyChanging("Tags");
-                    this._Tags = value;
-                    this.SendPropertyChanged("Tags");
-                }
-            }
-        }
-
-        public int VersionNumber
-        {
-            get
-            {
-                return this._VersionNumber;
-            }
-            set
-            {
-                if (this._VersionNumber != value)
-                {
-                    this.SendPropertyChanging("VersionNumber");
-                    this._VersionNumber = value;
-                    this.SendPropertyChanged("VersionNumber");
-                }
-            }
-        }
-
-        public Guid CreatedIngestionRunId
-        {
-            get
-            {
-                return this._CreatedIngestionRunId;
-            }
-            set
-            {
-                if (this._CreatedIngestionRunId != value)
-                {
-                    this.SendPropertyChanging("CreatedIngestionRunId");
-                    this._CreatedIngestionRunId = value;
-                    this.SendPropertyChanged("CreatedIngestionRunId");
-                }
-            }
-        }
-
-        public Guid UpdatedIngestionRunId
-        {
-            get
-            {
-                return this._UpdatedIngestionRunId;
-            }
-            set
-            {
-                if (this._UpdatedIngestionRunId != value)
-                {
-                    this.SendPropertyChanging("UpdatedIngestionRunId");
-                    this._UpdatedIngestionRunId = value;
-                    this.SendPropertyChanged("UpdatedIngestionRunId");
-                }
-            }
-        }
-
-        public Guid? RemovedIngestionRunId
-        {
-            get
-            {
-                return this._RemovedIngestionRunId;
-            }
-            set
-            {
-                if (this._RemovedIngestionRunId != value)
-                {
-                    this.SendPropertyChanging("RemovedIngestionRunId");
-                    this._RemovedIngestionRunId = value;
-                    this.SendPropertyChanged("RemovedIngestionRunId");
-                }
-            }
-        }
-
-        public DateTime ValidFromUtc
-        {
-            get
-            {
-                return this._ValidFromUtc;
-            }
-            set
-            {
-                if (this._ValidFromUtc != value)
-                {
-                    this.SendPropertyChanging("ValidFromUtc");
-                    this._ValidFromUtc = value;
-                    this.SendPropertyChanged("ValidFromUtc");
-                }
-            }
-        }
-
-        public DateTime? ValidToUtc
-        {
-            get
-            {
-                return this._ValidToUtc;
-            }
-            set
-            {
-                if (this._ValidToUtc != value)
-                {
-                    this.SendPropertyChanging("ValidToUtc");
-                    this._ValidToUtc = value;
-                    this.SendPropertyChanged("ValidToUtc");
-                }
-            }
-        }
-
-        public bool IsActive
-        {
-            get
-            {
-                return this._IsActive;
-            }
-            set
-            {
-                if (this._IsActive != value)
-                {
-                    this.SendPropertyChanging("IsActive");
-                    this._IsActive = value;
-                    this.SendPropertyChanged("IsActive");
-                }
-            }
-        }
-
-        public byte[] ContentHash
-        {
-            get
-            {
-                return this._ContentHash;
-            }
-            set
-            {
-                if (this._ContentHash != value)
-                {
-                    this.SendPropertyChanging("ContentHash");
-                    this._ContentHash = value;
-                    this.SendPropertyChanged("ContentHash");
-                }
-            }
-        }
-
-        public byte[] SemanticUidHash
-        {
-            get
-            {
-                return this._SemanticUidHash;
-            }
-            set
-            {
-                if (this._SemanticUidHash != value)
-                {
-                    this.SendPropertyChanging("SemanticUidHash");
-                    this._SemanticUidHash = value;
-                    this.SendPropertyChanged("SemanticUidHash");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid? ApiTypeId
+    {
+        get
+        {
+            return this._ApiTypeId;
+        }
+        set
+        {
+            if (this._ApiTypeId != value)
+            {
+                this.SendPropertyChanging("ApiTypeId");
+                this._ApiTypeId = value;
+                this.SendPropertyChanged("ApiTypeId");
+            }
+        }
+    }
+
+    public string SemanticUid
+    {
+        get
+        {
+            return this._SemanticUid;
+        }
+        set
+        {
+            if (this._SemanticUid != value)
+            {
+                this.SendPropertyChanging("SemanticUid");
+                this._SemanticUid = value;
+                this.SendPropertyChanged("SemanticUid");
+            }
+        }
+    }
+
+    public Guid TruthRunId
+    {
+        get
+        {
+            return this._TruthRunId;
+        }
+        set
+        {
+            if (this._TruthRunId != value)
+            {
+                this.SendPropertyChanging("TruthRunId");
+                this._TruthRunId = value;
+                this.SendPropertyChanged("TruthRunId");
+            }
+        }
+    }
+
+    public string Name
+    {
+        get
+        {
+            return this._Name;
+        }
+        set
+        {
+            if (this._Name != value)
+            {
+                this.SendPropertyChanging("Name");
+                this._Name = value;
+                this.SendPropertyChanged("Name");
+            }
+        }
+    }
+
+    public string Language
+    {
+        get
+        {
+            return this._Language;
+        }
+        set
+        {
+            if (this._Language != value)
+            {
+                this.SendPropertyChanging("Language");
+                this._Language = value;
+                this.SendPropertyChanged("Language");
+            }
+        }
+    }
+
+    public string Description
+    {
+        get
+        {
+            return this._Description;
+        }
+        set
+        {
+            if (this._Description != value)
+            {
+                this.SendPropertyChanging("Description");
+                this._Description = value;
+                this.SendPropertyChanged("Description");
+            }
+        }
+    }
+
+    public string Tags
+    {
+        get
+        {
+            return this._Tags;
+        }
+        set
+        {
+            if (this._Tags != value)
+            {
+                this.SendPropertyChanging("Tags");
+                this._Tags = value;
+                this.SendPropertyChanged("Tags");
+            }
+        }
+    }
+
+    public int VersionNumber
+    {
+        get
+        {
+            return this._VersionNumber;
+        }
+        set
+        {
+            if (this._VersionNumber != value)
+            {
+                this.SendPropertyChanging("VersionNumber");
+                this._VersionNumber = value;
+                this.SendPropertyChanged("VersionNumber");
+            }
+        }
+    }
+
+    public Guid CreatedIngestionRunId
+    {
+        get
+        {
+            return this._CreatedIngestionRunId;
+        }
+        set
+        {
+            if (this._CreatedIngestionRunId != value)
+            {
+                this.SendPropertyChanging("CreatedIngestionRunId");
+                this._CreatedIngestionRunId = value;
+                this.SendPropertyChanged("CreatedIngestionRunId");
+            }
+        }
+    }
+
+    public Guid UpdatedIngestionRunId
+    {
+        get
+        {
+            return this._UpdatedIngestionRunId;
+        }
+        set
+        {
+            if (this._UpdatedIngestionRunId != value)
+            {
+                this.SendPropertyChanging("UpdatedIngestionRunId");
+                this._UpdatedIngestionRunId = value;
+                this.SendPropertyChanged("UpdatedIngestionRunId");
+            }
+        }
+    }
+
+    public Guid? RemovedIngestionRunId
+    {
+        get
+        {
+            return this._RemovedIngestionRunId;
+        }
+        set
+        {
+            if (this._RemovedIngestionRunId != value)
+            {
+                this.SendPropertyChanging("RemovedIngestionRunId");
+                this._RemovedIngestionRunId = value;
+                this.SendPropertyChanged("RemovedIngestionRunId");
+            }
+        }
+    }
+
+    public DateTime ValidFromUtc
+    {
+        get
+        {
+            return this._ValidFromUtc;
+        }
+        set
+        {
+            if (this._ValidFromUtc != value)
+            {
+                this.SendPropertyChanging("ValidFromUtc");
+                this._ValidFromUtc = value;
+                this.SendPropertyChanged("ValidFromUtc");
+            }
+        }
+    }
+
+    public DateTime? ValidToUtc
+    {
+        get
+        {
+            return this._ValidToUtc;
+        }
+        set
+        {
+            if (this._ValidToUtc != value)
+            {
+                this.SendPropertyChanging("ValidToUtc");
+                this._ValidToUtc = value;
+                this.SendPropertyChanged("ValidToUtc");
+            }
+        }
+    }
+
+    public bool IsActive
+    {
+        get
+        {
+            return this._IsActive;
+        }
+        set
+        {
+            if (this._IsActive != value)
+            {
+                this.SendPropertyChanging("IsActive");
+                this._IsActive = value;
+                this.SendPropertyChanged("IsActive");
+            }
+        }
+    }
+
+    public byte[] ContentHash
+    {
+        get
+        {
+            return this._ContentHash;
+        }
+        set
+        {
+            if (this._ContentHash != value)
+            {
+                this.SendPropertyChanging("ContentHash");
+                this._ContentHash = value;
+                this.SendPropertyChanged("ContentHash");
+            }
+        }
+    }
+
+    public byte[] SemanticUidHash
+    {
+        get
+        {
+            return this._SemanticUidHash;
+        }
+        set
+        {
+            if (this._SemanticUidHash != value)
+            {
+                this.SendPropertyChanging("SemanticUidHash");
+                this._SemanticUidHash = value;
+                this.SendPropertyChanged("SemanticUidHash");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

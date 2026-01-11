@@ -7,12 +7,10 @@
 
 
 using CommunityToolkit.Mvvm.Input;
-
-using ITCompanionAI.AgentFramework.Ingestion;
-using ITCompanionAI.Entities;
-
+using ITCompanionAI.Ingestion.API;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using KBContext = ITCompanionAI.EFModels.KBContext;
 
 
 namespace ITCompanionAI.ViewModels;

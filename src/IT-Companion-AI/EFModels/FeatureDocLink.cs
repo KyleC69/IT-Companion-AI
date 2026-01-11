@@ -8,131 +8,121 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class FeatureDocLink : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class FeatureDocLink : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private Guid _FeatureId;
+    private Guid _FeatureId;
 
-        private string _DocUid;
+    private string _DocUid;
 
-        private string _SectionUid;
+    private string _SectionUid;
 
-        public FeatureDocLink()
+    public FeatureDocLink()
+    {
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public Guid FeatureId
-        {
-            get
-            {
-                return this._FeatureId;
-            }
-            set
-            {
-                if (this._FeatureId != value)
-                {
-                    this.SendPropertyChanging("FeatureId");
-                    this._FeatureId = value;
-                    this.SendPropertyChanged("FeatureId");
-                }
-            }
-        }
-
-        public string DocUid
-        {
-            get
-            {
-                return this._DocUid;
-            }
-            set
-            {
-                if (this._DocUid != value)
-                {
-                    this.SendPropertyChanging("DocUid");
-                    this._DocUid = value;
-                    this.SendPropertyChanged("DocUid");
-                }
-            }
-        }
-
-        public string SectionUid
-        {
-            get
-            {
-                return this._SectionUid;
-            }
-            set
-            {
-                if (this._SectionUid != value)
-                {
-                    this.SendPropertyChanging("SectionUid");
-                    this._SectionUid = value;
-                    this.SendPropertyChanged("SectionUid");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid FeatureId
+    {
+        get
+        {
+            return this._FeatureId;
+        }
+        set
+        {
+            if (this._FeatureId != value)
+            {
+                this.SendPropertyChanging("FeatureId");
+                this._FeatureId = value;
+                this.SendPropertyChanged("FeatureId");
+            }
+        }
+    }
+
+    public string DocUid
+    {
+        get
+        {
+            return this._DocUid;
+        }
+        set
+        {
+            if (this._DocUid != value)
+            {
+                this.SendPropertyChanging("DocUid");
+                this._DocUid = value;
+                this.SendPropertyChanged("DocUid");
+            }
+        }
+    }
+
+    public string SectionUid
+    {
+        get
+        {
+            return this._SectionUid;
+        }
+        set
+        {
+            if (this._SectionUid != value)
+            {
+                this.SendPropertyChanging("SectionUid");
+                this._SectionUid = value;
+                this.SendPropertyChanged("SectionUid");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

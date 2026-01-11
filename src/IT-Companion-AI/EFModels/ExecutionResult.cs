@@ -8,207 +8,197 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class ExecutionResult : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class ExecutionResult : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private Guid _ExecutionRunId;
+    private Guid _ExecutionRunId;
 
-        private string _SampleUid;
+    private string _SampleUid;
 
-        private string _Status;
+    private string _Status;
 
-        private string _BuildLog;
+    private string _BuildLog;
 
-        private string _RunLog;
+    private string _RunLog;
 
-        private string _ExceptionJson;
+    private string _ExceptionJson;
 
-        private int? _DurationMs;
+    private int? _DurationMs;
 
-        public ExecutionResult()
+    public ExecutionResult()
+    {
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public Guid ExecutionRunId
-        {
-            get
-            {
-                return this._ExecutionRunId;
-            }
-            set
-            {
-                if (this._ExecutionRunId != value)
-                {
-                    this.SendPropertyChanging("ExecutionRunId");
-                    this._ExecutionRunId = value;
-                    this.SendPropertyChanged("ExecutionRunId");
-                }
-            }
-        }
-
-        public string SampleUid
-        {
-            get
-            {
-                return this._SampleUid;
-            }
-            set
-            {
-                if (this._SampleUid != value)
-                {
-                    this.SendPropertyChanging("SampleUid");
-                    this._SampleUid = value;
-                    this.SendPropertyChanged("SampleUid");
-                }
-            }
-        }
-
-        public string Status
-        {
-            get
-            {
-                return this._Status;
-            }
-            set
-            {
-                if (this._Status != value)
-                {
-                    this.SendPropertyChanging("Status");
-                    this._Status = value;
-                    this.SendPropertyChanged("Status");
-                }
-            }
-        }
-
-        public string BuildLog
-        {
-            get
-            {
-                return this._BuildLog;
-            }
-            set
-            {
-                if (this._BuildLog != value)
-                {
-                    this.SendPropertyChanging("BuildLog");
-                    this._BuildLog = value;
-                    this.SendPropertyChanged("BuildLog");
-                }
-            }
-        }
-
-        public string RunLog
-        {
-            get
-            {
-                return this._RunLog;
-            }
-            set
-            {
-                if (this._RunLog != value)
-                {
-                    this.SendPropertyChanging("RunLog");
-                    this._RunLog = value;
-                    this.SendPropertyChanged("RunLog");
-                }
-            }
-        }
-
-        public string ExceptionJson
-        {
-            get
-            {
-                return this._ExceptionJson;
-            }
-            set
-            {
-                if (this._ExceptionJson != value)
-                {
-                    this.SendPropertyChanging("ExceptionJson");
-                    this._ExceptionJson = value;
-                    this.SendPropertyChanged("ExceptionJson");
-                }
-            }
-        }
-
-        public int? DurationMs
-        {
-            get
-            {
-                return this._DurationMs;
-            }
-            set
-            {
-                if (this._DurationMs != value)
-                {
-                    this.SendPropertyChanging("DurationMs");
-                    this._DurationMs = value;
-                    this.SendPropertyChanged("DurationMs");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid ExecutionRunId
+    {
+        get
+        {
+            return this._ExecutionRunId;
+        }
+        set
+        {
+            if (this._ExecutionRunId != value)
+            {
+                this.SendPropertyChanging("ExecutionRunId");
+                this._ExecutionRunId = value;
+                this.SendPropertyChanged("ExecutionRunId");
+            }
+        }
+    }
+
+    public string SampleUid
+    {
+        get
+        {
+            return this._SampleUid;
+        }
+        set
+        {
+            if (this._SampleUid != value)
+            {
+                this.SendPropertyChanging("SampleUid");
+                this._SampleUid = value;
+                this.SendPropertyChanged("SampleUid");
+            }
+        }
+    }
+
+    public string Status
+    {
+        get
+        {
+            return this._Status;
+        }
+        set
+        {
+            if (this._Status != value)
+            {
+                this.SendPropertyChanging("Status");
+                this._Status = value;
+                this.SendPropertyChanged("Status");
+            }
+        }
+    }
+
+    public string BuildLog
+    {
+        get
+        {
+            return this._BuildLog;
+        }
+        set
+        {
+            if (this._BuildLog != value)
+            {
+                this.SendPropertyChanging("BuildLog");
+                this._BuildLog = value;
+                this.SendPropertyChanged("BuildLog");
+            }
+        }
+    }
+
+    public string RunLog
+    {
+        get
+        {
+            return this._RunLog;
+        }
+        set
+        {
+            if (this._RunLog != value)
+            {
+                this.SendPropertyChanging("RunLog");
+                this._RunLog = value;
+                this.SendPropertyChanged("RunLog");
+            }
+        }
+    }
+
+    public string ExceptionJson
+    {
+        get
+        {
+            return this._ExceptionJson;
+        }
+        set
+        {
+            if (this._ExceptionJson != value)
+            {
+                this.SendPropertyChanging("ExceptionJson");
+                this._ExceptionJson = value;
+                this.SendPropertyChanged("ExceptionJson");
+            }
+        }
+    }
+
+    public int? DurationMs
+    {
+        get
+        {
+            return this._DurationMs;
+        }
+        set
+        {
+            if (this._DurationMs != value)
+            {
+                this.SendPropertyChanging("DurationMs");
+                this._DurationMs = value;
+                this.SendPropertyChanged("DurationMs");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

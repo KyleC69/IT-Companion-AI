@@ -8,188 +8,178 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class RagChunk : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class RagChunk : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private Guid _RagRunId;
+    private Guid _RagRunId;
 
-        private string _ChunkUid;
+    private string _ChunkUid;
 
-        private string _Kind;
+    private string _Kind;
 
-        private string _Text;
+    private string _Text;
 
-        private string _MetadataJson;
+    private string _MetadataJson;
 
-        private string _EmbeddingVector;
+    private string _EmbeddingVector;
 
-        public RagChunk()
+    public RagChunk()
+    {
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public Guid RagRunId
-        {
-            get
-            {
-                return this._RagRunId;
-            }
-            set
-            {
-                if (this._RagRunId != value)
-                {
-                    this.SendPropertyChanging("RagRunId");
-                    this._RagRunId = value;
-                    this.SendPropertyChanged("RagRunId");
-                }
-            }
-        }
-
-        public string ChunkUid
-        {
-            get
-            {
-                return this._ChunkUid;
-            }
-            set
-            {
-                if (this._ChunkUid != value)
-                {
-                    this.SendPropertyChanging("ChunkUid");
-                    this._ChunkUid = value;
-                    this.SendPropertyChanged("ChunkUid");
-                }
-            }
-        }
-
-        public string Kind
-        {
-            get
-            {
-                return this._Kind;
-            }
-            set
-            {
-                if (this._Kind != value)
-                {
-                    this.SendPropertyChanging("Kind");
-                    this._Kind = value;
-                    this.SendPropertyChanged("Kind");
-                }
-            }
-        }
-
-        public string Text
-        {
-            get
-            {
-                return this._Text;
-            }
-            set
-            {
-                if (this._Text != value)
-                {
-                    this.SendPropertyChanging("Text");
-                    this._Text = value;
-                    this.SendPropertyChanged("Text");
-                }
-            }
-        }
-
-        public string MetadataJson
-        {
-            get
-            {
-                return this._MetadataJson;
-            }
-            set
-            {
-                if (this._MetadataJson != value)
-                {
-                    this.SendPropertyChanging("MetadataJson");
-                    this._MetadataJson = value;
-                    this.SendPropertyChanged("MetadataJson");
-                }
-            }
-        }
-
-        public string EmbeddingVector
-        {
-            get
-            {
-                return this._EmbeddingVector;
-            }
-            set
-            {
-                if (this._EmbeddingVector != value)
-                {
-                    this.SendPropertyChanging("EmbeddingVector");
-                    this._EmbeddingVector = value;
-                    this.SendPropertyChanged("EmbeddingVector");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid RagRunId
+    {
+        get
+        {
+            return this._RagRunId;
+        }
+        set
+        {
+            if (this._RagRunId != value)
+            {
+                this.SendPropertyChanging("RagRunId");
+                this._RagRunId = value;
+                this.SendPropertyChanged("RagRunId");
+            }
+        }
+    }
+
+    public string ChunkUid
+    {
+        get
+        {
+            return this._ChunkUid;
+        }
+        set
+        {
+            if (this._ChunkUid != value)
+            {
+                this.SendPropertyChanging("ChunkUid");
+                this._ChunkUid = value;
+                this.SendPropertyChanged("ChunkUid");
+            }
+        }
+    }
+
+    public string Kind
+    {
+        get
+        {
+            return this._Kind;
+        }
+        set
+        {
+            if (this._Kind != value)
+            {
+                this.SendPropertyChanging("Kind");
+                this._Kind = value;
+                this.SendPropertyChanged("Kind");
+            }
+        }
+    }
+
+    public string Text
+    {
+        get
+        {
+            return this._Text;
+        }
+        set
+        {
+            if (this._Text != value)
+            {
+                this.SendPropertyChanging("Text");
+                this._Text = value;
+                this.SendPropertyChanged("Text");
+            }
+        }
+    }
+
+    public string MetadataJson
+    {
+        get
+        {
+            return this._MetadataJson;
+        }
+        set
+        {
+            if (this._MetadataJson != value)
+            {
+                this.SendPropertyChanging("MetadataJson");
+                this._MetadataJson = value;
+                this.SendPropertyChanged("MetadataJson");
+            }
+        }
+    }
+
+    public string EmbeddingVector
+    {
+        get
+        {
+            return this._EmbeddingVector;
+        }
+        set
+        {
+            if (this._EmbeddingVector != value)
+            {
+                this.SendPropertyChanging("EmbeddingVector");
+                this._EmbeddingVector = value;
+                this.SendPropertyChanged("EmbeddingVector");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

@@ -8,150 +8,140 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class SnapshotDiff : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class SnapshotDiff : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private Guid _OldSnapshotId;
+    private Guid _OldSnapshotId;
 
-        private Guid _NewSnapshotId;
+    private Guid _NewSnapshotId;
 
-        private DateTime _TimestampUtc;
+    private DateTime _TimestampUtc;
 
-        private string _SchemaVersion;
+    private string _SchemaVersion;
 
-        public SnapshotDiff()
+    public SnapshotDiff()
+    {
+        OnCreated();
+    }
+
+    public Guid Id
+    {
+        get
         {
-            OnCreated();
+            return this._Id;
         }
-
-        public Guid Id
+        set
         {
-            get
+            if (this._Id != value)
             {
-                return this._Id;
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
             }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public Guid OldSnapshotId
-        {
-            get
-            {
-                return this._OldSnapshotId;
-            }
-            set
-            {
-                if (this._OldSnapshotId != value)
-                {
-                    this.SendPropertyChanging("OldSnapshotId");
-                    this._OldSnapshotId = value;
-                    this.SendPropertyChanged("OldSnapshotId");
-                }
-            }
-        }
-
-        public Guid NewSnapshotId
-        {
-            get
-            {
-                return this._NewSnapshotId;
-            }
-            set
-            {
-                if (this._NewSnapshotId != value)
-                {
-                    this.SendPropertyChanging("NewSnapshotId");
-                    this._NewSnapshotId = value;
-                    this.SendPropertyChanged("NewSnapshotId");
-                }
-            }
-        }
-
-        public DateTime TimestampUtc
-        {
-            get
-            {
-                return this._TimestampUtc;
-            }
-            set
-            {
-                if (this._TimestampUtc != value)
-                {
-                    this.SendPropertyChanging("TimestampUtc");
-                    this._TimestampUtc = value;
-                    this.SendPropertyChanged("TimestampUtc");
-                }
-            }
-        }
-
-        public string SchemaVersion
-        {
-            get
-            {
-                return this._SchemaVersion;
-            }
-            set
-            {
-                if (this._SchemaVersion != value)
-                {
-                    this.SendPropertyChanging("SchemaVersion");
-                    this._SchemaVersion = value;
-                    this.SendPropertyChanged("SchemaVersion");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid OldSnapshotId
+    {
+        get
+        {
+            return this._OldSnapshotId;
+        }
+        set
+        {
+            if (this._OldSnapshotId != value)
+            {
+                this.SendPropertyChanging("OldSnapshotId");
+                this._OldSnapshotId = value;
+                this.SendPropertyChanged("OldSnapshotId");
+            }
+        }
+    }
+
+    public Guid NewSnapshotId
+    {
+        get
+        {
+            return this._NewSnapshotId;
+        }
+        set
+        {
+            if (this._NewSnapshotId != value)
+            {
+                this.SendPropertyChanging("NewSnapshotId");
+                this._NewSnapshotId = value;
+                this.SendPropertyChanged("NewSnapshotId");
+            }
+        }
+    }
+
+    public DateTime TimestampUtc
+    {
+        get
+        {
+            return this._TimestampUtc;
+        }
+        set
+        {
+            if (this._TimestampUtc != value)
+            {
+                this.SendPropertyChanging("TimestampUtc");
+                this._TimestampUtc = value;
+                this.SendPropertyChanged("TimestampUtc");
+            }
+        }
+    }
+
+    public string SchemaVersion
+    {
+        get
+        {
+            return this._SchemaVersion;
+        }
+        set
+        {
+            if (this._SchemaVersion != value)
+            {
+                this.SendPropertyChanging("SchemaVersion");
+                this._SchemaVersion = value;
+                this.SendPropertyChanged("SchemaVersion");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

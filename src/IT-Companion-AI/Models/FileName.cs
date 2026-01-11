@@ -6,6 +6,10 @@
 // Do not remove file headers
 
 
+using ApiMember = ITCompanionAI.EFModels.ApiMember;
+using ApiParameter = ITCompanionAI.EFModels.ApiParameter;
+using ApiType = ITCompanionAI.EFModels.ApiType;
+
 namespace ITCompanionAI.Models;
 
 

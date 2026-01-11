@@ -8,150 +8,140 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class SemanticIdentity : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class SemanticIdentity : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private byte[] _UidHash;
+    private byte[] _UidHash;
 
-        private string _Uid;
+    private string _Uid;
 
-        private string _Kind;
+    private string _Kind;
 
-        private DateTime _CreatedUtc;
+    private DateTime _CreatedUtc;
 
-        private string _Notes;
+    private string _Notes;
 
-        public SemanticIdentity()
+    public SemanticIdentity()
+    {
+        OnCreated();
+    }
+
+    public byte[] UidHash
+    {
+        get
         {
-            OnCreated();
+            return this._UidHash;
         }
-
-        public byte[] UidHash
+        set
         {
-            get
+            if (this._UidHash != value)
             {
-                return this._UidHash;
+                this.SendPropertyChanging("UidHash");
+                this._UidHash = value;
+                this.SendPropertyChanged("UidHash");
             }
-            set
-            {
-                if (this._UidHash != value)
-                {
-                    this.SendPropertyChanging("UidHash");
-                    this._UidHash = value;
-                    this.SendPropertyChanged("UidHash");
-                }
-            }
-        }
-
-        public string Uid
-        {
-            get
-            {
-                return this._Uid;
-            }
-            set
-            {
-                if (this._Uid != value)
-                {
-                    this.SendPropertyChanging("Uid");
-                    this._Uid = value;
-                    this.SendPropertyChanged("Uid");
-                }
-            }
-        }
-
-        public string Kind
-        {
-            get
-            {
-                return this._Kind;
-            }
-            set
-            {
-                if (this._Kind != value)
-                {
-                    this.SendPropertyChanging("Kind");
-                    this._Kind = value;
-                    this.SendPropertyChanged("Kind");
-                }
-            }
-        }
-
-        public DateTime CreatedUtc
-        {
-            get
-            {
-                return this._CreatedUtc;
-            }
-            set
-            {
-                if (this._CreatedUtc != value)
-                {
-                    this.SendPropertyChanging("CreatedUtc");
-                    this._CreatedUtc = value;
-                    this.SendPropertyChanged("CreatedUtc");
-                }
-            }
-        }
-
-        public string Notes
-        {
-            get
-            {
-                return this._Notes;
-            }
-            set
-            {
-                if (this._Notes != value)
-                {
-                    this.SendPropertyChanging("Notes");
-                    this._Notes = value;
-                    this.SendPropertyChanged("Notes");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public string Uid
+    {
+        get
+        {
+            return this._Uid;
+        }
+        set
+        {
+            if (this._Uid != value)
+            {
+                this.SendPropertyChanging("Uid");
+                this._Uid = value;
+                this.SendPropertyChanged("Uid");
+            }
+        }
+    }
+
+    public string Kind
+    {
+        get
+        {
+            return this._Kind;
+        }
+        set
+        {
+            if (this._Kind != value)
+            {
+                this.SendPropertyChanging("Kind");
+                this._Kind = value;
+                this.SendPropertyChanged("Kind");
+            }
+        }
+    }
+
+    public DateTime CreatedUtc
+    {
+        get
+        {
+            return this._CreatedUtc;
+        }
+        set
+        {
+            if (this._CreatedUtc != value)
+            {
+                this.SendPropertyChanging("CreatedUtc");
+                this._CreatedUtc = value;
+                this.SendPropertyChanged("CreatedUtc");
+            }
+        }
+    }
+
+    public string Notes
+    {
+        get
+        {
+            return this._Notes;
+        }
+        set
+        {
+            if (this._Notes != value)
+            {
+                this.SendPropertyChanging("Notes");
+                this._Notes = value;
+                this.SendPropertyChanged("Notes");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

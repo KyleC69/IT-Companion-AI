@@ -8,112 +8,102 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class SpCheckTemporalConsistencyResult1 : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class SpCheckTemporalConsistencyResult1 : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private string _TableName;
+    private string _TableName;
 
-        private Guid _Id;
+    private Guid _Id;
 
-        private string _SemanticUid;
+    private string _SemanticUid;
 
-        public SpCheckTemporalConsistencyResult1()
+    public SpCheckTemporalConsistencyResult1()
+    {
+        OnCreated();
+    }
+
+    public string TableName
+    {
+        get
         {
-            OnCreated();
+            return this._TableName;
         }
-
-        public string TableName
+        set
         {
-            get
+            if (this._TableName != value)
             {
-                return this._TableName;
+                this.SendPropertyChanging("TableName");
+                this._TableName = value;
+                this.SendPropertyChanged("TableName");
             }
-            set
-            {
-                if (this._TableName != value)
-                {
-                    this.SendPropertyChanging("TableName");
-                    this._TableName = value;
-                    this.SendPropertyChanged("TableName");
-                }
-            }
-        }
-
-        public Guid Id
-        {
-            get
-            {
-                return this._Id;
-            }
-            set
-            {
-                if (this._Id != value)
-                {
-                    this.SendPropertyChanging("Id");
-                    this._Id = value;
-                    this.SendPropertyChanged("Id");
-                }
-            }
-        }
-
-        public string SemanticUid
-        {
-            get
-            {
-                return this._SemanticUid;
-            }
-            set
-            {
-                if (this._SemanticUid != value)
-                {
-                    this.SendPropertyChanging("SemanticUid");
-                    this._SemanticUid = value;
-                    this.SendPropertyChanged("SemanticUid");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public Guid Id
+    {
+        get
+        {
+            return this._Id;
+        }
+        set
+        {
+            if (this._Id != value)
+            {
+                this.SendPropertyChanging("Id");
+                this._Id = value;
+                this.SendPropertyChanged("Id");
+            }
+        }
+    }
+
+    public string SemanticUid
+    {
+        get
+        {
+            return this._SemanticUid;
+        }
+        set
+        {
+            if (this._SemanticUid != value)
+            {
+                this.SendPropertyChanging("SemanticUid");
+                this._SemanticUid = value;
+                this.SendPropertyChanged("SemanticUid");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

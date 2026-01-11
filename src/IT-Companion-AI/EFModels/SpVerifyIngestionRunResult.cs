@@ -8,93 +8,83 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class SpVerifyIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class SpVerifyIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private string _Category;
+    private string _Category;
 
-        private string _Detail;
+    private string _Detail;
 
-        public SpVerifyIngestionRunResult()
+    public SpVerifyIngestionRunResult()
+    {
+        OnCreated();
+    }
+
+    public string Category
+    {
+        get
         {
-            OnCreated();
+            return this._Category;
         }
-
-        public string Category
+        set
         {
-            get
+            if (this._Category != value)
             {
-                return this._Category;
+                this.SendPropertyChanging("Category");
+                this._Category = value;
+                this.SendPropertyChanged("Category");
             }
-            set
-            {
-                if (this._Category != value)
-                {
-                    this.SendPropertyChanging("Category");
-                    this._Category = value;
-                    this.SendPropertyChanged("Category");
-                }
-            }
-        }
-
-        public string Detail
-        {
-            get
-            {
-                return this._Detail;
-            }
-            set
-            {
-                if (this._Detail != value)
-                {
-                    this.SendPropertyChanging("Detail");
-                    this._Detail = value;
-                    this.SendPropertyChanged("Detail");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public string Detail
+    {
+        get
+        {
+            return this._Detail;
+        }
+        set
+        {
+            if (this._Detail != value)
+            {
+                this.SendPropertyChanging("Detail");
+                this._Detail = value;
+                this.SendPropertyChanged("Detail");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

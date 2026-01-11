@@ -8,8 +8,6 @@
 
 using Windows.Graphics;
 
-using ITCompanionAI.AgentFramework;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,6 +18,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using ITCompanionAI.Ingestion.Docs;
+using KBContext = ITCompanionAI.EFModels.KBContext;
 
 namespace ITCompanionAI;
 

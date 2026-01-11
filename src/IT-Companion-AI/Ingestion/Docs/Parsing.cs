@@ -17,7 +17,7 @@
 using HtmlAgilityPack;
 
 
-namespace ITCompanionAI.AgentFramework;
+namespace ITCompanionAI.Ingestion.Docs;
 
 
 public interface IContentParser

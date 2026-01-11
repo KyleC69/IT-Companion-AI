@@ -6,26 +6,22 @@
 // Do not remove file headers
 
 
-using System.Collections;
-using System.Diagnostics;
-using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Xml.Linq;
-using Microsoft.CodeAnalysis.MSBuild;
-
+using ITCompanionAI.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
-
 using Octokit;
+using ApiMember = ITCompanionAI.EFModels.ApiMember;
+using ApiParameter = ITCompanionAI.EFModels.ApiParameter;
+using ApiType = ITCompanionAI.EFModels.ApiType;
 using Document = Microsoft.CodeAnalysis.Document;
-using Encoding = System.Text.Encoding;
 using Project = Microsoft.CodeAnalysis.Project;
 
-namespace ITCompanionAI.AgentFramework.Ingestion;
+namespace ITCompanionAI.Ingestion.API;
 
 
 

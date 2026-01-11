@@ -8,150 +8,140 @@
 // the code is regenerated.
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
+namespace ITCompanionAI.EFModels;
 
-namespace ITCompanionAI.Entities
-{
-    public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged {
+public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged {
 
-        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
+    private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(System.String.Empty);
 
-        private string _ArtifactKind;
+    private string _ArtifactKind;
 
-        private string _SemanticUid;
+    private string _SemanticUid;
 
-        private int _VersionNumber;
+    private int _VersionNumber;
 
-        private DateTime _ValidFromUtc;
+    private DateTime _ValidFromUtc;
 
-        private DateTime? _ValidToUtc;
+    private DateTime? _ValidToUtc;
 
-        public SpGetChangesInIngestionRunResult()
+    public SpGetChangesInIngestionRunResult()
+    {
+        OnCreated();
+    }
+
+    public string ArtifactKind
+    {
+        get
         {
-            OnCreated();
+            return this._ArtifactKind;
         }
-
-        public string ArtifactKind
+        set
         {
-            get
+            if (this._ArtifactKind != value)
             {
-                return this._ArtifactKind;
+                this.SendPropertyChanging("ArtifactKind");
+                this._ArtifactKind = value;
+                this.SendPropertyChanged("ArtifactKind");
             }
-            set
-            {
-                if (this._ArtifactKind != value)
-                {
-                    this.SendPropertyChanging("ArtifactKind");
-                    this._ArtifactKind = value;
-                    this.SendPropertyChanged("ArtifactKind");
-                }
-            }
-        }
-
-        public string SemanticUid
-        {
-            get
-            {
-                return this._SemanticUid;
-            }
-            set
-            {
-                if (this._SemanticUid != value)
-                {
-                    this.SendPropertyChanging("SemanticUid");
-                    this._SemanticUid = value;
-                    this.SendPropertyChanged("SemanticUid");
-                }
-            }
-        }
-
-        public int VersionNumber
-        {
-            get
-            {
-                return this._VersionNumber;
-            }
-            set
-            {
-                if (this._VersionNumber != value)
-                {
-                    this.SendPropertyChanging("VersionNumber");
-                    this._VersionNumber = value;
-                    this.SendPropertyChanged("VersionNumber");
-                }
-            }
-        }
-
-        public DateTime ValidFromUtc
-        {
-            get
-            {
-                return this._ValidFromUtc;
-            }
-            set
-            {
-                if (this._ValidFromUtc != value)
-                {
-                    this.SendPropertyChanging("ValidFromUtc");
-                    this._ValidFromUtc = value;
-                    this.SendPropertyChanged("ValidFromUtc");
-                }
-            }
-        }
-
-        public DateTime? ValidToUtc
-        {
-            get
-            {
-                return this._ValidToUtc;
-            }
-            set
-            {
-                if (this._ValidToUtc != value)
-                {
-                    this.SendPropertyChanging("ValidToUtc");
-                    this._ValidToUtc = value;
-                    this.SendPropertyChanged("ValidToUtc");
-                }
-            }
-        }
-
-        #region Extensibility Method Definitions
-
-        partial void OnCreated();
-
-        #endregion
-
-        public virtual event PropertyChangingEventHandler PropertyChanging;
-
-        public virtual event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void SendPropertyChanging()
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, emptyChangingEventArgs);
-        }
-
-        protected virtual void SendPropertyChanging(System.String propertyName) 
-        {
-            var handler = this.PropertyChanging;
-            if (handler != null)
-                handler(this, new PropertyChangingEventArgs(propertyName));
-        }
-
-        protected virtual void SendPropertyChanged(System.String propertyName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    public string SemanticUid
+    {
+        get
+        {
+            return this._SemanticUid;
+        }
+        set
+        {
+            if (this._SemanticUid != value)
+            {
+                this.SendPropertyChanging("SemanticUid");
+                this._SemanticUid = value;
+                this.SendPropertyChanged("SemanticUid");
+            }
+        }
+    }
+
+    public int VersionNumber
+    {
+        get
+        {
+            return this._VersionNumber;
+        }
+        set
+        {
+            if (this._VersionNumber != value)
+            {
+                this.SendPropertyChanging("VersionNumber");
+                this._VersionNumber = value;
+                this.SendPropertyChanged("VersionNumber");
+            }
+        }
+    }
+
+    public DateTime ValidFromUtc
+    {
+        get
+        {
+            return this._ValidFromUtc;
+        }
+        set
+        {
+            if (this._ValidFromUtc != value)
+            {
+                this.SendPropertyChanging("ValidFromUtc");
+                this._ValidFromUtc = value;
+                this.SendPropertyChanged("ValidFromUtc");
+            }
+        }
+    }
+
+    public DateTime? ValidToUtc
+    {
+        get
+        {
+            return this._ValidToUtc;
+        }
+        set
+        {
+            if (this._ValidToUtc != value)
+            {
+                this.SendPropertyChanging("ValidToUtc");
+                this._ValidToUtc = value;
+                this.SendPropertyChanged("ValidToUtc");
+            }
+        }
+    }
+
+    #region Extensibility Method Definitions
+
+    partial void OnCreated();
+
+    #endregion
+
+    public virtual event PropertyChangingEventHandler PropertyChanging;
+
+    public virtual event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, emptyChangingEventArgs);
+    }
+
+    protected virtual void SendPropertyChanging(System.String propertyName) 
+    {
+        var handler = this.PropertyChanging;
+        if (handler != null)
+            handler(this, new PropertyChangingEventArgs(propertyName));
+    }
+
+    protected virtual void SendPropertyChanged(System.String propertyName)
+    {
+        var handler = this.PropertyChanged;
+        if (handler != null)
+            handler(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
