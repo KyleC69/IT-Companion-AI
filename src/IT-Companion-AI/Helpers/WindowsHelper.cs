@@ -6,6 +6,8 @@
 // Do not remove file headers
 
 
+using Microsoft.UI.Xaml;
+
 namespace ITCompanionAI.Helpers;
 
 

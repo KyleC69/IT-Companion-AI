@@ -6,9 +6,13 @@
 // Do not remove file headers
 
 
+using CommunityToolkit.Mvvm.Input;
+
 using ITCompanionAI.AgentFramework.Ingestion;
+using ITCompanionAI.Entities;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 
 namespace ITCompanionAI.ViewModels;
@@ -31,8 +35,9 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 
 
         logger.LogInformation("ButtonViewModel initialized.");
+        
 
-        logger.LogInformation("^^^^^^^^^^^^^^^^^      Ingestion Finished    ************.");
+
     }
 
 
@@ -54,11 +59,26 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     [RelayCommand]
     public async Task HarvestApiAsync()
     {
-        var path = "d:\\SKAPIRepo\\semantic-kernel\\dotnet\\src";
         logger.LogInformation("Application Starting Up");
 
-        var ingester = new APIIngestion(new KBContext());
-        await ingester.StartIngestionAsync().ConfigureAwait(false);
+        //   var ingester = new APIIngestion(new KBContext());
+        //    await ingester.StartIngestionAsync().ConfigureAwait(false);
+        var filePath = """f:\SKApiRepo\semantic-kernel\dotnet\src""";
+
+
+      //  var results =  await harvester.ExtractAsync(filePath, CancellationToken.None);
+      
+
+     //   var ingester = new APIIngestion(new KBContext());
+    //  var sourceSnapshotId =  await ingester.StartIngestionAsync();
+    Guid sourceSnapshotId = new Guid("997BE774-96B5-44D8-B6AD-14FC2EBDDABB");
+
+
+        var verifier = new IngestionVerifier(new KBContext());
+        await verifier.VerifyApiTypesAsync(sourceSnapshotId, CancellationToken.None);
+        await verifier.VerifyMembersAndParametersAsync(sourceSnapshotId, CancellationToken.None);
+
+
         logger.LogInformation("Ingestion Complete");
 
 

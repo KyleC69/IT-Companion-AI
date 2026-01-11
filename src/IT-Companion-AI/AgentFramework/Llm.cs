@@ -211,7 +211,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
     private readonly bool _requiresPastKeyValues;
     private readonly bool _requiresPositionIds;
     private readonly InferenceSession _session;
-    private readonly Tokenizer _tokenizer;
+    private readonly HFTokenizer.Tokenizer _tokenizer;
 
 
 
@@ -221,7 +221,7 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
 
     public OnnxLLMClient(
         string modelPath,
-        Tokenizer tokenizer,
+        HFTokenizer.Tokenizer tokenizer,
         int maxNewTokens = 256,
         string inputIdsName = "input_ids",
         string outputName = "logits",

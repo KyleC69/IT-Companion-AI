@@ -6,6 +6,8 @@
 // Do not remove file headers
 
 
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace ITCompanionAI.ViewModels;
 
 

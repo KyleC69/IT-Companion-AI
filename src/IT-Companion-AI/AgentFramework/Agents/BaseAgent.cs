@@ -6,6 +6,7 @@
 // Do not remove file headers
 
 
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 
 

@@ -6,23 +6,14 @@
 // Do not remove file headers
 
 
-global using CommunityToolkit.Mvvm.ComponentModel;
-global using CommunityToolkit.Mvvm.Input;
-global using Microsoft.UI.Xaml;
-global using Microsoft.UI.Xaml.Controls;
 global using System;
-global using System.Collections.Generic;
 global using System.Collections;
+global using System.Collections.Generic;
 global using System.ComponentModel;
-global using System.ComponentModel.DataAnnotations;
 global using System.Diagnostics;
 global using System.Text;
 global using System.Xml.Linq;
-
 global using ITCompanionAI.Entities;
 global using ITCompanionAI.Helpers;
-global using ITCompanionAI.KBCurator;
 global using ITCompanionAI.Models;
-
-
 global using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;

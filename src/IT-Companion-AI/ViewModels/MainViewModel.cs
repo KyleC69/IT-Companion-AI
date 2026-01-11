@@ -7,6 +7,9 @@
 
 
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.Input;
+
+using Microsoft.Extensions.Logging;
 
 
 namespace ITCompanionAI.ViewModels;

@@ -16,7 +16,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.EntityFrameworkCore;
 using ITCompanionAI.Views;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace ITCompanionAI;
 

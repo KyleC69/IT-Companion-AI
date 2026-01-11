@@ -6,6 +6,7 @@
 // Do not remove file headers
 
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 
