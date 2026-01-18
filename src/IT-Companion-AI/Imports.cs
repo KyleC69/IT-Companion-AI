@@ -1,13 +1,17 @@
 // Project Name: SKAgent
 // File Name: Imports.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
 
-global using CommunityToolkit.Mvvm.ComponentModel;
-global using CommunityToolkit.Mvvm.Input;
-
-global using Microsoft.UI.Xaml;
-global using Microsoft.UI.Xaml.Controls;
+global using System;
+global using System.Collections;
+global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.Text;
+global using System.Xml.Linq;
+global using ITCompanionAI.Models;
+global using ITCompanionAI.Helpers;
+global using HFTokenizer = Tokenizers.HuggingFace.Tokenizer;

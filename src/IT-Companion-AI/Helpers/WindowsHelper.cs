@@ -1,10 +1,12 @@
 ﻿// Project Name: SKAgent
 // File Name: WindowsHelper.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
+
+using Microsoft.UI.Xaml;
 
 namespace ITCompanionAI.Helpers;
 

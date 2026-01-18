@@ -1,18 +1,20 @@
 // Project Name: SKAgent
 // File Name: MainPage.xaml.cs
 // Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
+// Github:  OldSkoolzRoolz KyleC69
 // License: All Rights Reserved. No use without consent.
 // Do not remove file headers
 
 
 using ITCompanionAI.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 
 namespace ITCompanionAI.Views;
 
 
-public sealed partial class MainPage : Page
+public partial class MainPage : Page
 {
     public MainPage()
     {
@@ -27,8 +29,12 @@ public sealed partial class MainPage : Page
 
 
 
+
+
     public MainViewModel ViewModel { get; } = new();
     private Window MyWindow { get; }
+
+
 
 
 

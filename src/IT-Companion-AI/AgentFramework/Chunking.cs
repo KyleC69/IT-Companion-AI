@@ -1,17 +1,7 @@
-﻿// Project Name: SKAgent
-// File Name: Chunking.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
-using Tokenizers.HuggingFace.Tokenizer;
-
-
-// ============================================================================
+﻿// ============================================================================
 // CHUNKING (Microsoft.ML.Tokenizers-based)
 // ============================================================================
+
 
 
 namespace ITCompanionAI.AgentFramework;
@@ -21,17 +11,21 @@ public sealed record Chunk(
     int Index,
     string Text,
     int TokenCount,
-    string? Section = null,
-    string? Symbol = null,
-    string? Kind = null
+    string Section = null,
+    string Symbol = null,
+    string Kind = null
 );
+
+
 
 
 
 public interface IChunker
 {
-    IReadOnlyList<Chunk> Chunk(string text, string? section = null);
+    IReadOnlyList<Chunk> Chunk(string text, string section = null);
 }
+
+
 
 
 
@@ -41,19 +35,19 @@ public interface IChunker
 public sealed class TokenizerChunker : IChunker
 {
     private readonly int _maxTokens;
-    private readonly Tokenizer _tokenizer;
+    private readonly HFTokenizer.Tokenizer _tokenizer;
 
 
 
 
 
-    public TokenizerChunker(Tokenizer tokenizer, int maxTokens = 512)
+
+
+
+    public TokenizerChunker(HFTokenizer.Tokenizer tokenizer, int maxTokens = 512)
     {
         _tokenizer = tokenizer;
-        if (maxTokens <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxTokens));
-        }
+        if (maxTokens <= 0) throw new ArgumentOutOfRangeException(nameof(maxTokens));
 
         _maxTokens = maxTokens;
     }
@@ -62,20 +56,17 @@ public sealed class TokenizerChunker : IChunker
 
 
 
-    public IReadOnlyList<Chunk> Chunk(string text, string? section = null)
+
+
+
+    public IReadOnlyList<Chunk> Chunk(string text, string section = null)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return Array.Empty<Chunk>();
-        }
+        if (string.IsNullOrWhiteSpace(text)) return Array.Empty<Chunk>();
 
         // Encode the text using the tokenizer
-        IReadOnlyList<int> ids = _tokenizer.Encode(text, false) as IReadOnlyList<int> ?? Array.Empty<int>();
+        var ids = _tokenizer.Encode(text, false) as IReadOnlyList<int> ?? Array.Empty<int>();
         // If no tokens are generated, return an empty list
-        if (ids.Count == 0)
-        {
-            return Array.Empty<Chunk>();
-        }
+        if (ids.Count == 0) return Array.Empty<Chunk>();
 
         var total = ids.Count;
         var chunkCount = (total + _maxTokens - 1) / _maxTokens;
@@ -84,7 +75,7 @@ public sealed class TokenizerChunker : IChunker
         {
             var count = Math.Min(_maxTokens, total - start);
             // Extract the subset of token IDs for the current chunk
-            List<uint> subIds = ids.Skip(start).Take(count).Select(id => (uint)id).ToList();
+            var subIds = ids.Skip(start).Take(count).Select(id => (uint)id).ToList();
             // Decode the subset of token IDs back into text
             var subText = _tokenizer.Decode(subIds, true);
             // Add the chunk to the list

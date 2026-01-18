@@ -1,16 +1,10 @@
-﻿// Project Name: SKAgent
-// File Name: MainViewModel.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
+﻿using System.Collections.ObjectModel;
 
-
-using System.Collections.ObjectModel;
-
-using ITCompanionAI.AgentFramework.Planning;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
+
 
 
 namespace ITCompanionAI.ViewModels;
@@ -19,10 +13,16 @@ namespace ITCompanionAI.ViewModels;
 public partial class MainViewModel : BaseViewModel
 {
     private readonly ILoggerFactory _loggerFactory;
-    private CancellationTokenSource? _cts;
+    private CancellationTokenSource _cts;
+
+
+    [ObservableProperty] private string _ingestTarget;
 
     private bool _isBusy;
     private string _userInput = string.Empty;
+
+
+
 
 
 
@@ -37,9 +37,11 @@ public partial class MainViewModel : BaseViewModel
             builder.AddDebug();
             builder.AddConsole();
             builder.SetMinimumLevel(LogLevel.Trace);
-
         });
     }
+
+
+
 
 
 
@@ -50,10 +52,7 @@ public partial class MainViewModel : BaseViewModel
         get => _userInput;
         set
         {
-            if (_userInput == value)
-            {
-                return;
-            }
+            if (_userInput == value) return;
 
             _userInput = value;
             OnPropertyChanged();
@@ -63,7 +62,14 @@ public partial class MainViewModel : BaseViewModel
     }
 
 
+
+
+
     public ObservableCollection<ChatMessageViewModel> Messages { get; } = [];
+
+
+
+
 
     public bool IsBusy
     {
@@ -81,9 +87,16 @@ public partial class MainViewModel : BaseViewModel
         }
     }
 
+
+
+
+
     public bool CanSend => !IsBusy && !string.IsNullOrWhiteSpace(UserInput);
 
     public bool CanCancel => IsBusy && _cts is { IsCancellationRequested: false };
+
+
+
 
 
 
@@ -119,6 +132,9 @@ public partial class MainViewModel : BaseViewModel
 
 
 
+
+
+
     /// <summary>
     /// </summary>
     /// <returns></returns>
@@ -138,16 +154,6 @@ public partial class MainViewModel : BaseViewModel
 
         try
         {
-
-            IKnowledgeIngestionOrchestrator orchestrator = App.GetService<IKnowledgeIngestionOrchestrator>();
-
-            IPlannerAgent planner = App.GetService<IPlannerAgent>();
-
-            IngestionPlan plan =
-                await planner.CreatePlanAsync("Ingest the Semantic Kernel API signatures and usage documentation.",
-                    _cts.Token);
-
-
             //var ingestion = App.GetService<IngestionAgent>();
             //  var plans = await orchestrator.BuildOrUpdateKnowledgeBaseAsync("Ingest the Semantic Kernel API signatures and usage documentation.", _cts.Token);
 
@@ -225,6 +231,9 @@ public partial class MainViewModel : BaseViewModel
 
 
 
+
+
+
     /// <summary>
     /// </summary>
     /// <returns></returns>
@@ -242,9 +251,16 @@ public partial class MainViewModel : BaseViewModel
 
 
 
+
+
+
     partial void OnUserInputChanged(string value);
+
+
     partial void OnIsBusyChanged(bool value);
 }
+
+
 
 
 

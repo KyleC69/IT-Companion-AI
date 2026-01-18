@@ -1,115 +1,166 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
-        <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-        <OutputType>WinExe</OutputType>
+	<PropertyGroup>
+		<TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<OutputType>WinExe</OutputType>
 
-        <!-- WinUI 3 -->
-        <UseWinUI>true</UseWinUI>
-        <EnableMsixTooling>false</EnableMsixTooling>
-        <WindowsPackageType>None</WindowsPackageType>
-        <!-- <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion> -->
+		<!-- WinUI 3 -->
+		<UseWinUI>true</UseWinUI>
+		<EnableMsixTooling>false</EnableMsixTooling>
+		<WindowsPackageType>None</WindowsPackageType>
+		<!-- <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion> -->
 
-        <!-- Project Options -->
+		<!-- Project Options -->
+		<EnableDefaultCompileItems>true</EnableDefaultCompileItems>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>ITCompanionAI</RootNamespace>
+		<Nullable>disable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>ITCompanionAI</RootNamespace>
 		<AppxOSMinVersionReplaceManifestVersion>false</AppxOSMinVersionReplaceManifestVersion>
 		<AppxOSMaxVersionTestedReplaceManifestVersion>false</AppxOSMaxVersionTestedReplaceManifestVersion>
-        <!-- App Options -->
-        <UseRidGraph>false</UseRidGraph>
-        <Platforms>x86;x64</Platforms>
-        <SupportedOSPlatformVersion>10.0.22621.0</SupportedOSPlatformVersion>
-      <UserSecretsId>ff581d75-4f91-479d-afcf-56453f276c7c</UserSecretsId>
-		
-  </PropertyGroup>
+		<!-- App Options -->
+		<UseRidGraph>false</UseRidGraph>
+		<Platforms>x86;x64</Platforms>
+		<SupportedOSPlatformVersion>10.0.22621.0</SupportedOSPlatformVersion>
+		<UserSecretsId>ff581d75-4f91-479d-afcf-56453f276c7c</UserSecretsId>
+		<GenerateProjectPriFile>false</GenerateProjectPriFile>
+		<EnableProjectPriFileGeneration>false</EnableProjectPriFileGeneration>
+		<AccelerateBuildsInIde>false</AccelerateBuildsInIde>
+	</PropertyGroup>
+
+
 
 
 	<PropertyGroup>
-		<NoWarn>$(NoWarn);CA2007;IDE1006;SKEXP0001;SKEXP0110;OPENAI001</NoWarn>
+		<NoWarn>$(NoWarn);CA2007;IDE1006;SKEXP0001;SKEXP0110;OPENAI001;CS8625;CS8629;CS8601;CS8605</NoWarn>
 	</PropertyGroup>
-	
-	
-	
-	
-	
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-      <IsPublishable>False</IsPublishable>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      <IsPublishable>False</IsPublishable>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <IsPublishable>False</IsPublishable>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-      <IsPublishable>False</IsPublishable>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      <IsPublishable>False</IsPublishable>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <IsPublishable>False</IsPublishable>
-    </PropertyGroup>
-
-    <ItemGroup>
-  
-      <Compile Remove="Sample.cs" />
-      <Compile Remove="SampleRun.cs" />
-    </ItemGroup>
-
-    
-
-    <ItemGroup>
-        <Content Include="Assets\SplashScreen.scale-200.png" />
-        <Content Include="Assets\LockScreenLogo.scale-200.png" />
-        <Content Include="Assets\Square150x150Logo.scale-200.png" />
-        <Content Include="Assets\Square44x44Logo.scale-200.png" />
-        <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-        <Content Include="Assets\StoreLogo.png" />
-        <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    </ItemGroup>
 
 
-    <ItemGroup>
-        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-        <PackageReference Include="Markdig" Version="0.44.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
-        <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.7.0" />
-        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
-        <PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
-        <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
-        <PackageReference Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.68.0-preview" />
-        <PackageReference Include="Microsoft.SemanticKernel" Version="1.68.0" />
-        <PackageReference Include="Microsoft.SemanticKernel.Agents.Orchestration" Version="1.68.0-preview" />
-        <PackageReference Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" Version="1.68.0-preview" />
-        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
-        <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.68.0-preview" />
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.0-experimental3" />
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1-RTM" />
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
-        <PackageReference Include="Tokenizers.HuggingFace" Version="2.21.4" />
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Contracts\**" />
+	  <Content Remove="Contracts\**" />
+	  <EmbeddedResource Remove="Contracts\**" />
+	  <None Remove="Contracts\**" />
+	  <Page Remove="Contracts\**" />
+	  <PRIResource Remove="Contracts\**" />
+	</ItemGroup>
 
-        <PackageReference Include="Octokit" Version="13.0.1" />
+	<ItemGroup>
 
-        <Manifest Include="$(ApplicationManifest)" />
-    </ItemGroup>
+		<Compile Remove="AgentFramework\Agents\ReconciliationAgent.cs" />
+
+		<Compile Remove="AgentFramework\Agents\VerificationAgent.cs" />
+
+		<Compile Remove="Ingestion\API\ApiHarvester.cs" />
+
+		<Compile Remove="Sample.cs" />
+		<Compile Remove="SampleRun.cs" />
+	</ItemGroup>
+
+
+
+
+
+	<ItemGroup>
+
+		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+		<PackageReference Include="Markdig" Version="0.44.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="5.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="*" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0-preview3.25342.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2" />
+		<PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.7.0" />
+		<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
+		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
+		<PackageReference Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.68.0-preview" />
+
+		
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260101001" />
+		<PackageReference Include="ReverseMarkdown" Version="5.0.0" />
+		<PackageReference Include="Tokenizers.HuggingFace" Version="2.21.4" />
+		<PackageReference Include="Octokit" Version="14.0.0" />
+
+		<Manifest Include="$(ApplicationManifest)" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\cs\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\de\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\es\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\fr\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\it\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\ja\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\ko\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\Microsoft.Build.Locator.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe.config" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\Microsoft.IO.Redist.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\Newtonsoft.Json.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\pl\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\pt-BR\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\ru\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\System.Buffers.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\System.Collections.Immutable.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\System.CommandLine.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\System.Memory.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\System.Numerics.Vectors.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\System.Runtime.CompilerServices.Unsafe.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\System.Threading.Tasks.Extensions.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\tr\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\zh-Hans\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-net472\zh-Hant\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\cs\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\de\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\es\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\fr\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\it\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\ja\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\ko\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\Microsoft.Build.Locator.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.runtimeconfig.json" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\Newtonsoft.Json.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\pl\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\pt-BR\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\ru\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\System.Collections.Immutable.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\System.CommandLine.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\tr\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\zh-Hans\System.CommandLine.resources.dll" />
+	  <Content Remove="C:\Users\TommyCat\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\5.0.0\contentFiles\any\any\BuildHost-netcore\zh-Hant\System.CommandLine.resources.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="EFModels\" />
+		<Folder Include="NewFolder\" />
+	</ItemGroup>
 
 </Project>

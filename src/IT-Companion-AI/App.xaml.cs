@@ -1,25 +1,19 @@
-// Project Name: SKAgent
-// File Name: App.xaml.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
 using Windows.Graphics;
 
-using ITCompanionAI.AgentFramework;
-using ITCompanionAI.AgentFramework.Ingestion;
-using ITCompanionAI.AgentFramework.Planning;
-using ITCompanionAI.AgentFramework.Storage;
-using ITCompanionAI.Helpers;
+using ITCompanionAI.Services;
 using ITCompanionAI.Views;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+
+using KBContext = ITCompanionAI.EFModels.KBContext;
+
 
 
 namespace ITCompanionAI;
@@ -36,6 +30,9 @@ public partial class App : Application
 
 
 
+
+
+
     /// <summary>
     ///     Initializes the singleton application object.  This is the first line of authored code
     ///     executed, and as such is the logical equivalent of main() or WinMain().
@@ -44,25 +41,22 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory)
-            .ConfigureServices((context, services) =>
+        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureAppConfiguration((context, config) =>
+        {
+            // Explicitly load user-secrets for this WinUI host so keys like "ITAI:GITHUB_TOKEN" are available.
+            config.AddUserSecrets<App>(true);
+        }).ConfigureServices((context, services) =>
+        {
+            services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
+            services.AddSingleton<HttpClientService>();
+            services.AddDbContext<KBContext>();
+            services.AddLogging(loggingBuilder =>
             {
-                services.AddSingleton<IIngestionAgent, IngestionAgent>();
-                services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
-                services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
-                services.AddSingleton<IPlannerAgent, PlannerAgent>();
-                services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
-
-                services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
-
-                PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=AIAgentRag", 1536);
-                //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
-
-                services.AddSingleton<IVectorStore>(sp => { return store; });
-
-                Ingester.ConfigureServices(context, services);
-
-            }).Build();
+                loggingBuilder.AddConsole();
+                loggingBuilder.AddDebug();
+                loggingBuilder.SetMinimumLevel(LogLevel.Trace);
+            });
+        }).Build();
 
         Services = Host.Services;
         //  TheKernel = Services.GetRequiredService<Kernel>();
@@ -71,7 +65,7 @@ public partial class App : Application
 
         Current.UnhandledException += (sender, args) =>
         {
-            ILogger<App> logger = Host.Services.GetRequiredService<ILogger<App>>();
+            var logger = Host.Services.GetRequiredService<ILogger<App>>();
             logger.LogError(args.Exception, "Unhandled exception occurred");
         };
     }
@@ -80,18 +74,24 @@ public partial class App : Application
 
 
 
-    public IHost? Host { get; set; }
+
+
+
+    public IHost Host { get; set; }
 
     public static Application AppHost => Current;
-    public static Ingester Ingester => new();
+
 
     /// <summary>
     ///     Gets the service provider for dependency injection.
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
 
-    public static Window? AppWindow { get; private set; }
-    public static Kernel? TheKernel { get; set; }
+    public static Window AppWindow { get; private set; }
+    public static Kernel TheKernel { get; set; }
+
+
+
 
 
 
@@ -110,6 +110,9 @@ public partial class App : Application
 
 
 
+
+
+
     /// <summary>
     ///     Invoked when the application is launched normally by the end user.  Other entry points
     ///     will be used such as when the application is launched to open a specific file.
@@ -118,7 +121,7 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs e)
     {
         window ??= new Window();
-        window.AppWindow.Resize(new SizeInt32(800, 600));
+        window.AppWindow.Resize(new SizeInt32(900, 750));
         AppWindow = window;
         if (window.Content is not Frame rootFrame)
         {
@@ -137,6 +140,9 @@ public partial class App : Application
 
 
 
+
+
+
     /// <summary>
     ///     Invoked when Navigation to a certain page fails
     /// </summary>
@@ -147,6 +153,8 @@ public partial class App : Application
         throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
     }
 }
+
+
 
 
 
@@ -164,8 +172,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection RegisterKernel(this IServiceCollection services)
     {
-
-
         // DO NOT REMOVE THESE LINES BELOW - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
         // ****************  AI DO NOT REMOVE THESE LINES BELOW    **********************
         var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN")

@@ -8,7 +8,8 @@
     xmlns:local="using:ITCompanionAI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local1="using:ITCompanionAI.Converters"
-    mc:Ignorable="d">
+    xmlns:vm="using:ITCompanionAI.ViewModels"
+    mc:Ignorable="d"  >
     <Page.Resources>
         <local1:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <DataTemplate x:Key="MessageTemplate">
@@ -30,12 +31,13 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-
+         
             <ProgressBar Grid.Row="2" IsIndeterminate="True"
                          Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
                          Height="4"
@@ -45,13 +47,14 @@
                               ItemTemplate="{StaticResource MessageTemplate}" />
             </ScrollViewer>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
-
+                 
                 <TextBox Text="{Binding UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          AcceptsReturn="True"
                          Height="80"
                          VerticalAlignment="Center"
                          PlaceholderText="Type a message..."
                          MinWidth="500" />
+
                 <StackPanel Orientation="Vertical">
                     <Button Width="150"
                             Content="Send" Margin="5"
@@ -62,13 +65,13 @@
                             Command="{Binding CancelCommand}"
                             IsEnabled="{Binding CanCancel}" />
                 </StackPanel>
+                
             </StackPanel>
+                <local:ButtonOverlay Grid.Row="0" Grid.RowSpan="2" Background="Brown" Height="200"
+                                     VerticalAlignment="Top"
+                                     Canvas.ZIndex="1000" />
 
-            <local:ButtonOverlay Grid.Row="0"
-                                 Grid.RowSpan="3"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Top"
-                                 Canvas.ZIndex="1000" />
+  
         </Grid>
     </Page.Content>
 </Page>

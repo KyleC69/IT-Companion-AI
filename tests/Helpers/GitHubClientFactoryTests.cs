@@ -1,13 +1,21 @@
+// Project Name: CompanionTests
+// File Name: GitHubClientFactoryTests.cs
+// Author: Kyle Crowder
+// Github:  OldSkoolzRoolz KyleC69
+// License: All Rights Reserved. No use without consent.
+// Do not remove file headers
+
+
 using System;
 using System.Collections.Generic;
 
 using ITCompanionAI.Helpers;
 
-using Microsoft.Extensions.Configuration;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+
 namespace CompanionTests.Helpers;
+
 
 [TestClass]
 public sealed class GitHubClientFactoryTests
@@ -20,12 +28,18 @@ public sealed class GitHubClientFactoryTests
         try
         {
             _ = GitHubClientOptions.FromConfiguration(config);
-            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("Expected InvalidOperationException was not thrown.");
+            Assert.Fail("Expected InvalidOperationException was not thrown.");
         }
         catch (InvalidOperationException)
         {
         }
     }
+
+
+
+
+
+
 
     [TestMethod]
     public void FromConfiguration_WhenApiBaseInvalid_Throws()
@@ -41,12 +55,18 @@ public sealed class GitHubClientFactoryTests
         try
         {
             _ = GitHubClientOptions.FromConfiguration(config);
-            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("Expected InvalidOperationException was not thrown.");
+            Assert.Fail("Expected InvalidOperationException was not thrown.");
         }
         catch (InvalidOperationException)
         {
         }
     }
+
+
+
+
+
+
 
     [TestMethod]
     public void CreateClient_WhenTokenPresent_SetsCredentials()
