@@ -1,42 +1,47 @@
-// Project Name: SKAgent
-// File Name: RoslynHarvesterBase.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
 using System.Security.Cryptography;
 using System.Text.Json;
-using ITCompanionAI.Models;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
+
 using Octokit;
+
 using ApiMember = ITCompanionAI.EFModels.ApiMember;
 using ApiParameter = ITCompanionAI.EFModels.ApiParameter;
 using ApiType = ITCompanionAI.EFModels.ApiType;
 using Document = Microsoft.CodeAnalysis.Document;
 using Project = Microsoft.CodeAnalysis.Project;
 
+
+
 namespace ITCompanionAI.Ingestion.API;
-
-
-
-
-
-
-
-
-
-
 
 
 public class RoslynHarvesterBase : CSharpSyntaxWalker
 {
+
+
+    private static readonly string[] ReferenceAssemblyFileNames =
+    {
+        "System.Runtime.dll",
+        "System.Collections.dll",
+        "System.Linq.dll",
+        "System.Threading.Tasks.dll",
+        "System.Console.dll",
+        "netstandard.dll"
+    };
+
     private readonly IGitHubClientFactory _gitHubClientFactory;
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RoslynHarvesterBase" /> class.
@@ -49,6 +54,13 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     {
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="RoslynHarvesterBase" /> class.
     /// </summary>
@@ -60,6 +72,13 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     {
         _gitHubClientFactory = gitHubClientFactory ?? throw new ArgumentNullException(nameof(gitHubClientFactory));
     }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Downloads repository contents for a given branch into a local directory.
@@ -114,6 +133,13 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         //       are preserved for future GitHub-based ingestion.
     }
 
+
+
+
+
+
+
+
     public static async Task<SolutionManifest> LoadManifestAsync(
         string manifestPath,
         CancellationToken cancellationToken = default)
@@ -123,9 +149,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         if (!File.Exists(manifestPath))
             throw new FileNotFoundException($"Manifest file not found: {manifestPath}");
 
-        await using var stream = File.OpenRead(manifestPath);
+        await using FileStream stream = File.OpenRead(manifestPath);
 
-        var manifest = await JsonSerializer.DeserializeAsync<SolutionManifest>(
+        SolutionManifest manifest = await JsonSerializer.DeserializeAsync<SolutionManifest>(
             stream,
             new JsonSerializerOptions
             {
@@ -142,18 +168,11 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     }
 
 
-    public sealed class SolutionManifest
-    {
-        public SolutionInfo solution { get; set; }
 
-        public sealed class SolutionInfo
-        {
-            public string path { get; set; }
-            public List<string> projects { get; set; }
-        }
-    }
 
-  
+
+
+
 
     public static async Task<Solution> LoadSolutionFromManifestAsync(
         SolutionManifest manifest,
@@ -170,28 +189,27 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             ["LoadMetadataForReferencedProjects"] = "false"
         };
 
-        using var workspace = MSBuildWorkspace.Create(properties);
+        using MSBuildWorkspace workspace = MSBuildWorkspace.Create(properties);
         workspace.LoadMetadataForReferencedProjects = false;
 
-        foreach (string relativeProjectPath in manifest.solution.projects)
+        foreach (var relativeProjectPath in manifest.solution.projects)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             if (string.IsNullOrWhiteSpace(relativeProjectPath))
                 continue;
 
-            string fullProjectPath = Path.Combine(repoRoot, relativeProjectPath);
+            var fullProjectPath = Path.Combine(repoRoot, relativeProjectPath);
 
             if (!File.Exists(fullProjectPath))
                 throw new FileNotFoundException($"Project file not found: {fullProjectPath}");
 
             // This loads the project, references, analyzers, and documents
-            
-           await workspace.OpenProjectAsync(fullProjectPath,null, cancellationToken);
-        
+
+            await workspace.OpenProjectAsync(fullProjectPath, null, cancellationToken);
         }
 
-        var solution = workspace.CurrentSolution;
+        Solution solution = workspace.CurrentSolution;
 
         if (!solution.Projects.Any())
             throw new InvalidOperationException("No projects were loaded from the manifest.");
@@ -206,56 +224,21 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-private static readonly string[] ReferenceAssemblyFileNames =
-    {
-        "System.Runtime.dll",
-        "System.Collections.dll",
-        "System.Linq.dll",
-        "System.Threading.Tasks.dll",
-        "System.Console.dll",
-        "netstandard.dll"
-    };
-
-    private static IEnumerable<string> GetMetadataReferencePaths(string? repositoryDirectory = null)
+    private static IEnumerable<string> GetMetadataReferencePaths(string repositoryDirectory = null)
     {
         HashSet<string> yielded = new(StringComparer.OrdinalIgnoreCase);
 
-        string? tpa = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
+        var tpa = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
         if (!string.IsNullOrWhiteSpace(tpa))
-        {
-            foreach (string path in tpa.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var path in tpa.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
             {
-                string fileName = Path.GetFileName(path);
+                var fileName = Path.GetFileName(path);
                 if (fileName is not null
                     && ReferenceAssemblyFileNames.Contains(fileName, StringComparer.OrdinalIgnoreCase)
                     && File.Exists(path)
                     && yielded.Add(path))
-                {
                     yield return path;
-                }
             }
-        }
 
         string[] fallbackAssemblies =
         {
@@ -267,13 +250,9 @@ private static readonly string[] ReferenceAssemblyFileNames =
             typeof(IAsyncEnumerable<int>).Assembly.Location
         };
 
-        foreach (string fallback in fallbackAssemblies)
-        {
+        foreach (var fallback in fallbackAssemblies)
             if (!string.IsNullOrWhiteSpace(fallback) && File.Exists(fallback) && yielded.Add(fallback))
-            {
                 yield return fallback;
-            }
-        }
 
         // NOTE: We no longer depend on bin/obj being present in the repo. This scan
         //       is effectively a no-op for source-only snapshots, but harmless.
@@ -281,27 +260,25 @@ private static readonly string[] ReferenceAssemblyFileNames =
         {
             var binDirs = Directory.EnumerateDirectories(repositoryDirectory, "bin", SearchOption.AllDirectories);
             foreach (var binDir in binDirs)
-            {
-                foreach (var dll in Directory.EnumerateFiles(binDir, "*.dll", SearchOption.AllDirectories))
-                {
-                    if (File.Exists(dll) && yielded.Add(dll))
-                    {
-                        yield return dll;
-                    }
-                }
-            }
+            foreach (var dll in Directory.EnumerateFiles(binDir, "*.dll", SearchOption.AllDirectories))
+                if (File.Exists(dll) && yielded.Add(dll))
+                    yield return dll;
         }
     }
+
+
+
+
+
+
+
 
     private static string GetDocumentName(string repositoryRoot, string filePath)
     {
         try
         {
-            string relative = Path.GetRelativePath(repositoryRoot, filePath);
-            if (!string.IsNullOrWhiteSpace(relative) && !relative.StartsWith("..", StringComparison.Ordinal))
-            {
-                return relative.Replace(Path.DirectorySeparatorChar, '/');
-            }
+            var relative = Path.GetRelativePath(repositoryRoot, filePath);
+            if (!string.IsNullOrWhiteSpace(relative) && !relative.StartsWith("..", StringComparison.Ordinal)) return relative.Replace(Path.DirectorySeparatorChar, '/');
         }
         catch
         {
@@ -311,6 +288,13 @@ private static readonly string[] ReferenceAssemblyFileNames =
         return Path.GetFileName(filePath);
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Computes a stable 64-char hex SHA-256 hash for uniqueness columns.
     /// </summary>
@@ -318,10 +302,17 @@ private static readonly string[] ReferenceAssemblyFileNames =
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+        var bytes = Encoding.UTF8.GetBytes(value);
         var hash = SHA256.HashData(bytes);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Hybrid type extraction: semantic when available, syntactic fallback when semantic binding fails.
@@ -334,64 +325,59 @@ private static readonly string[] ReferenceAssemblyFileNames =
         ArgumentNullException.ThrowIfNull(solution);
         ArgumentNullException.ThrowIfNull(output);
 
-        foreach (var project in solution.Projects)
+        foreach (Project project in solution.Projects)
         {
             ct.ThrowIfCancellationRequested();
 
             // Compilation is not strictly required here, but forcing it can help Roslyn cache semantic info.
             _ = await project.GetCompilationAsync(ct).ConfigureAwait(false);
 
-            foreach (var document in project.Documents)
+            foreach (Document document in project.Documents)
             {
                 ct.ThrowIfCancellationRequested();
 
-                var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
-                if (root is null)
-                {
-                    continue;
-                }
+                SyntaxNode root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
+                if (root is null) continue;
 
-                var semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
+                SemanticModel semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
 
                 var typeDecls = root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>();
-                foreach (var typeDecl in typeDecls)
+                foreach (BaseTypeDeclarationSyntax typeDecl in typeDecls)
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    ApiType? apiType;
+                    ApiType apiType;
 
-                    INamedTypeSymbol? symbol = null;
+                    INamedTypeSymbol symbol = null;
                     if (semanticModel is not null)
-                    {
                         try
                         {
-                            symbol = semanticModel.GetDeclaredSymbol(typeDecl, ct) as INamedTypeSymbol;
+                            symbol = semanticModel.GetDeclaredSymbol(typeDecl, ct);
                         }
                         catch
                         {
                             symbol = null;
                         }
-                    }
 
                     if (symbol is not null && symbol.TypeKind is not TypeKind.Error)
-                    {
                         apiType = CreateApiTypeFromSymbol(symbol, typeDecl, ct);
-                    }
                     else
-                    {
                         apiType = CreateApiTypeFromSyntax(typeDecl);
-                    }
 
-                    if (string.IsNullOrWhiteSpace(apiType.SemanticUid))
-                    {
-                        continue;
-                    }
+                    if (string.IsNullOrWhiteSpace(apiType.SemanticUid)) continue;
 
                     output.Add(apiType);
                 }
             }
         }
     }
+
+
+
+
+
+
+
 
     private static ApiType CreateApiTypeFromSymbol(INamedTypeSymbol symbol, BaseTypeDeclarationSyntax typeDecl, CancellationToken ct)
     {
@@ -492,11 +478,18 @@ private static readonly string[] ReferenceAssemblyFileNames =
         };
     }
 
+
+
+
+
+
+
+
     private static ApiType CreateApiTypeFromSyntax(BaseTypeDeclarationSyntax typeDecl)
     {
         var name = typeDecl.Identifier.Text;
 
-        string? ns = GetNamespaceFromSyntax(typeDecl);
+        var ns = GetNamespaceFromSyntax(typeDecl);
 
         var semanticUid = BuildSemanticUidFromSyntax(ns, name, typeDecl);
 
@@ -518,8 +511,8 @@ private static readonly string[] ReferenceAssemblyFileNames =
         bool? isRecord = typeDecl is RecordDeclarationSyntax;
         bool? isGeneric = (typeDecl as TypeDeclarationSyntax)?.TypeParameterList?.Parameters.Count > 0;
 
-        string? baseTypeUid = null;
-        string? interfaces = null;
+        string baseTypeUid = null;
+        string interfaces = null;
         if (typeDecl.BaseList is { Types: { Count: > 0 } baseTypes })
         {
             var typeNames = baseTypes
@@ -532,10 +525,7 @@ private static readonly string[] ReferenceAssemblyFileNames =
                 if (typeDecl is ClassDeclarationSyntax && typeNames.Count > 0)
                 {
                     baseTypeUid = typeNames[0];
-                    if (typeNames.Count > 1)
-                    {
-                        interfaces = string.Join(";", typeNames.Skip(1).OrderBy(s => s, StringComparer.Ordinal));
-                    }
+                    if (typeNames.Count > 1) interfaces = string.Join(";", typeNames.Skip(1).OrderBy(s => s, StringComparer.Ordinal));
                 }
                 else
                 {
@@ -551,12 +541,12 @@ private static readonly string[] ReferenceAssemblyFileNames =
         var (summary, remarks) = ExtractSummaryAndRemarksFromSyntax(typeDecl);
 
         var genericParameters = (typeDecl as TypeDeclarationSyntax)?.TypeParameterList?.Parameters;
-        string? genericParams = genericParameters is { Count: > 0 }
+        var genericParams = genericParameters is { Count: > 0 }
             ? string.Join(",",
                 genericParameters.Select<TypeParameterSyntax, string>(p => p.Identifier.Text).OrderBy(s => s, StringComparer.Ordinal))
             : null;
 
-        string? genericConstraints = ExtractGenericConstraintsFromSyntax(typeDecl);
+        var genericConstraints = ExtractGenericConstraintsFromSyntax(typeDecl);
 
         return new ApiType
         {
@@ -596,6 +586,13 @@ private static readonly string[] ReferenceAssemblyFileNames =
         };
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Hybrid member extraction: semantic when type symbols are available, syntactic fallback otherwise.
     /// </summary>
@@ -618,41 +615,27 @@ private static readonly string[] ReferenceAssemblyFileNames =
         {
             ct.ThrowIfCancellationRequested();
 
-            if (string.IsNullOrWhiteSpace(type.SemanticUid))
-            {
-                continue;
-            }
+            if (string.IsNullOrWhiteSpace(type.SemanticUid)) continue;
 
-            if (roslynTypeSymbolsByUid.TryGetValue(type.SemanticUid, out INamedTypeSymbol? typeSymbol) &&
+            if (roslynTypeSymbolsByUid.TryGetValue(type.SemanticUid, out INamedTypeSymbol typeSymbol) &&
                 typeSymbol is not null)
             {
                 foreach (ISymbol member in typeSymbol.GetMembers())
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    if (member.IsImplicitlyDeclared)
-                    {
-                        continue;
-                    }
+                    if (member.IsImplicitlyDeclared) continue;
 
                     if (member is IMethodSymbol method &&
                         method.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.EventAdd
                             or MethodKind.EventRemove)
-                    {
                         continue;
-                    }
 
-                    if (member is IFieldSymbol { AssociatedSymbol: not null })
-                    {
-                        continue;
-                    }
+                    if (member is IFieldSymbol { AssociatedSymbol: not null }) continue;
 
-                    if (member.DeclaredAccessibility == Accessibility.NotApplicable)
-                    {
-                        continue;
-                    }
+                    if (member.DeclaredAccessibility == Accessibility.NotApplicable) continue;
 
-                    SyntaxNode? memberDecl = null;
+                    SyntaxNode memberDecl = null;
                     try
                     {
                         memberDecl = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(ct);
@@ -717,7 +700,7 @@ private static readonly string[] ReferenceAssemblyFileNames =
                     var xml = member.GetDocumentationCommentXml(cancellationToken: ct);
                     var (summary, remarks) = ExtractSummaryAndRemarks(xml);
 
-                    var efMember = new ApiMember
+                    ApiMember efMember = new()
                     {
                         SemanticUid = semanticUid,
                         ApiFeatureId = type.Id,
@@ -759,6 +742,13 @@ private static readonly string[] ReferenceAssemblyFileNames =
         }
     }
 
+
+
+
+
+
+
+
     private static async Task ExtractMembersFromSyntaxForTypeAsync(
         Solution solution,
         ApiType type,
@@ -774,35 +764,27 @@ private static readonly string[] ReferenceAssemblyFileNames =
             {
                 ct.ThrowIfCancellationRequested();
 
-                var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
-                if (root is null)
-                {
-                    continue;
-                }
+                SyntaxNode root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
+                if (root is null) continue;
 
                 var typeDecls = root.DescendantNodes().OfType<TypeDeclarationSyntax>();
-                foreach (var typeDecl in typeDecls)
+                foreach (TypeDeclarationSyntax typeDecl in typeDecls)
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    string typeName = typeDecl.Identifier.Text;
-                    string? ns = GetNamespaceFromSyntax(typeDecl);
+                    var typeName = typeDecl.Identifier.Text;
+                    var ns = GetNamespaceFromSyntax(typeDecl);
 
                     if (!string.Equals(typeName, type.Name, StringComparison.Ordinal) ||
                         !string.Equals(ns, type.NamespacePath, StringComparison.Ordinal))
-                    {
                         continue;
-                    }
 
-                    foreach (var memberDecl in typeDecl.Members)
+                    foreach (MemberDeclarationSyntax memberDecl in typeDecl.Members)
                     {
                         ct.ThrowIfCancellationRequested();
 
-                        var apiMember = CreateApiMemberFromSyntax(memberDecl, type);
-                        if (apiMember is null)
-                        {
-                            continue;
-                        }
+                        ApiMember apiMember = CreateApiMemberFromSyntax(memberDecl, type);
+                        if (apiMember is null) continue;
 
                         output.Add(apiMember);
                     }
@@ -811,9 +793,16 @@ private static readonly string[] ReferenceAssemblyFileNames =
         }
     }
 
-    private static ApiMember? CreateApiMemberFromSyntax(MemberDeclarationSyntax memberDecl, ApiType owningType)
+
+
+
+
+
+
+
+    private static ApiMember CreateApiMemberFromSyntax(MemberDeclarationSyntax memberDecl, ApiType owningType)
     {
-        string name = memberDecl switch
+        var name = memberDecl switch
         {
             MethodDeclarationSyntax m => m.Identifier.Text,
             PropertyDeclarationSyntax p => p.Identifier.Text,
@@ -823,15 +812,12 @@ private static readonly string[] ReferenceAssemblyFileNames =
             _ => string.Empty
         };
 
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return null;
-        }
+        if (string.IsNullOrWhiteSpace(name)) return null;
 
-        string kind = memberDecl.Kind().ToString();
-        string? methodKind = memberDecl is MethodDeclarationSyntax ? "Ordinary" : null;
+        var kind = memberDecl.Kind().ToString();
+        var methodKind = memberDecl is MethodDeclarationSyntax ? "Ordinary" : null;
 
-        string accessibility = GetAccessibilityFromModifiers(memberDecl.Modifiers) ?? "Private";
+        var accessibility = GetAccessibilityFromModifiers(memberDecl.Modifiers) ?? "Private";
 
         bool? isStatic = memberDecl.Modifiers.Any(SyntaxKind.StaticKeyword);
         bool? isAbstract = memberDecl.Modifiers.Any(SyntaxKind.AbstractKeyword);
@@ -845,7 +831,7 @@ private static readonly string[] ReferenceAssemblyFileNames =
         bool? isConst = memberDecl is FieldDeclarationSyntax fds &&
                         fds.Modifiers.Any(SyntaxKind.ConstKeyword);
 
-        string? returnType = memberDecl switch
+        var returnType = memberDecl switch
         {
             MethodDeclarationSyntax m => m.ReturnType.ToString().Trim(),
             PropertyDeclarationSyntax p => p.Type.ToString().Trim(),
@@ -853,13 +839,13 @@ private static readonly string[] ReferenceAssemblyFileNames =
             _ => null
         };
 
-        string? attrs = ExtractAttributeTypeNamesFromSyntax(memberDecl.AttributeLists);
+        var attrs = ExtractAttributeTypeNamesFromSyntax(memberDecl.AttributeLists);
 
         var (filePath, startLine, endLine) = GetSourceSpan(memberDecl.SyntaxTree, memberDecl.Span);
 
         var (summary, remarks) = ExtractSummaryAndRemarksFromSyntax(memberDecl);
 
-        string semanticUid = BuildMemberSemanticUidFromSyntax(owningType, memberDecl, name, returnType);
+        var semanticUid = BuildMemberSemanticUidFromSyntax(owningType, memberDecl, name, returnType);
 
         return new ApiMember
         {
@@ -892,6 +878,13 @@ private static readonly string[] ReferenceAssemblyFileNames =
         };
     }
 
+
+
+
+
+
+
+
     public static Task ExtractParametersAsync(
         Solution solution,
         IReadOnlyList<ApiMember> members,
@@ -909,32 +902,23 @@ private static readonly string[] ReferenceAssemblyFileNames =
         {
             ct.ThrowIfCancellationRequested();
 
-            if (string.IsNullOrWhiteSpace(member.SemanticUid))
-            {
-                continue;
-            }
+            if (string.IsNullOrWhiteSpace(member.SemanticUid)) continue;
 
-            if (!roslynMemberSymbolsByUid.TryGetValue(member.SemanticUid, out ISymbol? symbol))
-            {
-                continue;
-            }
+            if (!roslynMemberSymbolsByUid.TryGetValue(member.SemanticUid, out ISymbol symbol)) continue;
 
             IReadOnlyList<IParameterSymbol> parameters = symbol switch
             {
                 IMethodSymbol method => method.Parameters,
                 IPropertySymbol prop when prop.IsIndexer => prop.Parameters,
                 IEventSymbol ev when ev.Type is INamedTypeSymbol delegateType
-                                    && delegateType.DelegateInvokeMethod is { } invoke
-                                        => invoke.Parameters,
+                                     && delegateType.DelegateInvokeMethod is { } invoke
+                    => invoke.Parameters,
                 _ => Array.Empty<IParameterSymbol>()
             };
 
-            if (parameters.Count == 0)
-            {
-                continue;
-            }
+            if (parameters.Count == 0) continue;
 
-            for (int i = 0; i < parameters.Count; i++)
+            for (var i = 0; i < parameters.Count; i++)
             {
                 ct.ThrowIfCancellationRequested();
 
@@ -964,25 +948,46 @@ private static readonly string[] ReferenceAssemblyFileNames =
         return Task.CompletedTask;
     }
 
+
+
+
+
+
+
+
     public static string ComputeApiTypeContentHashHex(ApiType t)
     {
-        string payload = BuildApiTypePayload(t);
+        var payload = BuildApiTypePayload(t);
         return Sha256Hex(payload);
     }
 
-    private static string? NormalizePath(string? path)
+
+
+
+
+
+
+
+    private static string NormalizePath(string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
+        if (string.IsNullOrWhiteSpace(path)) return null;
 
         return path.Replace('\\', '/');
     }
 
+
+
+
+
+
+
+
     public static string BuildApiTypePayload(ApiType t)
     {
-        static string BoolToBitString(bool? value) => value == true ? "1" : "0";
+        static string BoolToBitString(bool? value)
+        {
+            return value == true ? "1" : "0";
+        }
 
         return string.Join("|", new[]
         {
@@ -1007,6 +1012,13 @@ private static readonly string[] ReferenceAssemblyFileNames =
         });
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Walks an entire Roslyn <see cref="Solution" /> and builds a collection of <see cref="SyntaxTypeTree" /> objects.
     /// </summary>
@@ -1018,7 +1030,7 @@ private static readonly string[] ReferenceAssemblyFileNames =
         await ExtractTypesAsync(solution, types, ct).ConfigureAwait(false);
 
         // Dedupe types by semantic uid to avoid multiple declarations (partials) across documents.
-        List<ApiType> uniqueTypes = types
+        var uniqueTypes = types
             .Where(t => !string.IsNullOrWhiteSpace(t.SemanticUid))
             .GroupBy(t => t.SemanticUid, StringComparer.Ordinal)
             .Select(g =>
@@ -1033,17 +1045,13 @@ private static readonly string[] ReferenceAssemblyFileNames =
             .ToList();
 
         // Build Roslyn type symbol map once.
-        Dictionary<string, INamedTypeSymbol> roslynTypeSymbolsByUid =
+        var roslynTypeSymbolsByUid =
             await BuildTypeSymbolMapAsync(solution, uniqueTypes.Select(t => t.SemanticUid), ct).ConfigureAwait(false);
 
         // Assign deterministic Ids so members/parameters can link without needing a DbContext.
         foreach (ApiType t in uniqueTypes)
-        {
             if (t.Id == Guid.Empty)
-            {
                 t.Id = Guid.NewGuid();
-            }
-        }
 
         Dictionary<string, ISymbol> roslynMemberSymbolsByUid = new(StringComparer.Ordinal);
         List<ApiMember> members = new(Math.Max(128, uniqueTypes.Count * 8));
@@ -1051,7 +1059,7 @@ private static readonly string[] ReferenceAssemblyFileNames =
             .ConfigureAwait(false);
 
         // Dedupe members by semantic uid.
-        List<ApiMember> uniqueMembers = members
+        var uniqueMembers = members
             .Where(m => !string.IsNullOrWhiteSpace(m.SemanticUid))
             .GroupBy(m => m.SemanticUid, StringComparer.Ordinal)
             .Select(g =>
@@ -1065,23 +1073,19 @@ private static readonly string[] ReferenceAssemblyFileNames =
             .ToList();
 
         foreach (ApiMember m in uniqueMembers)
-        {
             if (m.Id == Guid.Empty)
-            {
                 m.Id = Guid.NewGuid();
-            }
-        }
 
         List<ApiParameter> parameters = new(Math.Max(256, uniqueMembers.Count * 2));
         await ExtractParametersAsync(solution, uniqueMembers, roslynMemberSymbolsByUid, parameters, ct)
             .ConfigureAwait(false);
 
         // Group for fast assembly per type.
-        Dictionary<Guid, IReadOnlyList<ApiMember>> membersByType = uniqueMembers
+        var membersByType = uniqueMembers
             .GroupBy(m => m.ApiFeatureId)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<ApiMember>)g.ToList());
 
-        Dictionary<Guid, IReadOnlyList<ApiParameter>> parametersByMember = parameters
+        var parametersByMember = parameters
             .GroupBy(p => p.ApiMemberId)
             .ToDictionary(g => g.Key,
                 g => (IReadOnlyList<ApiParameter>)g.OrderBy(x => x.Position)
@@ -1093,26 +1097,27 @@ private static readonly string[] ReferenceAssemblyFileNames =
         {
             ct.ThrowIfCancellationRequested();
 
-            membersByType.TryGetValue(t.Id, out IReadOnlyList<ApiMember>? typeMembers);
+            membersByType.TryGetValue(t.Id, out var typeMembers);
             typeMembers ??= Array.Empty<ApiMember>();
 
             List<ApiParameter> typeParameters = new();
             if (typeMembers.Count > 0)
-            {
                 foreach (ApiMember m in typeMembers)
-                {
-                    if (parametersByMember.TryGetValue(m.Id, out IReadOnlyList<ApiParameter>? mp))
-                    {
+                    if (parametersByMember.TryGetValue(m.Id, out var mp))
                         typeParameters.AddRange(mp);
-                    }
-                }
-            }
 
             trees.Add(new SyntaxTypeTree(t, typeMembers.ToList(), typeParameters));
         }
 
         return trees;
     }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Builds a lookup of Roslyn type symbols keyed by the fully-qualified semantic UID string.
@@ -1125,61 +1130,43 @@ private static readonly string[] ReferenceAssemblyFileNames =
         HashSet<string> typeUidSet = new(typeSemanticUids.Where(u => !string.IsNullOrWhiteSpace(u)), StringComparer.Ordinal);
         Dictionary<string, INamedTypeSymbol> result = new(StringComparer.Ordinal);
 
-        if (typeUidSet.Count == 0)
-        {
-            return result;
-        }
+        if (typeUidSet.Count == 0) return result;
 
         foreach (Project project in solution.Projects)
         {
             ct.ThrowIfCancellationRequested();
 
-            Compilation? compilation = await project.GetCompilationAsync(ct).ConfigureAwait(false);
-            if (compilation is null)
-            {
-                continue;
-            }
+            Compilation compilation = await project.GetCompilationAsync(ct).ConfigureAwait(false);
+            if (compilation is null) continue;
 
             foreach (Document document in project.Documents)
             {
                 ct.ThrowIfCancellationRequested();
 
-                SyntaxNode? root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
-                if (root is null)
-                {
-                    continue;
-                }
+                SyntaxNode root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
+                if (root is null) continue;
 
-                SemanticModel? semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
-                if (semanticModel is null)
-                {
-                    continue;
-                }
+                SemanticModel semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
+                if (semanticModel is null) continue;
 
                 foreach (BaseTypeDeclarationSyntax typeDecl in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    INamedTypeSymbol? symbol;
+                    INamedTypeSymbol symbol;
                     try
                     {
-                        symbol = (INamedTypeSymbol?)ModelExtensions.GetDeclaredSymbol(semanticModel, typeDecl, ct);
+                        symbol = (INamedTypeSymbol)ModelExtensions.GetDeclaredSymbol(semanticModel, typeDecl, ct);
                     }
                     catch
                     {
                         continue;
                     }
 
-                    if (symbol is null)
-                    {
-                        continue;
-                    }
+                    if (symbol is null) continue;
 
                     var uid = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                    if (!typeUidSet.Contains(uid))
-                    {
-                        continue;
-                    }
+                    if (!typeUidSet.Contains(uid)) continue;
 
                     // Prefer the first-seen declaration per project; higher-level dedupe happens in WalkSolutionAsync.
                     result.TryAdd(uid, symbol);
@@ -1190,19 +1177,23 @@ private static readonly string[] ReferenceAssemblyFileNames =
         return result;
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Extracts &lt;summary&gt; and &lt;remarks&gt; from Roslyn XML documentation (semantic path).
     /// </summary>
-    private static (string? Summary, string? Remarks) ExtractSummaryAndRemarks(string? xml)
+    private static (string Summary, string Remarks) ExtractSummaryAndRemarks(string xml)
     {
-        if (string.IsNullOrWhiteSpace(xml))
-        {
-            return (null, null);
-        }
+        if (string.IsNullOrWhiteSpace(xml)) return (null, null);
 
         try
         {
-            var doc = XDocument.Parse(xml);
+            XDocument doc = XDocument.Parse(xml);
             var summary = doc.Root?.Element("summary")?.Value?.Trim();
             var remarks = doc.Root?.Element("remarks")?.Value?.Trim();
             return (string.IsNullOrWhiteSpace(summary) ? null : summary,
@@ -1214,33 +1205,34 @@ private static readonly string[] ReferenceAssemblyFileNames =
         }
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Extracts &lt;summary&gt; and &lt;remarks&gt; from XML doc comments in syntax trivia (fallback path).
     /// </summary>
-    private static (string? Summary, string? Remarks) ExtractSummaryAndRemarksFromSyntax(MemberDeclarationSyntax member)
+    private static (string Summary, string Remarks) ExtractSummaryAndRemarksFromSyntax(MemberDeclarationSyntax member)
     {
-        var trivia = member.GetLeadingTrivia()
+        SyntaxTrivia trivia = member.GetLeadingTrivia()
             .FirstOrDefault(t =>
                 t.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
                 t.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia));
 
-        if (trivia == default)
-        {
-            return (null, null);
-        }
+        if (trivia == default) return (null, null);
 
-        var structure = trivia.GetStructure();
-        if (structure is not DocumentationCommentTriviaSyntax doc)
-        {
-            return (null, null);
-        }
+        SyntaxNode structure = trivia.GetStructure();
+        if (structure is not DocumentationCommentTriviaSyntax doc) return (null, null);
 
-        string? summary = doc.Content
+        var summary = doc.Content
             .OfType<XmlElementSyntax>()
             .FirstOrDefault(e => e.StartTag.Name.LocalName.Text == "summary")
             ?.Content.ToString().Trim();
 
-        string? remarks = doc.Content
+        var remarks = doc.Content
             .OfType<XmlElementSyntax>()
             .FirstOrDefault(e => e.StartTag.Name.LocalName.Text == "remarks")
             ?.Content.ToString().Trim();
@@ -1249,15 +1241,19 @@ private static readonly string[] ReferenceAssemblyFileNames =
             string.IsNullOrWhiteSpace(remarks) ? null : remarks);
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Converts a syntax <see cref="TextSpan" /> to source file/line information.
     /// </summary>
-    public static (string? FilePath, int? StartLine, int? EndLine) GetSourceSpan(SyntaxTree tree, TextSpan span)
+    public static (string FilePath, int? StartLine, int? EndLine) GetSourceSpan(SyntaxTree tree, TextSpan span)
     {
-        if (tree is null)
-        {
-            return (null, null, null);
-        }
+        if (tree is null) return (null, null, null);
 
         FileLinePositionSpan lineSpan = tree.GetLineSpan(span);
         var startLine = lineSpan.StartLinePosition.Line + 1;
@@ -1265,84 +1261,82 @@ private static readonly string[] ReferenceAssemblyFileNames =
         return (tree.FilePath, startLine, endLine);
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Builds a compact constraint string for a generic type parameter from Roslyn symbols.
     /// </summary>
-    public static string? BuildTypeParameterConstraintString(ITypeParameterSymbol p)
+    public static string BuildTypeParameterConstraintString(ITypeParameterSymbol p)
     {
-        if (p is null)
-        {
-            return null;
-        }
+        if (p is null) return null;
 
         List<string> parts = new();
 
-        if (p.HasReferenceTypeConstraint)
-        {
-            parts.Add("class");
-        }
+        if (p.HasReferenceTypeConstraint) parts.Add("class");
 
-        if (p.HasValueTypeConstraint)
-        {
-            parts.Add("struct");
-        }
+        if (p.HasValueTypeConstraint) parts.Add("struct");
 
-        if (p.HasNotNullConstraint)
-        {
-            parts.Add("notnull");
-        }
+        if (p.HasNotNullConstraint) parts.Add("notnull");
 
-        if (p.HasUnmanagedTypeConstraint)
-        {
-            parts.Add("unmanaged");
-        }
+        if (p.HasUnmanagedTypeConstraint) parts.Add("unmanaged");
 
-        foreach (ITypeSymbol t in p.ConstraintTypes)
-        {
-            parts.Add(t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-        }
+        foreach (ITypeSymbol t in p.ConstraintTypes) parts.Add(t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 
-        if (p.HasConstructorConstraint)
-        {
-            parts.Add("new()");
-        }
+        if (p.HasConstructorConstraint) parts.Add("new()");
 
         return parts.Count == 0 ? null : $"{p.Name}:{string.Join(",", parts)}";
     }
 
-    private static string? GetNamespaceFromSyntax(SyntaxNode node)
-    {
-        var nsDecl = node.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
-        if (nsDecl is not null)
-        {
-            return nsDecl.Name.ToString();
-        }
 
-        var fileNsDecl = node.Ancestors().OfType<FileScopedNamespaceDeclarationSyntax>().FirstOrDefault();
-        if (fileNsDecl is not null)
-        {
-            return fileNsDecl.Name.ToString();
-        }
+
+
+
+
+
+
+    private static string GetNamespaceFromSyntax(SyntaxNode node)
+    {
+        NamespaceDeclarationSyntax nsDecl = node.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+        if (nsDecl is not null) return nsDecl.Name.ToString();
+
+        FileScopedNamespaceDeclarationSyntax fileNsDecl = node.Ancestors().OfType<FileScopedNamespaceDeclarationSyntax>().FirstOrDefault();
+        if (fileNsDecl is not null) return fileNsDecl.Name.ToString();
 
         return null;
     }
 
-    private static string BuildSemanticUidFromSyntax(string? ns, string name, BaseTypeDeclarationSyntax typeDecl)
+
+
+
+
+
+
+
+    private static string BuildSemanticUidFromSyntax(string ns, string name, BaseTypeDeclarationSyntax typeDecl)
     {
         var typeParams = (typeDecl as TypeDeclarationSyntax)?.TypeParameterList?.Parameters;
-        string genericSuffix = typeParams is { Count: > 0 }
+        var genericSuffix = typeParams is { Count: > 0 }
             ? $"<{string.Join(",", typeParams.Select<TypeParameterSyntax, string>(p => p.Identifier.Text).OrderBy(s => s, StringComparer.Ordinal))}>"
             : string.Empty;
 
-        if (string.IsNullOrWhiteSpace(ns))
-        {
-            return $"global::{name}{genericSuffix}";
-        }
+        if (string.IsNullOrWhiteSpace(ns)) return $"global::{name}{genericSuffix}";
 
         return $"global::{ns}.{name}{genericSuffix}";
     }
 
-    private static string? GetAccessibilityFromModifiers(SyntaxTokenList modifiers)
+
+
+
+
+
+
+
+    private static string GetAccessibilityFromModifiers(SyntaxTokenList modifiers)
     {
         if (modifiers.Any(SyntaxKind.PublicKeyword)) return "Public";
         if (modifiers.Any(SyntaxKind.InternalKeyword) && modifiers.Any(SyntaxKind.ProtectedKeyword)) return "ProtectedInternal";
@@ -1352,7 +1346,14 @@ private static readonly string[] ReferenceAssemblyFileNames =
         return null;
     }
 
-    private static string? ExtractAttributeTypeNamesFromSyntax(SyntaxList<AttributeListSyntax> attributeLists)
+
+
+
+
+
+
+
+    private static string ExtractAttributeTypeNamesFromSyntax(SyntaxList<AttributeListSyntax> attributeLists)
     {
         var names = attributeLists
             .SelectMany(al => al.Attributes)
@@ -1365,22 +1366,25 @@ private static readonly string[] ReferenceAssemblyFileNames =
         return names.Count == 0 ? null : string.Join(";", names);
     }
 
-    private static string? ExtractGenericConstraintsFromSyntax(BaseTypeDeclarationSyntax typeDecl)
+
+
+
+
+
+
+
+    private static string ExtractGenericConstraintsFromSyntax(BaseTypeDeclarationSyntax typeDecl)
     {
-        if (typeDecl is not TypeDeclarationSyntax tds || tds.ConstraintClauses.Count == 0)
-        {
-            return null;
-        }
+        if (typeDecl is not TypeDeclarationSyntax tds || tds.ConstraintClauses.Count == 0) return null;
 
         var constraints = new List<string>();
 
-        foreach (var clause in tds.ConstraintClauses)
+        foreach (TypeParameterConstraintClauseSyntax clause in tds.ConstraintClauses)
         {
             var name = clause.Name.Identifier.Text;
             var parts = new List<string>();
 
-            foreach (var c in clause.Constraints)
-            {
+            foreach (TypeParameterConstraintSyntax c in clause.Constraints)
                 switch (c)
                 {
                     case ClassOrStructConstraintSyntax cs when cs.ClassOrStructKeyword.IsKind(SyntaxKind.ClassKeyword):
@@ -1396,18 +1400,21 @@ private static readonly string[] ReferenceAssemblyFileNames =
                         parts.Add("new()");
                         break;
                 }
-            }
 
-            if (parts.Count > 0)
-            {
-                constraints.Add($"{name}:{string.Join(",", parts)}");
-            }
+            if (parts.Count > 0) constraints.Add($"{name}:{string.Join(",", parts)}");
         }
 
         return constraints.Count == 0 ? null : string.Join(";", constraints.OrderBy(s => s, StringComparer.Ordinal));
     }
 
-    private static string BuildMemberSemanticUidFromSyntax(ApiType owningType, MemberDeclarationSyntax memberDecl, string name, string? returnType)
+
+
+
+
+
+
+
+    private static string BuildMemberSemanticUidFromSyntax(ApiType owningType, MemberDeclarationSyntax memberDecl, string name, string returnType)
     {
         // Best-effort UID based on owning type UID + member name + return type + parameter list signature.
         // This does not have to match Roslyn's exact format; it just needs to be stable within this system.
@@ -1422,12 +1429,38 @@ private static readonly string[] ReferenceAssemblyFileNames =
             _ => string.Empty
         };
 
-        string owningUid = owningType.SemanticUid ?? $"{owningType.NamespacePath}.{owningType.Name}";
-        string rt = string.IsNullOrWhiteSpace(returnType) ? "void" : returnType;
+        var owningUid = owningType.SemanticUid ?? $"{owningType.NamespacePath}.{owningType.Name}";
+        var rt = string.IsNullOrWhiteSpace(returnType) ? "void" : returnType;
 
         return $"{owningUid}.{name}{{{rt}{paramSig}}}";
     }
+
+
+
+
+
+
+
+
+    public sealed class SolutionManifest
+    {
+        public SolutionInfo solution { get; set; }
+
+
+
+
+
+        public sealed class SolutionInfo
+        {
+            public string path { get; set; }
+            public List<string> projects { get; set; }
+        }
+    }
 }
+
+
+
+
 
 /// <summary>
 ///     Simple wrapper over a list of <see cref="SyntaxTypeTree" /> that exposes it as an <see cref="IReadOnlyList{T}" />.
@@ -1435,6 +1468,13 @@ private static readonly string[] ReferenceAssemblyFileNames =
 public class ApiSyntaxTreeCollections : IReadOnlyList<SyntaxTypeTree>
 {
     private readonly List<SyntaxTypeTree> _trees;
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ApiSyntaxTreeCollections" /> class.
@@ -1446,15 +1486,33 @@ public class ApiSyntaxTreeCollections : IReadOnlyList<SyntaxTypeTree>
         _trees = trees.ToList();
     }
 
+
+
+
+
+
+
+
     /// <summary>
     ///     Gets the <see cref="SyntaxTypeTree" /> at the given index.
     /// </summary>
     public SyntaxTypeTree this[int index] => _trees[index];
 
+
+
+
+
     /// <summary>
     ///     Gets the number of trees in the collection.
     /// </summary>
     public int Count => _trees.Count;
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Returns an enumerator that iterates through the contained trees.
@@ -1463,6 +1521,13 @@ public class ApiSyntaxTreeCollections : IReadOnlyList<SyntaxTypeTree>
     {
         return _trees.GetEnumerator();
     }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Returns a non-generic enumerator that iterates through the contained trees.

@@ -1,14 +1,7 @@
-﻿// Project Name: SKAgent
-// File Name: GitHubClientHelper.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 
 using Octokit;
+
 
 
 namespace ITCompanionAI.Helpers;
@@ -28,38 +21,30 @@ public sealed record GitHubClientOptions(
 
 
 
+
     public static GitHubClientOptions FromConfiguration(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
         var productName = configuration[$"{SectionName}:ProductName"];
-        if (string.IsNullOrWhiteSpace(productName))
-        {
-            productName = "ITCompanionAI";
-        }
+        if (string.IsNullOrWhiteSpace(productName)) productName = "ITCompanionAI";
 
         var apiBase = configuration[$"{SectionName}:ApiBaseAddress"];
-        if (string.IsNullOrWhiteSpace(apiBase))
-        {
-            apiBase = "https://api.github.com/";
-        }
+        if (string.IsNullOrWhiteSpace(apiBase)) apiBase = "https://api.github.com/";
 
-        if (!Uri.TryCreate(apiBase, UriKind.Absolute, out Uri? apiBaseAddress))
-        {
+        if (!Uri.TryCreate(apiBase, UriKind.Absolute, out Uri apiBaseAddress))
             throw new InvalidOperationException(
                 $"Invalid GitHub API base address in configuration key '{SectionName}:ApiBaseAddress'.");
-        }
 
         var token = configuration[TokenConfigKey];
         if (string.IsNullOrWhiteSpace(token))
-        {
             throw new InvalidOperationException(
                 $"Missing GitHub token in configuration key '{TokenConfigKey}'. Add it via user-secrets (recommended) or environment variables.");
-        }
 
         return new GitHubClientOptions(productName, apiBaseAddress, token);
     }
 }
+
 
 
 
@@ -72,9 +57,11 @@ public interface IGitHubClientFactory
 
 
 
+
 public sealed class GitHubClientFactory : IGitHubClientFactory
 {
     private readonly IConfiguration _configuration;
+
 
 
 
@@ -93,12 +80,13 @@ public sealed class GitHubClientFactory : IGitHubClientFactory
 
 
 
+
     public GitHubClient CreateClient()
     {
-        var options = GitHubClientOptions.FromConfiguration(_configuration);
+        GitHubClientOptions options = GitHubClientOptions.FromConfiguration(_configuration);
 
-        var productInfo = new ProductHeaderValue(options.ProductName);
-        var client = new GitHubClient(productInfo, options.ApiBaseAddress)
+        ProductHeaderValue productInfo = new(options.ProductName);
+        GitHubClient client = new(productInfo, options.ApiBaseAddress)
         {
             Credentials = new Credentials(options.Token)
         };

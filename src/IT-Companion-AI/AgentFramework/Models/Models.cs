@@ -1,11 +1,3 @@
-// Project Name: SKAgent
-// File Name: Models.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
 namespace ITCompanionAI.AgentFramework.Models;
 
 
@@ -16,7 +8,7 @@ public sealed record CustomModelDefinition(
     string Id,
     string Connection,
     string Api,
-    IDictionary<string, object?> Options)
+    IDictionary<string, object> Options)
 {
     /// <summary>
     ///     Validates the model definition and throws when required fields are missing or invalid.
@@ -24,23 +16,15 @@ public sealed record CustomModelDefinition(
     /// <exception cref="ArgumentException">Thrown when any required field is missing or invalid.</exception>
     public void Validate()
     {
-        if (string.IsNullOrWhiteSpace(Id))
-        {
-            throw new ArgumentException("Id is required.", nameof(Id));
-        }
+        if (string.IsNullOrWhiteSpace(Id)) throw new ArgumentException("Id is required.", nameof(Id));
 
-        if (string.IsNullOrWhiteSpace(Connection))
-        {
-            throw new ArgumentException("Connection is required.", nameof(Connection));
-        }
+        if (string.IsNullOrWhiteSpace(Connection)) throw new ArgumentException("Connection is required.", nameof(Connection));
 
-        if (string.IsNullOrWhiteSpace(Api))
-        {
-            throw new ArgumentException("Api (model identifier) is required.", nameof(Api));
-        }
+        if (string.IsNullOrWhiteSpace(Api)) throw new ArgumentException("Api (model identifier) is required.", nameof(Api));
 
         ArgumentNullException.ThrowIfNull(Options);
     }
+
 
 
 
@@ -53,17 +37,11 @@ public sealed record CustomModelDefinition(
     /// </summary>
     public T GetOptionOrDefault<T>(string key, T defaultValue)
     {
-        if (Options.TryGetValue(key, out var value) && value is T typed)
-        {
-            return typed;
-        }
+        if (Options.TryGetValue(key, out var value) && value is T typed) return typed;
 
         try
         {
-            if (Options.TryGetValue(key, out value) && value is not null)
-            {
-                return (T)Convert.ChangeType(value, typeof(T));
-            }
+            if (Options.TryGetValue(key, out value) && value is not null) return (T)Convert.ChangeType(value, typeof(T));
         }
         catch
         {
@@ -73,6 +51,7 @@ public sealed record CustomModelDefinition(
         return defaultValue;
     }
 }
+
 
 
 
@@ -96,6 +75,7 @@ public sealed record AgentTranscript(string AgentName, string Role, string Conte
 
 
 
+
     /// <summary>
     ///     Creates a transcript entry for a system or agent message.
     /// </summary>
@@ -104,6 +84,7 @@ public sealed record AgentTranscript(string AgentName, string Role, string Conte
         return new AgentTranscript(agentName, role, content, DateTimeOffset.UtcNow);
     }
 }
+
 
 
 
@@ -118,9 +99,13 @@ internal interface ISpecialistAgent
 
 
 
-    Task<SpecialistResult> ExecuteAsync(string userMessage, string task, CancellationToken cancellationToken,
-        Action<AgentTranscript>? logCallback);
+
+    Task<SpecialistResult> ExecuteAsync(string userMessage,
+        string task,
+        CancellationToken cancellationToken,
+        Action<AgentTranscript> logCallback);
 }
+
 
 
 

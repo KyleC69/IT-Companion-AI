@@ -1,16 +1,13 @@
-﻿// Project Name: SKAgent
-// File Name: ButtonViewModel.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+
 using ITCompanionAI.Ingestion.API;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using KBContext = ITCompanionAI.EFModels.KBContext;
+
 
 
 namespace ITCompanionAI.ViewModels;
@@ -21,6 +18,10 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     private readonly ILogger<ButtonViewModel> logger;
 
 
+    [ObservableProperty] private string _ingestTarget;
+
+
+
 
 
 
@@ -28,14 +29,10 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 
     public ButtonViewModel()
     {
-
         logger = App.Services.GetRequiredService<ILogger<ButtonViewModel>>();
 
 
         logger.LogInformation("ButtonViewModel initialized.");
-        
-
-
     }
 
 
@@ -44,7 +41,9 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 
 
 
+
     public event PropertyChangedEventHandler PropertyChanged;
+
 
 
 
@@ -64,24 +63,22 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
         var filePath = """f:\SKApiRepo\semantic-kernel\dotnet\src""";
 
 
-      //  var results =  await harvester.ExtractAsync(filePath, CancellationToken.None);
-      
-
-     //   var ingester = new APIIngestion(new KBContext());
-    //  var sourceSnapshotId =  await ingester.StartIngestionAsync();
-    Guid sourceSnapshotId = new Guid("997BE774-96B5-44D8-B6AD-14FC2EBDDABB");
+        //  var results =  await harvester.ExtractAsync(filePath, CancellationToken.None);
 
 
-        var verifier = new IngestionVerifier(new KBContext());
+        //   var ingester = new APIIngestion(new KBContext());
+        //  var sourceSnapshotId =  await ingester.StartIngestionAsync();
+        Guid sourceSnapshotId = new("997BE774-96B5-44D8-B6AD-14FC2EBDDABB");
+
+
+        IngestionVerifier verifier = new(new KBContext());
         await verifier.VerifyApiTypesAsync(sourceSnapshotId, CancellationToken.None);
         await verifier.VerifyMembersAndParametersAsync(sourceSnapshotId, CancellationToken.None);
 
 
         logger.LogInformation("Ingestion Complete");
-
-
-
     }
+
 
 
 
@@ -95,8 +92,10 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     [RelayCommand]
     private async Task HarvestXmlDocxAsync()
     {
+        logger.LogInformation("Ingestion Complete");
         await Task.CompletedTask.ConfigureAwait(false);
     }
+
 
 
 
@@ -110,8 +109,12 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     [RelayCommand]
     private async Task GetDocBlocsAsync()
     {
-        await Task.CompletedTask.ConfigureAwait(false);
+        await Entrypoint.Main(_ingestTarget);
+
+
+        logger.LogInformation("Ingestion Complete");
     }
+
 
 
 
@@ -126,7 +129,9 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     private async Task HarvestDocsAsync()
     {
         await Task.CompletedTask.ConfigureAwait(false);
+        logger.LogInformation("Ingestion Complete");
     }
+
 
 
 
@@ -140,7 +145,9 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     [RelayCommand]
     private void Action2()
     {
+        logger.LogInformation("Ingestion Complete");
     }
+
 
 
 

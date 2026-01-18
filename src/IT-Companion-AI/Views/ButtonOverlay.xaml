@@ -10,18 +10,23 @@
     </UserControl.DataContext>
 
     <Grid>
-        <Border BorderThickness="3" BorderBrush="CadetBlue" Padding="15" Margin="15" CornerRadius="30">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="220"/>
+            <RowDefinition Height="220"  />
+            <RowDefinition Height="210"/>
+        </Grid.RowDefinitions>
+        <Border BorderThickness="3" Grid.Row="2" BorderBrush="CadetBlue" Padding="5" Margin="5" CornerRadius="30">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="7" MinHeight="125">
 
-                <Button Content="Harvest Api" Width="150" Height="40" Command="{Binding HarvestApiCommand}"
+                <Button Content="Harvest Api" Width="150" Height="40" Command="{Binding HarvestApiCommand}" Background="{ThemeResource ButtonBackgroundThemeBrush}"
                         IsEnabled="True" />
-                <Button Content="Harvest xml docx" Width="150" Height="40" Command="{Binding HarvestXmlDocxCommand}"
+                <Button Content="Harvest xml docx"  Width="150" Height="40" Command="{Binding HarvestXmlDocxCommand}"   Background="{ThemeResource ButtonBackgroundThemeBrush}"
                         IsEnabled="True" />
-                <Button Content="Get Doc Blocs" Width="150" Height="40" Command="{Binding GetDocBlocsCommand}"
+                    <Button Content="Get Doc Blocs" Width="150" Height="40" Command="{Binding GetDocBlocsCommand}"  Background="{ThemeResource ButtonBackgroundThemeBrush}"
                         IsEnabled="True" />
-                <Button Content="Harvest Docs" Width="150" Height="40" Command="{Binding HarvestDocsCommand}"
+                <Button Content="Harvest Docs" Width="150" Height="40" Command="{Binding HarvestDocsCommand}"  Background="{ThemeResource ButtonBackgroundThemeBrush}"
                         IsEnabled="True" />
-
+                <TextBox x:Name="InputTextBox" Text="{Binding IngestTarget}" Height="50" MinWidth="500" HorizontalAlignment="Center" VerticalAlignment="Bottom" PlaceholderText="Url to ingest....." />
             </StackPanel>
         </Border>
     </Grid>

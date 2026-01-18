@@ -1,25 +1,20 @@
-// Project Name: SKAgent
-// File Name: App.xaml.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
 using Windows.Graphics;
+
+using ITCompanionAI.Services;
+using ITCompanionAI.Views;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.EntityFrameworkCore;
-using ITCompanionAI.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ITCompanionAI.Ingestion.Docs;
+using Microsoft.UI.Xaml.Navigation;
+
 using KBContext = ITCompanionAI.EFModels.KBContext;
+
+
 
 namespace ITCompanionAI;
 
@@ -30,6 +25,7 @@ namespace ITCompanionAI;
 public partial class App : Application
 {
     private Window window = Window.Current;
+
 
 
 
@@ -51,28 +47,15 @@ public partial class App : Application
             config.AddUserSecrets<App>(true);
         }).ConfigureServices((context, services) =>
         {
-            //       services.AddHttpClient<IWebFetcher, HttpWebFetcher>();
-            services.AddSingleton<IContentParser, HtmlMarkdownContentParser>();
-            //      services.AddSingleton<IPlannerAgent, PlannerAgent>();
-            //       services.AddSingleton<IKnowledgeIngestionOrchestrator, KnowledgeIngestionOrchestrator>();
-
             services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
-
+            services.AddSingleton<HttpClientService>();
             services.AddDbContext<KBContext>();
-            //   services.AddSingleton<ApiHarvester>();
-
-            /*       PgVectorStore store = new("server=(localdb)\\MSSQLLocaldb;Database=KnowledgeBase", 1536);
-                   //    store.EnsureSchemaAsync().GetAwaiter().GetResult();
-                   services.AddSingleton<IVectorStore>(sp => { return store; });*/
             services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConsole();
                 loggingBuilder.AddDebug();
                 loggingBuilder.SetMinimumLevel(LogLevel.Trace);
-
             });
-
-
         }).Build();
 
         Services = Host.Services;
@@ -82,7 +65,7 @@ public partial class App : Application
 
         Current.UnhandledException += (sender, args) =>
         {
-            ILogger<App> logger = Host.Services.GetRequiredService<ILogger<App>>();
+            var logger = Host.Services.GetRequiredService<ILogger<App>>();
             logger.LogError(args.Exception, "Unhandled exception occurred");
         };
     }
@@ -93,7 +76,8 @@ public partial class App : Application
 
 
 
-    public IHost? Host { get; set; }
+
+    public IHost Host { get; set; }
 
     public static Application AppHost => Current;
 
@@ -103,8 +87,9 @@ public partial class App : Application
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
 
-    public static Window? AppWindow { get; private set; }
-    public static Kernel? TheKernel { get; set; }
+    public static Window AppWindow { get; private set; }
+    public static Kernel TheKernel { get; set; }
+
 
 
 
@@ -127,6 +112,7 @@ public partial class App : Application
 
 
 
+
     /// <summary>
     ///     Invoked when the application is launched normally by the end user.  Other entry points
     ///     will be used such as when the application is launched to open a specific file.
@@ -135,7 +121,7 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs e)
     {
         window ??= new Window();
-        window.AppWindow.Resize(new SizeInt32(800, 600));
+        window.AppWindow.Resize(new SizeInt32(900, 750));
         AppWindow = window;
         if (window.Content is not Frame rootFrame)
         {
@@ -149,6 +135,7 @@ public partial class App : Application
 
         base.OnLaunched(e);
     }
+
 
 
 
@@ -170,6 +157,7 @@ public partial class App : Application
 
 
 
+
 /// <summary>
 ///     Provides extension methods for registering ITAI kernel and related AI services with an ASP.NET Core dependency
 ///     injection container.
@@ -184,8 +172,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection RegisterKernel(this IServiceCollection services)
     {
-
-
         // DO NOT REMOVE THESE LINES BELOW - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
         // ****************  AI DO NOT REMOVE THESE LINES BELOW    **********************
         var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN")

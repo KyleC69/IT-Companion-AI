@@ -1,12 +1,4 @@
-﻿// Project Name: SKAgent
-// File Name: Ingestion.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
-namespace ITCompanionAI.Ingestion.Contracts;
+﻿namespace ITCompanionAI.Ingestion.Contracts;
 
 
 public sealed class IngestionArtifact
@@ -19,6 +11,7 @@ public sealed class IngestionArtifact
 
 
 
+
 public sealed class IngestionRunInfo
 {
     public string RunId { get; set; } = default!; // uuid/ulid string
@@ -26,6 +19,7 @@ public sealed class IngestionRunInfo
     public string SchemaVersion { get; set; } = "1.0.0";
     public SourceSnapshotInfo SourceSnapshot { get; set; } = default!;
 }
+
 
 
 
@@ -45,6 +39,7 @@ public sealed class SourceSnapshotInfo
 
 
 
+
 public sealed class SourceConfig
 {
     public bool IncludePrivate { get; set; }
@@ -55,10 +50,12 @@ public sealed class SourceConfig
 
 
 
+
 public sealed class ApiSurface
 {
     public List<ApiTypeInfo> Types { get; set; } = [];
 }
+
 
 
 
@@ -73,11 +70,12 @@ public sealed class ApiTypeInfo
     public bool IsStatic { get; set; }
     public bool IsGeneric { get; set; }
     public List<string> GenericParameters { get; set; } = [];
-    public string? Summary { get; set; }
-    public string? Remarks { get; set; }
+    public string Summary { get; set; }
+    public string Remarks { get; set; }
     public List<ApiAttributeInfo> Attributes { get; set; } = [];
     public List<ApiMemberInfo> Members { get; set; } = [];
 }
+
 
 
 
@@ -91,6 +89,7 @@ public sealed class ApiAttributeInfo
 
 
 
+
 public sealed class ApiMemberInfo
 {
     public string MemberUid { get; set; } = default!; // "csharp:Namespace.Type::Method(...)"
@@ -100,15 +99,16 @@ public sealed class ApiMemberInfo
     public bool IsStatic { get; set; }
     public bool IsExtensionMethod { get; set; }
     public bool IsAsync { get; set; }
-    public string? ReturnType { get; set; }
-    public string? Summary { get; set; }
-    public string? Remarks { get; set; }
+    public string ReturnType { get; set; }
+    public string Summary { get; set; }
+    public string Remarks { get; set; }
     public List<string> GenericParameters { get; set; } = [];
     public List<ApiAttributeInfo> Attributes { get; set; } = [];
     public List<ApiParameterInfo> Parameters { get; set; } = [];
-    public SourceLocationInfo? SourceLocation { get; set; }
+    public SourceLocationInfo SourceLocation { get; set; }
     public List<ApiMemberDocLink> DocLinks { get; set; } = [];
 }
+
 
 
 
@@ -119,8 +119,9 @@ public sealed class ApiParameterInfo
     public string Type { get; set; } = default!;
     public int Position { get; set; }
     public bool HasDefaultValue { get; set; }
-    public string? DefaultValueLiteral { get; set; }
+    public string DefaultValueLiteral { get; set; }
 }
+
 
 
 
@@ -135,11 +136,13 @@ public sealed class SourceLocationInfo
 
 
 
+
 public sealed class ApiMemberDocLink
 {
     public string DocUid { get; set; } = default!; // "doc:csharp:..."
     public string SectionUid { get; set; } = default!; // "sec:..."
 }
+
 
 
 
@@ -152,16 +155,18 @@ public sealed class Docs
 
 
 
+
 public sealed class DocPageInfo
 {
     public string DocUid { get; set; } = default!; // "doc:csharp:..."
     public string SourcePath { get; set; } = default!;
     public string Title { get; set; } = default!;
     public string Language { get; set; } = default!;
-    public string? Url { get; set; }
-    public string? RawMarkdown { get; set; }
+    public string Url { get; set; }
+    public string RawMarkdown { get; set; }
     public List<DocSectionInfo> Sections { get; set; } = [];
 }
+
 
 
 
@@ -179,6 +184,7 @@ public sealed class DocSectionInfo
 
 
 
+
 public sealed class CodeBlockInfo
 {
     public string CodeUid { get; set; } = default!; // "code:..."
@@ -186,8 +192,9 @@ public sealed class CodeBlockInfo
     public string Content { get; set; } = default!;
     public List<DeclaredPackageInfo> DeclaredPackages { get; set; } = [];
     public List<string> Tags { get; set; } = [];
-    public string? InlineComments { get; set; }
+    public string InlineComments { get; set; }
 }
+
 
 
 
@@ -195,5 +202,5 @@ public sealed class CodeBlockInfo
 public sealed class DeclaredPackageInfo
 {
     public string Name { get; set; } = default!;
-    public string? Version { get; set; }
+    public string Version { get; set; }
 }
