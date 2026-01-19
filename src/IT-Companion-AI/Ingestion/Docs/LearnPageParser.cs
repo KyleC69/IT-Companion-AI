@@ -55,17 +55,12 @@ public sealed class LearnPageParser
     ///     Thrown if the main content of the Learn page cannot be located in the HTML
     ///     document.
     /// </exception>
-    public LearnPageParseResult Parse(string url, Guid ingestionRunId, Guid sourceSnapshotId)
+    public async Task<LearnPageParseResult> ParseAsync(string url, Guid ingestionRunId, Guid sourceSnapshotId, CancellationToken cancellationToken = default)
     {
-        var htmlstring = _httpClient.GetWebDocument(url);
+        var htmlstring = await _httpClient.GetWebDocumentAsync(url, cancellationToken);
 
-
-        HtmlDocument? doc = null;
-
-        if (doc is null)
-        {
-            return new LearnPageParseResult();
-        }
+        HtmlDocument doc = new();
+        doc.LoadHtml(htmlstring);
 
         DateTime now = DateTime.Now;
 
@@ -232,7 +227,7 @@ public sealed class LearnPageParser
         var codeBlocks = new List<CodeBlock>();
 
         // Include the heading itself in the HTML fragment
-        builder.Append(headingNode.OuterHtml);
+        _ = builder.Append(headingNode.OuterHtml);
 
         HtmlNode current = headingNode.NextSibling;
 
@@ -293,11 +288,11 @@ public sealed class LearnPageParser
                     }
                 }
 
-                builder.Append(current.OuterHtml);
+                _ = builder.Append(current.OuterHtml);
             }
             else if (current.NodeType == HtmlNodeType.Text)
             {
-                builder.Append(current.InnerText);
+                _ = builder.Append(current.InnerText);
             }
 
             current = current.NextSibling;
@@ -334,16 +329,11 @@ public sealed class LearnPageParser
         }
 
         var classes = string.Join(" ", node.GetClasses());
-        if (classes.Contains("feedback", StringComparison.OrdinalIgnoreCase) ||
-            classes.Contains("rating", StringComparison.OrdinalIgnoreCase) ||
-            classes.Contains("breadcrumb", StringComparison.OrdinalIgnoreCase) ||
-            classes.Contains("toc", StringComparison.OrdinalIgnoreCase) ||
-            classes.Contains("sidebar", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return false;
+        return classes.Contains("feedback", StringComparison.OrdinalIgnoreCase) ||
+               classes.Contains("rating", StringComparison.OrdinalIgnoreCase) ||
+               classes.Contains("breadcrumb", StringComparison.OrdinalIgnoreCase) ||
+               classes.Contains("toc", StringComparison.OrdinalIgnoreCase) ||
+               classes.Contains("sidebar", StringComparison.OrdinalIgnoreCase);
     }
 
 
@@ -353,7 +343,7 @@ public sealed class LearnPageParser
 
 
 
-    private static string ExtractLanguageFromClass(string classAttr)
+    private static string? ExtractLanguageFromClass(string classAttr)
     {
         if (string.IsNullOrWhiteSpace(classAttr))
         {
@@ -384,42 +374,42 @@ public sealed class LearnPageParser
 
 
 
-/*
-    public LearnPageParseResult Parse(string url)
-    {
-        HtmlWeb web = new();
-        HtmlDocument doc = web.Load(url);
+    /*
+        public LearnPageParseResult Parse(string url)
+        {
+            HtmlWeb web = new();
+            HtmlDocument doc = web.Load(url);
 
-        DateTime now = DateTime.UtcNow;
+            DateTime now = DateTime.UtcNow;
 
-        // Anchor on Learn main article
-        HtmlNode article = doc.DocumentNode.SelectSingleNode("//article[@id='main']")
-                           ?? doc.DocumentNode.SelectSingleNode("//*[@id='main-content']")
-                           ?? doc.DocumentNode.SelectSingleNode("//body");
+            // Anchor on Learn main article
+            HtmlNode article = doc.DocumentNode.SelectSingleNode("//article[@id='main']")
+                               ?? doc.DocumentNode.SelectSingleNode("//*[@id='main-content']")
+                               ?? doc.DocumentNode.SelectSingleNode("//body");
 
-        if (article is null) throw new InvalidOperationException("Unable to locate main content on Learn page.");
+            if (article is null) throw new InvalidOperationException("Unable to locate main content on Learn page.");
 
-        HtmlNode titleNode = article.SelectSingleNode(".//h1")
-                             ?? doc.DocumentNode.SelectSingleNode("//h1")
-                             ?? doc.DocumentNode.SelectSingleNode("//title");
+            HtmlNode titleNode = article.SelectSingleNode(".//h1")
+                                 ?? doc.DocumentNode.SelectSingleNode("//h1")
+                                 ?? doc.DocumentNode.SelectSingleNode("//title");
 
-        var title = HtmlEntity.DeEntitize(titleNode?.InnerText?.Trim() ?? string.Empty);
+            var title = HtmlEntity.DeEntitize(titleNode?.InnerText?.Trim() ?? string.Empty);
 
-        var pageSemanticUid = HashUtils.ComputeSemanticUidForPage(url);
+            var pageSemanticUid = HashUtils.ComputeSemanticUidForPage(url);
 
-        // Use only the main article HTML as the "raw" content
-        var articleHtml = article.InnerHtml;
-        var pageMarkdown = HtmlToMarkdown.Convert(articleHtml);
+            // Use only the main article HTML as the "raw" content
+            var articleHtml = article.InnerHtml;
+            var pageMarkdown = HtmlToMarkdown.Convert(articleHtml);
 
 
-        //select all the links from the table of contents
-      //  HtmlNode? toc = article.SelectSingleNode("//*[@id='ms--toc-content']");
+            //select all the links from the table of contents
+          //  HtmlNode? toc = article.SelectSingleNode("//*[@id='ms--toc-content']");
 
-        HtmlNodeCollection? links = toc?.SelectNodes("//a[@href]");
-        if (links is null || links.Count == 0)
-            throw new InvalidOperationException("No links found in the table of contents.");
+            HtmlNodeCollection? links = toc?.SelectNodes("//a[@href]");
+            if (links is null || links.Count == 0)
+                throw new InvalidOperationException("No links found in the table of contents.");
 
-        return default;
-    }
-*/
+            return default;
+        }
+    */
 }

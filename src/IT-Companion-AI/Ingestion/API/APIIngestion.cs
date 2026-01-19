@@ -105,15 +105,17 @@ public class APIIngestion : RoslynHarvesterBase
         // Harvest symbols (types -> members -> parameters).
 
         // Types
-        List<ApiType> apiTypes = new();
+        List<ApiType> apiTypes = [];
         await ExtractTypesAsync(solution, apiTypes, CancellationToken.None).ConfigureAwait(false);
 
         // Ensure IDs exist for all types BEFORE member extraction so ApiFeatureId is non-empty.
         foreach (ApiType type in apiTypes)
+        {
             if (type.Id == Guid.Empty)
             {
                 type.Id = Guid.NewGuid();
             }
+        }
 
         // Build type symbol map now that types are extracted.
         var roslynTypeSymbolsByUid = await BuildTypeSymbolMapAsync(
@@ -123,7 +125,7 @@ public class APIIngestion : RoslynHarvesterBase
             .ConfigureAwait(false);
 
         // Members
-        List<ApiMember> apiMembers = new();
+        List<ApiMember> apiMembers = [];
         var roslynMemberSymbolsByUid = new Dictionary<string, ISymbol>(StringComparer.Ordinal);
 
         await ExtractMembersAsync(
@@ -137,13 +139,15 @@ public class APIIngestion : RoslynHarvesterBase
 
         // Ensure IDs exist for all members BEFORE parameter extraction so ApiMemberId is non-empty.
         foreach (ApiMember member in apiMembers)
+        {
             if (member.Id == Guid.Empty)
             {
                 member.Id = Guid.NewGuid();
             }
+        }
 
         // Parameters
-        List<ApiParameter> apiParameters = new();
+        List<ApiParameter> apiParameters = [];
         await ExtractParametersAsync(
                 solution,
                 apiMembers,
@@ -285,7 +289,7 @@ public class APIIngestion : RoslynHarvesterBase
             p.ValidFromUtc = p.ValidFromUtc == default ? DateTime.UtcNow : p.ValidFromUtc;
             p.IsActive = true;
 
-            await _db.SpUpsertApiParameterAsync(
+            _ = await _db.SpUpsertApiParameterAsync(
                     p.ApiMemberId,
                     p.Name,
                     p.TypeUid,

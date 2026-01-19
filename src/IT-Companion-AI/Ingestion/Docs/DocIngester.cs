@@ -32,7 +32,7 @@ public class DocIngester
         dbContext.SpBeginIngestionRun("1111", "rerun doc ingestion", ref ingestionRunId); // Pass as ref Guid?
 
 
-        LearnPageParser parser = new(App.GetService<HttpClientService>());
+        LearnPageParser parser = new();
         DocRepository repo = new(connectionString);
         LearnIngestionRunner runner = new(parser, repo);
 

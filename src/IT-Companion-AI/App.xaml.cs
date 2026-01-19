@@ -1,5 +1,3 @@
-using Windows.Graphics;
-
 using ITCompanionAI.Services;
 using ITCompanionAI.Views;
 
@@ -11,6 +9,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+
+using Windows.Graphics;
 
 using KBContext = ITCompanionAI.EFModels.KBContext;
 
@@ -44,17 +44,17 @@ public partial class App : Application
         Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureAppConfiguration((context, config) =>
         {
             // Explicitly load user-secrets for this WinUI host so keys like "ITAI:GITHUB_TOKEN" are available.
-            config.AddUserSecrets<App>(true);
+            _ = config.AddUserSecrets<App>(true);
         }).ConfigureServices((context, services) =>
         {
-            services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
-            services.AddSingleton<HttpClientService>();
-            services.AddDbContext<KBContext>();
-            services.AddLogging(loggingBuilder =>
+            _ = services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
+            _ = services.AddSingleton<HttpClientService>();
+            _ = services.AddDbContext<KBContext>();
+            _ = services.AddLogging(loggingBuilder =>
             {
-                loggingBuilder.AddConsole();
-                loggingBuilder.AddDebug();
-                loggingBuilder.SetMinimumLevel(LogLevel.Trace);
+                _ = loggingBuilder.AddConsole();
+                _ = loggingBuilder.AddDebug();
+                _ = loggingBuilder.SetMinimumLevel(LogLevel.Trace);
             });
         }).Build();
 
@@ -174,7 +174,7 @@ public static class ServiceCollectionExtensions
     {
         // DO NOT REMOVE THESE LINES BELOW - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
         // ****************  AI DO NOT REMOVE THESE LINES BELOW    **********************
-        var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN")
+        _ = Environment.GetEnvironmentVariable("GITHUB_TOKEN")
                           ?? throw new InvalidOperationException("Missing GitHub API key in configuration.");
         var postgresConnectionString =
             """Host=127.0.0.1;Database=postgres;Username=postgres;Password=Agent1234;Persist Security Info=True"""
@@ -182,11 +182,10 @@ public static class ServiceCollectionExtensions
                 "Missing Postgres connection string in environment variable 'POSTGRES_CONNECTIONSTRING'.");
 
         var phiModel = "Phi-4-mini-instruct";
-        Uri openAiEndpoint = new("https://models.github.ai/inference");
+        _ = new Uri("https://models.github.ai/inference");
 
         _ = phiModel;
-
-        Action<ILoggingBuilder> loggingConfiguration = c => c.AddConsole().SetMinimumLevel(LogLevel.Trace);
+        _ = c => c.AddConsole().SetMinimumLevel(LogLevel.Trace);
         // ****************  AI DO NOT REMOVE THESE LINES ABOVE    **********************
         // DO NOT REMOVE THESE LINES ABOVE - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
         //#####################################################################

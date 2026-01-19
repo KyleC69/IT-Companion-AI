@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Text.Json;
+﻿#nullable enable
 
 using ITCompanionAI.Services;
 
@@ -7,6 +6,9 @@ using Markdig;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+
+using System.Data;
+using System.Text.Json;
 
 using RMarkdown = ReverseMarkdown;
 
@@ -74,7 +76,7 @@ public sealed class LearnIngestionPipeline
             try
             {
                 using HttpResponseMessage resp = await _http.GetAsync(entry.Url, HttpCompletionOption.ResponseHeadersRead);
-                resp.EnsureSuccessStatusCode();
+                _ = resp.EnsureSuccessStatusCode();
 
                 html = await resp.Content.ReadAsStringAsync();
             }
@@ -114,15 +116,18 @@ public sealed class LearnIngestionPipeline
 
 
             // 11. Build page model
-            DocsPage page = new() { Url = entry.Url };
-            page.Uid = entry.Uid;
-            page.Title = entry.Title;
-            page.Breadcrumb = entry.Breadcrumb;
-            page.Html = html; // Raw response from server
-            page.Markdown = markdown;
-            page.NormalizedMarkdown = normalized;
-            page.Hash = hash;
-            page.LastFetched = DateTimeOffset.UtcNow;
+            DocsPage page = new()
+            {
+                Url = entry.Url,
+                Uid = entry.Uid,
+                Title = entry.Title,
+                Breadcrumb = entry.Breadcrumb,
+                Html = html, // Raw response from server
+                Markdown = markdown,
+                NormalizedMarkdown = normalized,
+                Hash = hash,
+                LastFetched = DateTimeOffset.UtcNow
+            };
 
             // 12. Persist
             await SaveDocumentAsync(page);
@@ -146,7 +151,7 @@ public sealed class LearnIngestionPipeline
 
         // Check if document already exists
         SqlCommand selectCommand = new("SELECT COUNT(*) FROM Documents WHERE Url = @Url", connection);
-        selectCommand.Parameters.AddWithValue("@Url", page.Url);
+        _ = selectCommand.Parameters.AddWithValue("@Url", page.Url);
         var exists = (int)await selectCommand.ExecuteScalarAsync() > 0;
 
         if (exists)
@@ -156,7 +161,7 @@ public sealed class LearnIngestionPipeline
                 "UPDATE Documents SET Uid = @Uid, Title = @Title, Breadcrumb = @Breadcrumb, DocHtml = @DocHtml, NormalizedMarkdown = @NormalizedMarkdown, Hash = @Hash, LastFetched = @LastFetched WHERE Url = @Url",
                 connection);
             AddDocumentParameters(updateCommand, page);
-            await updateCommand.ExecuteNonQueryAsync();
+            _ = await updateCommand.ExecuteNonQueryAsync();
         }
         else
         {
@@ -166,7 +171,7 @@ public sealed class LearnIngestionPipeline
                 connection);
             AddDocumentParameters(insertCommand, page);
             insertCommand.Parameters.Add("@ContentRaw", SqlDbType.NVarChar, -1).Value = (object?)page.Html ?? DBNull.Value;
-            await insertCommand.ExecuteNonQueryAsync();
+            _ = await insertCommand.ExecuteNonQueryAsync();
         }
     }
 

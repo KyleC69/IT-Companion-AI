@@ -33,9 +33,9 @@ public partial class MainViewModel : BaseViewModel
         Title = "Agentic AI";
         _loggerFactory = LoggerFactory.Create(builder =>
         {
-            builder.AddDebug();
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Trace);
+            _ = builder.AddDebug();
+            _ = builder.AddConsole();
+            _ = builder.SetMinimumLevel(LogLevel.Trace);
         });
     }
 
@@ -57,8 +57,8 @@ public partial class MainViewModel : BaseViewModel
             }
 
             _userInput = value;
-            this.OnPropertyChanged();
-            this.OnPropertyChanged(nameof(CanSend));
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CanSend));
             OnUserInputChanged(value);
         }
     }
@@ -81,9 +81,9 @@ public partial class MainViewModel : BaseViewModel
             if (_isBusy != value)
             {
                 _isBusy = value;
-                this.OnPropertyChanged();
-                this.OnPropertyChanged(nameof(CanSend));
-                this.OnPropertyChanged(nameof(CanCancel));
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanSend));
+                OnPropertyChanged(nameof(CanCancel));
                 OnIsBusyChanged(value);
             }
         }
@@ -168,8 +168,8 @@ public partial class MainViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
-            this.OnPropertyChanged(nameof(CanSend));
-            this.OnPropertyChanged(nameof(CanCancel));
+            OnPropertyChanged(nameof(CanSend));
+            OnPropertyChanged(nameof(CanCancel));
         }
 
 
@@ -245,7 +245,7 @@ public partial class MainViewModel : BaseViewModel
         if (_cts is { IsCancellationRequested: false })
         {
             _cts.Cancel();
-            this.OnPropertyChanged(nameof(CanCancel));
+            OnPropertyChanged(nameof(CanCancel));
         }
     }
 

@@ -1,4 +1,4 @@
-﻿namespace ITCompanionAI.Ingestion;
+﻿namespace ITCompanionAI.Models;
 
 
 public sealed class FlatTocEntry

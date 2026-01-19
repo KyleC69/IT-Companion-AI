@@ -45,13 +45,10 @@ public sealed record GitHubClientOptions(
         }
 
         var token = configuration[TokenConfigKey];
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            throw new InvalidOperationException(
-                $"Missing GitHub token in configuration key '{TokenConfigKey}'. Add it via user-secrets (recommended) or environment variables.");
-        }
-
-        return new GitHubClientOptions(productName, apiBaseAddress, token);
+        return string.IsNullOrWhiteSpace(token)
+            ? throw new InvalidOperationException(
+                $"Missing GitHub token in configuration key '{TokenConfigKey}'. Add it via user-secrets (recommended) or environment variables.")
+            : new GitHubClientOptions(productName, apiBaseAddress, token);
     }
 }
 

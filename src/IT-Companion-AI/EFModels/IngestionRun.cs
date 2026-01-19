@@ -35,12 +35,12 @@ public partial class IngestionRun : INotifyPropertyChanging, INotifyPropertyChan
 
     public IngestionRun()
     {
-        _ApiFeatures = new List<ApiFeature>();
-        _ApiMembers = new List<ApiMember>();
-        _ApiParameters = new List<ApiParameter>();
-        _ApiTypes = new List<ApiType>();
-        _DocPages = new List<DocPage>();
-        _DocSections = new List<DocSection>();
+        _ApiFeatures = [];
+        _ApiMembers = [];
+        _ApiParameters = [];
+        _ApiTypes = [];
+        _DocPages = [];
+        _DocSections = [];
         OnCreated();
     }
 
@@ -204,11 +204,7 @@ public partial class IngestionRun : INotifyPropertyChanging, INotifyPropertyChan
 
     protected virtual void SendPropertyChanging()
     {
-        PropertyChangingEventHandler handler = PropertyChanging;
-        if (handler != null)
-        {
-            handler(this, emptyChangingEventArgs);
-        }
+        PropertyChanging?.Invoke(this, emptyChangingEventArgs);
     }
 
 
@@ -220,11 +216,7 @@ public partial class IngestionRun : INotifyPropertyChanging, INotifyPropertyChan
 
     protected virtual void SendPropertyChanging(string propertyName)
     {
-        PropertyChangingEventHandler handler = PropertyChanging;
-        if (handler != null)
-        {
-            handler(this, new PropertyChangingEventArgs(propertyName));
-        }
+        PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
     }
 
 
@@ -236,10 +228,6 @@ public partial class IngestionRun : INotifyPropertyChanging, INotifyPropertyChan
 
     protected virtual void SendPropertyChanged(string propertyName)
     {
-        PropertyChangedEventHandler handler = PropertyChanged;
-        if (handler != null)
-        {
-            handler(this, new PropertyChangedEventArgs(propertyName));
-        }
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

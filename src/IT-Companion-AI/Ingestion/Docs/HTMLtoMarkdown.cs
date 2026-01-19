@@ -75,7 +75,10 @@ public static class HtmlToMarkdown
                 continue;
             }
 
-            foreach (HtmlNode n in nodes) n.Remove();
+            foreach (HtmlNode n in nodes)
+            {
+                n.Remove();
+            }
         }
     }
 }

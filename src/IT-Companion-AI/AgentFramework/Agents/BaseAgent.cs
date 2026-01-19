@@ -3,9 +3,6 @@ using Microsoft.SemanticKernel.Agents;
 
 
 
-#pragma warning disable SKEXP0110 // Agent base class is experimental
-
-
 namespace ITCompanionAI.AgentFramework.Agents;
 
 

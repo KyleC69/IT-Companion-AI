@@ -386,11 +386,7 @@ public partial class VApiFeatureCurrent : INotifyPropertyChanging, INotifyProper
 
     protected virtual void SendPropertyChanging()
     {
-        PropertyChangingEventHandler handler = PropertyChanging;
-        if (handler != null)
-        {
-            handler(this, emptyChangingEventArgs);
-        }
+        PropertyChanging?.Invoke(this, emptyChangingEventArgs);
     }
 
 
@@ -402,11 +398,7 @@ public partial class VApiFeatureCurrent : INotifyPropertyChanging, INotifyProper
 
     protected virtual void SendPropertyChanging(string propertyName)
     {
-        PropertyChangingEventHandler handler = PropertyChanging;
-        if (handler != null)
-        {
-            handler(this, new PropertyChangingEventArgs(propertyName));
-        }
+        PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
     }
 
 
@@ -418,10 +410,6 @@ public partial class VApiFeatureCurrent : INotifyPropertyChanging, INotifyProper
 
     protected virtual void SendPropertyChanged(string propertyName)
     {
-        PropertyChangedEventHandler handler = PropertyChanged;
-        if (handler != null)
-        {
-            handler(this, new PropertyChangedEventArgs(propertyName));
-        }
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

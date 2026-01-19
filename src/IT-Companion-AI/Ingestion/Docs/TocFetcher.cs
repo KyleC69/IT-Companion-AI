@@ -1,9 +1,9 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-
-using ITCompanionAI.Services;
+﻿using ITCompanionAI.Services;
 
 using Microsoft.Extensions.Logging;
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 
 
@@ -180,7 +180,7 @@ public sealed class TocFetcher
 
     private sealed class LearnTocResponse2
     {
-        [JsonPropertyName("items")] public List<TocItem> Items { get; set; } = new();
+        [JsonPropertyName("items")] public List<TocItem> Items { get; set; } = [];
     }
 
 
@@ -194,31 +194,15 @@ public sealed class TocFetcher
         [JsonPropertyName("href")] public string Href { get; set; }
 
         // Learn TOC uses "children" in many cases, but some doc sets/nodes use "items".
-        [JsonPropertyName("children")] public List<TocItem> Children { get; set; } = new();
+        [JsonPropertyName("children")] public List<TocItem> Children { get; set; } = [];
 
-        [JsonPropertyName("items")] public List<TocItem> NestedItems { get; set; } = new();
+        [JsonPropertyName("items")] public List<TocItem> NestedItems { get; set; } = [];
 
 
 
 
 
         [JsonIgnore]
-        public List<TocItem> Items
-        {
-            get
-            {
-                if (Children.Count > 0)
-                {
-                    return Children;
-                }
-
-                if (NestedItems.Count > 0)
-                {
-                    return NestedItems;
-                }
-
-                return new List<TocItem>();
-            }
-        }
+        public List<TocItem> Items => Children.Count > 0 ? Children : NestedItems.Count > 0 ? NestedItems : [];
     }
 }

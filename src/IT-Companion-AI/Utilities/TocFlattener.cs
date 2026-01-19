@@ -1,5 +1,4 @@
-﻿using ITCompanionAI.Ingestion;
-using ITCompanionAI.Ingestion.Docs;
+﻿using ITCompanionAI.Ingestion.Docs;
 
 
 
@@ -12,7 +11,7 @@ public static class TocFlattener
         List<string> parents = null,
         int depth = 0)
     {
-        parents ??= new List<string>();
+        parents ??= [];
 
         foreach (TocFetcher.TocItem item in items)
         {
@@ -31,13 +30,17 @@ public static class TocFlattener
             if (item.Children.Count > 0)
             {
                 foreach (FlatTocEntry child in Flatten(item.Children, breadcrumb.ToList(), depth + 1))
+                {
                     yield return child;
+                }
             }
 
             if (item.NestedItems.Count > 0)
             {
                 foreach (FlatTocEntry child in Flatten(item.NestedItems, breadcrumb.ToList(), depth + 1))
+                {
                     yield return child;
+                }
             }
         }
     }

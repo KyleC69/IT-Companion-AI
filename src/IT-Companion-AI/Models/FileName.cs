@@ -31,9 +31,9 @@ public sealed class SyntaxTypeTree
 
 
 
-    public List<ApiType> TypeSymbol { get; } = new();
+    public List<ApiType> TypeSymbol { get; } = [];
 
-    public List<ApiMember> MemberSymbols { get; } = new();
+    public List<ApiMember> MemberSymbols { get; } = [];
 
-    public List<ApiParameter> ParameterSymbols { get; } = new();
+    public List<ApiParameter> ParameterSymbols { get; } = [];
 }

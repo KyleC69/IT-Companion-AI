@@ -5,9 +5,6 @@ using Microsoft.SemanticKernel.Agents;
 
 
 
-#pragma warning disable SKEXP0110
-
-
 namespace ITCompanionAI.AgentFramework;
 
 
@@ -86,8 +83,8 @@ public static class KernelFactory
     private static Kernel BuildKernel(ILoggerFactory loggerFactory)
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton(loggerFactory);
-        builder.Services.AddLogging();
+        _ = builder.Services.AddSingleton(loggerFactory);
+        _ = builder.Services.AddLogging();
 
         var apiKey = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
         if (string.IsNullOrWhiteSpace(apiKey))

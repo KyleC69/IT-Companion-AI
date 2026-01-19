@@ -64,10 +64,6 @@ public partial class ButtonViewModel : BaseViewModel
     {
         logger.LogInformation("Application Starting Up");
 
-        //   var ingester = new APIIngestion(new KBContext());
-        //    await ingester.StartIngestionAsync().ConfigureAwait(false);
-        var filePath = """f:\SKApiRepo\semantic-kernel\dotnet\src""";
-
 
         //  var results =  await harvester.ExtractAsync(filePath, CancellationToken.None);
 

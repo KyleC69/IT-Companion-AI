@@ -145,14 +145,14 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
         {
             inputIds[0, i] = tokenIds[i];
             attentionMask[0, i] = 1;
-            tokenTypeIds?[0, i] = 0;
+            _ = (tokenTypeIds?[0, i] = 0);
         }
 
-        List<NamedOnnxValue> inputs = new()
-        {
+        List<NamedOnnxValue> inputs =
+        [
             NamedOnnxValue.CreateFromTensor(_inputIdsName, inputIds),
             NamedOnnxValue.CreateFromTensor(_attentionMaskName, attentionMask)
-        };
+        ];
 
         if (tokenTypeIds is not null)
         {
@@ -168,10 +168,17 @@ public sealed class OnnxEmbeddingClient : IEmbeddingClient, IDisposable
             var hiddenSize = output.Length / sequenceLength;
             var pooled = new float[hiddenSize];
             for (var t = 0; t < sequenceLength; t++)
-            for (var h = 0; h < hiddenSize; h++)
-                pooled[h] += output[t * hiddenSize + h];
+            {
+                for (var h = 0; h < hiddenSize; h++)
+                {
+                    pooled[h] += output[(t * hiddenSize) + h];
+                }
+            }
 
-            for (var h = 0; h < hiddenSize; h++) pooled[h] /= sequenceLength;
+            for (var h = 0; h < hiddenSize; h++)
+            {
+                pooled[h] /= sequenceLength;
+            }
 
             return Task.FromResult(pooled);
         }
@@ -348,10 +355,10 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         List<uint> completionTokenIds = new(_maxNewTokens);
 
         // Persist KV cache across steps
-        List<DenseTensor<float>> pastKeysFloat = new();
-        List<DenseTensor<float>> pastValuesFloat = new();
-        List<DenseTensor<Half>> pastKeysHalf = new();
-        List<DenseTensor<Half>> pastValuesHalf = new();
+        List<DenseTensor<float>> pastKeysFloat = [];
+        List<DenseTensor<float>> pastValuesFloat = [];
+        List<DenseTensor<Half>> pastKeysHalf = [];
+        List<DenseTensor<Half>> pastValuesHalf = [];
 
         for (var step = 0; step < _maxNewTokens; step++)
         {
@@ -461,11 +468,13 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
             }
 
             for (var layer = 0; layer < expectedLayers; layer++)
+            {
                 if (keys[layer] == null || values[layer] == null || keys[layer].Length == 0 ||
                     values[layer].Length == 0)
                 {
                     return false;
                 }
+            }
 
             return true;
         }
@@ -486,19 +495,21 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         {
             var tokenIndex = startIndex + i;
             inputTensor[0, i] = tokens[tokenIndex];
-            positionIds?[0, i] = tokenIndex;
+            _ = (positionIds?[0, i] = tokenIndex);
         }
 
         if (attentionMask != null)
         {
             for (var i = 0; i < contextLen; i++)
+            {
                 attentionMask[0, i] = 1;
+            }
         }
 
-        List<NamedOnnxValue> inputs = new()
-        {
+        List<NamedOnnxValue> inputs =
+        [
             NamedOnnxValue.CreateFromTensor(context.InputIdsName, inputTensor)
-        };
+        ];
 
         if (positionIds != null)
         {
@@ -672,11 +683,13 @@ public sealed class OnnxLLMClient : ILLMClient, IDisposable
         var bestIndex = 0;
         var bestValue = logits[0];
         for (var i = 1; i < logits.Count; i++)
+        {
             if (logits[i] > bestValue)
             {
                 bestValue = logits[i];
                 bestIndex = i;
             }
+        }
 
         return bestIndex;
     }

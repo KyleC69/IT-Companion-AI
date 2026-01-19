@@ -27,25 +27,24 @@ public sealed class LearnIngestionRunner
 
 
 
-    public async Task IngestAsync(IEnumerable<string> urls, Guid sourceSnapshotId, Guid ingestionRunId)
+    public async Task IngestAsync(IEnumerable<string> urls, Guid sourceSnapshotId, Guid ingestionRunId, CancellationToken cancellationToken = default)
     {
-        LearnPageParseResult result = new();
+        _ = new LearnPageParseResult();
         foreach (var url in urls)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var trimmed = url?.Trim();
             if (string.IsNullOrWhiteSpace(trimmed))
             {
                 continue;
             }
 
-
-
-
+            LearnPageParseResult result;
             try
             {
-                result = _parser.Parse(trimmed, Guid.NewGuid(), Guid.NewGuid());
+                result = await _parser.ParseAsync(trimmed, Guid.NewGuid(), Guid.NewGuid(), cancellationToken);
             }
-            catch (Exception e)
+            catch (HttpRequestException e)
             {
                 Log.TraceEvent(System.Diagnostics.TraceEventType.Warning, 0, "Fetch failed Url={0} Error={1}", url, e.Message);
                 Console.WriteLine(e);

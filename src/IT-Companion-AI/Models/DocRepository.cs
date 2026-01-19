@@ -71,9 +71,15 @@ public sealed class DocRepository
         {
             await InsertDocPageAsync(conn, tx, page);
 
-            foreach (DocSection section in sections) await InsertDocSectionAsync(conn, tx, section);
+            foreach (DocSection section in sections)
+            {
+                await InsertDocSectionAsync(conn, tx, section);
+            }
 
-            foreach (CodeBlock block in codeBlocks) await InsertCodeBlockAsync(conn, tx, block);
+            foreach (CodeBlock block in codeBlocks)
+            {
+                await InsertCodeBlockAsync(conn, tx, block);
+            }
 
             tx.Commit();
         }
@@ -148,7 +154,7 @@ insert into dbo.doc_page (
         cmd.Parameters.Add("@is_active", SqlDbType.Bit).Value = page.IsActive;
         cmd.Parameters.Add("@content_hash", SqlDbType.Binary, 32).Value = (object)page.ContentHash ?? DBNull.Value;
 
-        await cmd.ExecuteNonQueryAsync();
+        _ = await cmd.ExecuteNonQueryAsync();
     }
 
 
@@ -212,7 +218,7 @@ insert into dbo.doc_section (
         cmd.Parameters.Add("@is_active", SqlDbType.Bit).Value = section.IsActive;
         cmd.Parameters.Add("@content_hash", SqlDbType.Binary, 32).Value = (object)section.ContentHash ?? DBNull.Value;
 
-        await cmd.ExecuteNonQueryAsync();
+        _ = await cmd.ExecuteNonQueryAsync();
     }
 
 
@@ -279,6 +285,6 @@ insert into dbo.code_block (
         cmd.Parameters.Add("@is_active", SqlDbType.Bit).Value = block.IsActive;
         cmd.Parameters.Add("@content_hash", SqlDbType.Binary, 32).Value = (object)block.ContentHash ?? DBNull.Value;
 
-        await cmd.ExecuteNonQueryAsync();
+        _ = await cmd.ExecuteNonQueryAsync();
     }
 }

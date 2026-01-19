@@ -18,37 +18,30 @@ public sealed class ContentExtractor
         switch (mode)
         {
             case ExtractionMode.Html:
-                switch (docType)
+                return docType switch
                 {
-                    case DocumentType.LearnPage:
-                        return ExtractLearnMainHtml(html);
-                    case DocumentType.BlogPost:
-                        return ExtractBlogHtml(html);
+                    DocumentType.LearnPage => ExtractLearnMainHtml(html),
+                    DocumentType.BlogPost => ExtractBlogHtml(html),
                     //Add more document types as needed
-                    default:
-                        throw new NotImplementedException($"HTML extraction not implemented for document type {docType}");
-                }
+                    _ => throw new NotImplementedException($"HTML extraction not implemented for document type {docType}")
+                };
             case ExtractionMode.Text:
                 return ExtractText(html);
             case ExtractionMode.Markdown:
-                switch (docType)
+                return docType switch
                 {
-                    case DocumentType.LearnPage:
-                        return ExtractLearnMainMarkdown();
+                    DocumentType.LearnPage => ExtractLearnMainMarkdown(),
                     //Add more document types as needed
-                    default:
-                        throw new NotImplementedException($"Markdown extraction not implemented for document type {docType}");
-                }
+                    _ => throw new NotImplementedException($"Markdown extraction not implemented for document type {docType}")
+                };
             case ExtractionMode.Code:
             {
-                switch (docType)
+                return docType switch
                 {
-                    case DocumentType.LearnPage:
-                        return ExtractCodeFromLearnPage(html);
+                    DocumentType.LearnPage => ExtractCodeFromLearnPage(html),
                     //Add more document types as needed
-                    default:
-                        throw new NotImplementedException($"Code extraction not implemented for document type {docType}");
-                }
+                    _ => throw new NotImplementedException($"Code extraction not implemented for document type {docType}")
+                };
             }
             default:
                 throw new NotImplementedException($"Extraction mode {mode} not implemented");
@@ -124,12 +117,7 @@ public sealed class ContentExtractor
         doc.LoadHtml(html);
         // Learn pages: main content is under <main>
         HtmlNode main = doc.DocumentNode.SelectSingleNode("//main");
-        if (main == null)
-        {
-            return string.Empty;
-        }
-
-        return main.InnerHtml;
+        return main == null ? string.Empty : main.InnerHtml;
     }
 
 
@@ -157,12 +145,7 @@ public sealed class ContentExtractor
         doc.LoadHtml(html);
         // Blog posts: main content is often under <article>
         HtmlNode article = doc.DocumentNode.SelectSingleNode("//article");
-        if (article == null)
-        {
-            return string.Empty;
-        }
-
-        return article.InnerHtml;
+        return article == null ? string.Empty : article.InnerHtml;
     }
 
 

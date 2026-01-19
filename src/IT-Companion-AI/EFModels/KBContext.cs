@@ -24,8 +24,8 @@ public partial class KBContext : DbContext
 
 
 
-    public KBContext(DbContextOptions<KBContext> options) :
-        base(options)
+    public KBContext(DbContextOptions<KBContext> options)
+        : base(options)
     {
         OnCreated();
     }
@@ -112,9 +112,9 @@ public partial class KBContext : DbContext
     {
         if (!optionsBuilder.IsConfigured ||
             (!optionsBuilder.Options.Extensions.OfType<RelationalOptionsExtension>().Any(ext => !string.IsNullOrEmpty(ext.ConnectionString) || ext.Connection != null) &&
-             !optionsBuilder.Options.Extensions.Any(ext => !(ext is RelationalOptionsExtension) && !(ext is CoreOptionsExtension))))
+             !optionsBuilder.Options.Extensions.Any(ext => ext is not RelationalOptionsExtension and not CoreOptionsExtension)))
         {
-            optionsBuilder.UseSqlServer(@"Data Source=(localdb)\mssqllocaldb;Initial Catalog=KnowledgeCurator;Integrated Security=True;Persist Security Info=True");
+            _ = optionsBuilder.UseSqlServer(@"Data Source=(localdb)\mssqllocaldb;Initial Catalog=KnowledgeCurator;Integrated Security=True;Persist Security Info=True");
         }
 
         CustomizeConfiguration(ref optionsBuilder);
@@ -250,25 +250,25 @@ public partial class KBContext : DbContext
 
     private void RelationshipsMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ApiFeature>().HasOne(x => x.IngestionRun).WithMany(op => op.ApiFeatures).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
-        modelBuilder.Entity<ApiFeature>().HasOne(x => x.ApiMember).WithOne(op => op.ApiFeature).HasForeignKey(typeof(ApiMember), @"ApiFeatureId").IsRequired(false);
+        _ = modelBuilder.Entity<ApiFeature>().HasOne(x => x.IngestionRun).WithMany(op => op.ApiFeatures).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<ApiFeature>().HasOne(x => x.ApiMember).WithOne(op => op.ApiFeature).HasForeignKey(typeof(ApiMember), @"ApiFeatureId").IsRequired(false);
 
-        modelBuilder.Entity<ApiMember>().HasOne(x => x.IngestionRun).WithMany(op => op.ApiMembers).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<ApiMember>().HasOne(x => x.IngestionRun).WithMany(op => op.ApiMembers).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
 
-        modelBuilder.Entity<ApiParameter>().HasOne(x => x.IngestionRun).WithMany(op => op.ApiParameters).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<ApiParameter>().HasOne(x => x.IngestionRun).WithMany(op => op.ApiParameters).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
 
-        modelBuilder.Entity<ApiType>().HasOne(x => x.IngestionRun).WithMany(op => op.ApiTypes).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<ApiType>().HasOne(x => x.IngestionRun).WithMany(op => op.ApiTypes).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
 
-        modelBuilder.Entity<DocPage>().HasOne(x => x.IngestionRun).WithMany(op => op.DocPages).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<DocPage>().HasOne(x => x.IngestionRun).WithMany(op => op.DocPages).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
 
-        modelBuilder.Entity<DocSection>().HasOne(x => x.IngestionRun).WithMany(op => op.DocSections).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<DocSection>().HasOne(x => x.IngestionRun).WithMany(op => op.DocSections).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
 
-        modelBuilder.Entity<IngestionRun>().HasMany(x => x.ApiFeatures).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
-        modelBuilder.Entity<IngestionRun>().HasMany(x => x.ApiMembers).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
-        modelBuilder.Entity<IngestionRun>().HasMany(x => x.ApiParameters).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
-        modelBuilder.Entity<IngestionRun>().HasMany(x => x.ApiTypes).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
-        modelBuilder.Entity<IngestionRun>().HasMany(x => x.DocPages).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
-        modelBuilder.Entity<IngestionRun>().HasMany(x => x.DocSections).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<IngestionRun>().HasMany(x => x.ApiFeatures).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<IngestionRun>().HasMany(x => x.ApiMembers).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<IngestionRun>().HasMany(x => x.ApiParameters).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<IngestionRun>().HasMany(x => x.ApiTypes).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<IngestionRun>().HasMany(x => x.DocPages).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
+        _ = modelBuilder.Entity<IngestionRun>().HasMany(x => x.DocSections).WithOne(op => op.IngestionRun).HasForeignKey(@"CreatedIngestionRunId").IsRequired();
     }
 
 
@@ -289,7 +289,7 @@ public partial class KBContext : DbContext
 
     public bool HasChanges()
     {
-        return ChangeTracker.Entries().Any(e => e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted);
+        return ChangeTracker.Entries().Any(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted);
     }
 
 
@@ -332,17 +332,10 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -388,17 +381,10 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(SemanticUidParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -444,16 +430,9 @@ public partial class KBContext : DbContext
                 SchemaVersionParameter.Direction = ParameterDirection.Input;
                 SchemaVersionParameter.DbType = DbType.String;
                 SchemaVersionParameter.Size = 200;
-                if (SchemaVersion != null)
-                {
-                    SchemaVersionParameter.Value = SchemaVersion;
-                }
-                else
-                {
-                    SchemaVersionParameter.Value = DBNull.Value;
-                }
+                SchemaVersionParameter.Value = SchemaVersion != null ? SchemaVersion : DBNull.Value;
 
-                cmd.Parameters.Add(SchemaVersionParameter);
+                _ = cmd.Parameters.Add(SchemaVersionParameter);
 
                 DbParameter NotesParameter = cmd.CreateParameter();
                 NotesParameter.ParameterName = "Notes";
@@ -469,7 +448,7 @@ public partial class KBContext : DbContext
                     NotesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(NotesParameter);
+                _ = cmd.Parameters.Add(NotesParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -485,17 +464,12 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.ExecuteNonQuery();
 
-                if (cmd.Parameters["IngestionRunId"].Value != null && !(cmd.Parameters["IngestionRunId"].Value is DBNull))
-                {
-                    IngestionRunId = (Guid)Convert.ChangeType(cmd.Parameters["IngestionRunId"].Value, typeof(Guid));
-                }
-                else
-                {
-                    IngestionRunId = default(Guid);
-                }
+                IngestionRunId = cmd.Parameters["IngestionRunId"].Value is not null and not DBNull
+                    ? (Guid)Convert.ChangeType(cmd.Parameters["IngestionRunId"].Value, typeof(Guid))
+                    : default;
             }
         }
         finally
@@ -541,16 +515,9 @@ public partial class KBContext : DbContext
                 SchemaVersionParameter.Direction = ParameterDirection.Input;
                 SchemaVersionParameter.DbType = DbType.String;
                 SchemaVersionParameter.Size = 200;
-                if (SchemaVersion != null)
-                {
-                    SchemaVersionParameter.Value = SchemaVersion;
-                }
-                else
-                {
-                    SchemaVersionParameter.Value = DBNull.Value;
-                }
+                SchemaVersionParameter.Value = SchemaVersion != null ? SchemaVersion : DBNull.Value;
 
-                cmd.Parameters.Add(SchemaVersionParameter);
+                _ = cmd.Parameters.Add(SchemaVersionParameter);
 
                 DbParameter NotesParameter = cmd.CreateParameter();
                 NotesParameter.ParameterName = "Notes";
@@ -566,7 +533,7 @@ public partial class KBContext : DbContext
                     NotesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(NotesParameter);
+                _ = cmd.Parameters.Add(NotesParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -582,17 +549,12 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
 
-                if (cmd.Parameters["IngestionRunId"].Value != null && !(cmd.Parameters["IngestionRunId"].Value is DBNull))
-                {
-                    IngestionRunId = (Guid)Convert.ChangeType(cmd.Parameters["IngestionRunId"].Value, typeof(Guid));
-                }
-                else
-                {
-                    IngestionRunId = default(Guid);
-                }
+                IngestionRunId = cmd.Parameters["IngestionRunId"].Value is not null and not DBNull
+                    ? (Guid)Convert.ChangeType(cmd.Parameters["IngestionRunId"].Value, typeof(Guid))
+                    : default;
             }
         }
         finally
@@ -656,7 +618,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -676,7 +638,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -696,7 +658,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -716,7 +678,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -741,7 +703,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResult1s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -766,7 +728,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResult1s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -791,7 +753,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResult1s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -816,7 +778,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResult1s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -843,28 +805,18 @@ public partial class KBContext : DbContext
                             resultRow.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            resultRow.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.ValidToUtc = null;
-                        }
+                        resultRow.ValidToUtc = fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
-                        if (fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from")))
-                        {
-                            resultRow.NextFrom = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.NextFrom = null;
-                        }
+                        resultRow.NextFrom = fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime))
+                            : null;
 
                         result.SpCheckTemporalConsistencyResult2s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -891,28 +843,18 @@ public partial class KBContext : DbContext
                             resultRow.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            resultRow.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.ValidToUtc = null;
-                        }
+                        resultRow.ValidToUtc = fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
-                        if (fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from")))
-                        {
-                            resultRow.NextFrom = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.NextFrom = null;
-                        }
+                        resultRow.NextFrom = fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime))
+                            : null;
 
                         result.SpCheckTemporalConsistencyResult2s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -939,28 +881,18 @@ public partial class KBContext : DbContext
                             resultRow.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            resultRow.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.ValidToUtc = null;
-                        }
+                        resultRow.ValidToUtc = fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
-                        if (fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from")))
-                        {
-                            resultRow.NextFrom = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.NextFrom = null;
-                        }
+                        resultRow.NextFrom = fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime))
+                            : null;
 
                         result.SpCheckTemporalConsistencyResult2s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -987,28 +919,18 @@ public partial class KBContext : DbContext
                             resultRow.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            resultRow.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.ValidToUtc = null;
-                        }
+                        resultRow.ValidToUtc = fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
-                        if (fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from")))
-                        {
-                            resultRow.NextFrom = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.NextFrom = null;
-                        }
+                        resultRow.NextFrom = fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime))
+                            : null;
 
                         result.SpCheckTemporalConsistencyResult2s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
                 }
             }
         }
@@ -1073,7 +995,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1093,7 +1015,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1113,7 +1035,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1133,7 +1055,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1158,7 +1080,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResult1s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1183,7 +1105,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResult1s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1208,7 +1130,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResult1s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1233,7 +1155,7 @@ public partial class KBContext : DbContext
                         result.SpCheckTemporalConsistencyResult1s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1260,28 +1182,18 @@ public partial class KBContext : DbContext
                             resultRow.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            resultRow.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.ValidToUtc = null;
-                        }
+                        resultRow.ValidToUtc = fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
-                        if (fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from")))
-                        {
-                            resultRow.NextFrom = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.NextFrom = null;
-                        }
+                        resultRow.NextFrom = fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime))
+                            : null;
 
                         result.SpCheckTemporalConsistencyResult2s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1308,28 +1220,18 @@ public partial class KBContext : DbContext
                             resultRow.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            resultRow.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.ValidToUtc = null;
-                        }
+                        resultRow.ValidToUtc = fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
-                        if (fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from")))
-                        {
-                            resultRow.NextFrom = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.NextFrom = null;
-                        }
+                        resultRow.NextFrom = fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime))
+                            : null;
 
                         result.SpCheckTemporalConsistencyResult2s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1356,28 +1258,18 @@ public partial class KBContext : DbContext
                             resultRow.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            resultRow.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.ValidToUtc = null;
-                        }
+                        resultRow.ValidToUtc = fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
-                        if (fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from")))
-                        {
-                            resultRow.NextFrom = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.NextFrom = null;
-                        }
+                        resultRow.NextFrom = fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime))
+                            : null;
 
                         result.SpCheckTemporalConsistencyResult2s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
@@ -1404,28 +1296,18 @@ public partial class KBContext : DbContext
                             resultRow.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            resultRow.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.ValidToUtc = null;
-                        }
+                        resultRow.ValidToUtc = fieldNames.Contains(@"valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
-                        if (fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from")))
-                        {
-                            resultRow.NextFrom = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            resultRow.NextFrom = null;
-                        }
+                        resultRow.NextFrom = fieldNames.Contains(@"next_from") && !reader.IsDBNull(reader.GetOrdinal(@"next_from"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"next_from")), typeof(DateTime))
+                            : null;
 
                         result.SpCheckTemporalConsistencyResult2s.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
                 }
             }
         }
@@ -1483,23 +1365,16 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter SnapshotUidParameter = cmd.CreateParameter();
                 SnapshotUidParameter.ParameterName = "SnapshotUid";
                 SnapshotUidParameter.Direction = ParameterDirection.Input;
                 SnapshotUidParameter.DbType = DbType.String;
                 SnapshotUidParameter.Size = 1000;
-                if (SnapshotUid != null)
-                {
-                    SnapshotUidParameter.Value = SnapshotUid;
-                }
-                else
-                {
-                    SnapshotUidParameter.Value = DBNull.Value;
-                }
+                SnapshotUidParameter.Value = SnapshotUid != null ? SnapshotUid : DBNull.Value;
 
-                cmd.Parameters.Add(SnapshotUidParameter);
+                _ = cmd.Parameters.Add(SnapshotUidParameter);
 
                 DbParameter RepoUrlParameter = cmd.CreateParameter();
                 RepoUrlParameter.ParameterName = "RepoUrl";
@@ -1515,87 +1390,52 @@ public partial class KBContext : DbContext
                     RepoUrlParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(RepoUrlParameter);
+                _ = cmd.Parameters.Add(RepoUrlParameter);
 
                 DbParameter BranchParameter = cmd.CreateParameter();
                 BranchParameter.ParameterName = "Branch";
                 BranchParameter.Direction = ParameterDirection.Input;
                 BranchParameter.DbType = DbType.String;
                 BranchParameter.Size = 200;
-                if (Branch != null)
-                {
-                    BranchParameter.Value = Branch;
-                }
-                else
-                {
-                    BranchParameter.Value = DBNull.Value;
-                }
+                BranchParameter.Value = Branch != null ? Branch : DBNull.Value;
 
-                cmd.Parameters.Add(BranchParameter);
+                _ = cmd.Parameters.Add(BranchParameter);
 
                 DbParameter RepoCommitParameter = cmd.CreateParameter();
                 RepoCommitParameter.ParameterName = "RepoCommit";
                 RepoCommitParameter.Direction = ParameterDirection.Input;
                 RepoCommitParameter.DbType = DbType.String;
                 RepoCommitParameter.Size = 200;
-                if (RepoCommit != null)
-                {
-                    RepoCommitParameter.Value = RepoCommit;
-                }
-                else
-                {
-                    RepoCommitParameter.Value = DBNull.Value;
-                }
+                RepoCommitParameter.Value = RepoCommit != null ? RepoCommit : DBNull.Value;
 
-                cmd.Parameters.Add(RepoCommitParameter);
+                _ = cmd.Parameters.Add(RepoCommitParameter);
 
                 DbParameter LanguageParameter = cmd.CreateParameter();
                 LanguageParameter.ParameterName = "Language";
                 LanguageParameter.Direction = ParameterDirection.Input;
                 LanguageParameter.DbType = DbType.String;
                 LanguageParameter.Size = 200;
-                if (Language != null)
-                {
-                    LanguageParameter.Value = Language;
-                }
-                else
-                {
-                    LanguageParameter.Value = DBNull.Value;
-                }
+                LanguageParameter.Value = Language != null ? Language : DBNull.Value;
 
-                cmd.Parameters.Add(LanguageParameter);
+                _ = cmd.Parameters.Add(LanguageParameter);
 
                 DbParameter PackageNameParameter = cmd.CreateParameter();
                 PackageNameParameter.ParameterName = "PackageName";
                 PackageNameParameter.Direction = ParameterDirection.Input;
                 PackageNameParameter.DbType = DbType.String;
                 PackageNameParameter.Size = 200;
-                if (PackageName != null)
-                {
-                    PackageNameParameter.Value = PackageName;
-                }
-                else
-                {
-                    PackageNameParameter.Value = DBNull.Value;
-                }
+                PackageNameParameter.Value = PackageName != null ? PackageName : DBNull.Value;
 
-                cmd.Parameters.Add(PackageNameParameter);
+                _ = cmd.Parameters.Add(PackageNameParameter);
 
                 DbParameter PackageVersionParameter = cmd.CreateParameter();
                 PackageVersionParameter.ParameterName = "PackageVersion";
                 PackageVersionParameter.Direction = ParameterDirection.Input;
                 PackageVersionParameter.DbType = DbType.String;
                 PackageVersionParameter.Size = 200;
-                if (PackageVersion != null)
-                {
-                    PackageVersionParameter.Value = PackageVersion;
-                }
-                else
-                {
-                    PackageVersionParameter.Value = DBNull.Value;
-                }
+                PackageVersionParameter.Value = PackageVersion != null ? PackageVersion : DBNull.Value;
 
-                cmd.Parameters.Add(PackageVersionParameter);
+                _ = cmd.Parameters.Add(PackageVersionParameter);
 
                 DbParameter ConfigJsonParameter = cmd.CreateParameter();
                 ConfigJsonParameter.ParameterName = "ConfigJson";
@@ -1611,7 +1451,7 @@ public partial class KBContext : DbContext
                     ConfigJsonParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(ConfigJsonParameter);
+                _ = cmd.Parameters.Add(ConfigJsonParameter);
 
                 DbParameter SnapshotIdParameter = cmd.CreateParameter();
                 SnapshotIdParameter.ParameterName = "SnapshotId";
@@ -1627,17 +1467,12 @@ public partial class KBContext : DbContext
                     SnapshotIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SnapshotIdParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(SnapshotIdParameter);
+                _ = cmd.ExecuteNonQuery();
 
-                if (cmd.Parameters["SnapshotId"].Value != null && !(cmd.Parameters["SnapshotId"].Value is DBNull))
-                {
-                    SnapshotId = (Guid)Convert.ChangeType(cmd.Parameters["SnapshotId"].Value, typeof(Guid));
-                }
-                else
-                {
-                    SnapshotId = default(Guid);
-                }
+                SnapshotId = cmd.Parameters["SnapshotId"].Value is not null and not DBNull
+                    ? (Guid)Convert.ChangeType(cmd.Parameters["SnapshotId"].Value, typeof(Guid))
+                    : default;
             }
         }
         finally
@@ -1692,23 +1527,16 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter SnapshotUidParameter = cmd.CreateParameter();
                 SnapshotUidParameter.ParameterName = "SnapshotUid";
                 SnapshotUidParameter.Direction = ParameterDirection.Input;
                 SnapshotUidParameter.DbType = DbType.String;
                 SnapshotUidParameter.Size = 1000;
-                if (SnapshotUid != null)
-                {
-                    SnapshotUidParameter.Value = SnapshotUid;
-                }
-                else
-                {
-                    SnapshotUidParameter.Value = DBNull.Value;
-                }
+                SnapshotUidParameter.Value = SnapshotUid != null ? SnapshotUid : DBNull.Value;
 
-                cmd.Parameters.Add(SnapshotUidParameter);
+                _ = cmd.Parameters.Add(SnapshotUidParameter);
 
                 DbParameter RepoUrlParameter = cmd.CreateParameter();
                 RepoUrlParameter.ParameterName = "RepoUrl";
@@ -1724,87 +1552,52 @@ public partial class KBContext : DbContext
                     RepoUrlParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(RepoUrlParameter);
+                _ = cmd.Parameters.Add(RepoUrlParameter);
 
                 DbParameter BranchParameter = cmd.CreateParameter();
                 BranchParameter.ParameterName = "Branch";
                 BranchParameter.Direction = ParameterDirection.Input;
                 BranchParameter.DbType = DbType.String;
                 BranchParameter.Size = 200;
-                if (Branch != null)
-                {
-                    BranchParameter.Value = Branch;
-                }
-                else
-                {
-                    BranchParameter.Value = DBNull.Value;
-                }
+                BranchParameter.Value = Branch != null ? Branch : DBNull.Value;
 
-                cmd.Parameters.Add(BranchParameter);
+                _ = cmd.Parameters.Add(BranchParameter);
 
                 DbParameter RepoCommitParameter = cmd.CreateParameter();
                 RepoCommitParameter.ParameterName = "RepoCommit";
                 RepoCommitParameter.Direction = ParameterDirection.Input;
                 RepoCommitParameter.DbType = DbType.String;
                 RepoCommitParameter.Size = 200;
-                if (RepoCommit != null)
-                {
-                    RepoCommitParameter.Value = RepoCommit;
-                }
-                else
-                {
-                    RepoCommitParameter.Value = DBNull.Value;
-                }
+                RepoCommitParameter.Value = RepoCommit != null ? RepoCommit : DBNull.Value;
 
-                cmd.Parameters.Add(RepoCommitParameter);
+                _ = cmd.Parameters.Add(RepoCommitParameter);
 
                 DbParameter LanguageParameter = cmd.CreateParameter();
                 LanguageParameter.ParameterName = "Language";
                 LanguageParameter.Direction = ParameterDirection.Input;
                 LanguageParameter.DbType = DbType.String;
                 LanguageParameter.Size = 200;
-                if (Language != null)
-                {
-                    LanguageParameter.Value = Language;
-                }
-                else
-                {
-                    LanguageParameter.Value = DBNull.Value;
-                }
+                LanguageParameter.Value = Language != null ? Language : DBNull.Value;
 
-                cmd.Parameters.Add(LanguageParameter);
+                _ = cmd.Parameters.Add(LanguageParameter);
 
                 DbParameter PackageNameParameter = cmd.CreateParameter();
                 PackageNameParameter.ParameterName = "PackageName";
                 PackageNameParameter.Direction = ParameterDirection.Input;
                 PackageNameParameter.DbType = DbType.String;
                 PackageNameParameter.Size = 200;
-                if (PackageName != null)
-                {
-                    PackageNameParameter.Value = PackageName;
-                }
-                else
-                {
-                    PackageNameParameter.Value = DBNull.Value;
-                }
+                PackageNameParameter.Value = PackageName != null ? PackageName : DBNull.Value;
 
-                cmd.Parameters.Add(PackageNameParameter);
+                _ = cmd.Parameters.Add(PackageNameParameter);
 
                 DbParameter PackageVersionParameter = cmd.CreateParameter();
                 PackageVersionParameter.ParameterName = "PackageVersion";
                 PackageVersionParameter.Direction = ParameterDirection.Input;
                 PackageVersionParameter.DbType = DbType.String;
                 PackageVersionParameter.Size = 200;
-                if (PackageVersion != null)
-                {
-                    PackageVersionParameter.Value = PackageVersion;
-                }
-                else
-                {
-                    PackageVersionParameter.Value = DBNull.Value;
-                }
+                PackageVersionParameter.Value = PackageVersion != null ? PackageVersion : DBNull.Value;
 
-                cmd.Parameters.Add(PackageVersionParameter);
+                _ = cmd.Parameters.Add(PackageVersionParameter);
 
                 DbParameter ConfigJsonParameter = cmd.CreateParameter();
                 ConfigJsonParameter.ParameterName = "ConfigJson";
@@ -1820,7 +1613,7 @@ public partial class KBContext : DbContext
                     ConfigJsonParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(ConfigJsonParameter);
+                _ = cmd.Parameters.Add(ConfigJsonParameter);
 
                 DbParameter SnapshotIdParameter = cmd.CreateParameter();
                 SnapshotIdParameter.ParameterName = "SnapshotId";
@@ -1836,17 +1629,12 @@ public partial class KBContext : DbContext
                     SnapshotIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SnapshotIdParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(SnapshotIdParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
 
-                if (cmd.Parameters["SnapshotId"].Value != null && !(cmd.Parameters["SnapshotId"].Value is DBNull))
-                {
-                    SnapshotId = (Guid)Convert.ChangeType(cmd.Parameters["SnapshotId"].Value, typeof(Guid));
-                }
-                else
-                {
-                    SnapshotId = default(Guid);
-                }
+                SnapshotId = cmd.Parameters["SnapshotId"].Value is not null and not DBNull
+                    ? (Guid)Convert.ChangeType(cmd.Parameters["SnapshotId"].Value, typeof(Guid))
+                    : default;
             }
         }
         finally
@@ -1903,23 +1691,16 @@ public partial class KBContext : DbContext
                     SnapshotIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SnapshotIdParameter);
+                _ = cmd.Parameters.Add(SnapshotIdParameter);
 
                 DbParameter SchemaVersionParameter = cmd.CreateParameter();
                 SchemaVersionParameter.ParameterName = "SchemaVersion";
                 SchemaVersionParameter.Direction = ParameterDirection.Input;
                 SchemaVersionParameter.DbType = DbType.String;
                 SchemaVersionParameter.Size = 200;
-                if (SchemaVersion != null)
-                {
-                    SchemaVersionParameter.Value = SchemaVersion;
-                }
-                else
-                {
-                    SchemaVersionParameter.Value = DBNull.Value;
-                }
+                SchemaVersionParameter.Value = SchemaVersion != null ? SchemaVersion : DBNull.Value;
 
-                cmd.Parameters.Add(SchemaVersionParameter);
+                _ = cmd.Parameters.Add(SchemaVersionParameter);
 
                 DbParameter TruthRunIdParameter = cmd.CreateParameter();
                 TruthRunIdParameter.ParameterName = "TruthRunId";
@@ -1935,17 +1716,12 @@ public partial class KBContext : DbContext
                     TruthRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(TruthRunIdParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(TruthRunIdParameter);
+                _ = cmd.ExecuteNonQuery();
 
-                if (cmd.Parameters["TruthRunId"].Value != null && !(cmd.Parameters["TruthRunId"].Value is DBNull))
-                {
-                    TruthRunId = (Guid)Convert.ChangeType(cmd.Parameters["TruthRunId"].Value, typeof(Guid));
-                }
-                else
-                {
-                    TruthRunId = default(Guid);
-                }
+                TruthRunId = cmd.Parameters["TruthRunId"].Value is not null and not DBNull
+                    ? (Guid)Convert.ChangeType(cmd.Parameters["TruthRunId"].Value, typeof(Guid))
+                    : default;
             }
         }
         finally
@@ -2000,23 +1776,16 @@ public partial class KBContext : DbContext
                     SnapshotIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SnapshotIdParameter);
+                _ = cmd.Parameters.Add(SnapshotIdParameter);
 
                 DbParameter SchemaVersionParameter = cmd.CreateParameter();
                 SchemaVersionParameter.ParameterName = "SchemaVersion";
                 SchemaVersionParameter.Direction = ParameterDirection.Input;
                 SchemaVersionParameter.DbType = DbType.String;
                 SchemaVersionParameter.Size = 200;
-                if (SchemaVersion != null)
-                {
-                    SchemaVersionParameter.Value = SchemaVersion;
-                }
-                else
-                {
-                    SchemaVersionParameter.Value = DBNull.Value;
-                }
+                SchemaVersionParameter.Value = SchemaVersion != null ? SchemaVersion : DBNull.Value;
 
-                cmd.Parameters.Add(SchemaVersionParameter);
+                _ = cmd.Parameters.Add(SchemaVersionParameter);
 
                 DbParameter TruthRunIdParameter = cmd.CreateParameter();
                 TruthRunIdParameter.ParameterName = "TruthRunId";
@@ -2032,17 +1801,12 @@ public partial class KBContext : DbContext
                     TruthRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(TruthRunIdParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(TruthRunIdParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
 
-                if (cmd.Parameters["TruthRunId"].Value != null && !(cmd.Parameters["TruthRunId"].Value is DBNull))
-                {
-                    TruthRunId = (Guid)Convert.ChangeType(cmd.Parameters["TruthRunId"].Value, typeof(Guid));
-                }
-                else
-                {
-                    TruthRunId = default(Guid);
-                }
+                TruthRunId = cmd.Parameters["TruthRunId"].Value is not null and not DBNull
+                    ? (Guid)Convert.ChangeType(cmd.Parameters["TruthRunId"].Value, typeof(Guid))
+                    : default;
             }
         }
         finally
@@ -2090,17 +1854,10 @@ public partial class KBContext : DbContext
                 UidParameter.Direction = ParameterDirection.Input;
                 UidParameter.DbType = DbType.String;
                 UidParameter.Size = 1000;
-                if (Uid != null)
-                {
-                    UidParameter.Value = Uid;
-                }
-                else
-                {
-                    UidParameter.Value = DBNull.Value;
-                }
+                UidParameter.Value = Uid != null ? Uid : DBNull.Value;
 
-                cmd.Parameters.Add(UidParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(UidParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -2146,17 +1903,10 @@ public partial class KBContext : DbContext
                 UidParameter.Direction = ParameterDirection.Input;
                 UidParameter.DbType = DbType.String;
                 UidParameter.Size = 1000;
-                if (Uid != null)
-                {
-                    UidParameter.Value = Uid;
-                }
-                else
-                {
-                    UidParameter.Value = DBNull.Value;
-                }
+                UidParameter.Value = Uid != null ? Uid : DBNull.Value;
 
-                cmd.Parameters.Add(UidParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(UidParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -2211,8 +1961,8 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -2267,8 +2017,8 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -2314,32 +2064,18 @@ public partial class KBContext : DbContext
                 UidParameter.Direction = ParameterDirection.Input;
                 UidParameter.DbType = DbType.String;
                 UidParameter.Size = 1000;
-                if (Uid != null)
-                {
-                    UidParameter.Value = Uid;
-                }
-                else
-                {
-                    UidParameter.Value = DBNull.Value;
-                }
+                UidParameter.Value = Uid != null ? Uid : DBNull.Value;
 
-                cmd.Parameters.Add(UidParameter);
+                _ = cmd.Parameters.Add(UidParameter);
 
                 DbParameter KindParameter = cmd.CreateParameter();
                 KindParameter.ParameterName = "Kind";
                 KindParameter.Direction = ParameterDirection.Input;
                 KindParameter.DbType = DbType.String;
                 KindParameter.Size = 50;
-                if (Kind != null)
-                {
-                    KindParameter.Value = Kind;
-                }
-                else
-                {
-                    KindParameter.Value = DBNull.Value;
-                }
+                KindParameter.Value = Kind != null ? Kind : DBNull.Value;
 
-                cmd.Parameters.Add(KindParameter);
+                _ = cmd.Parameters.Add(KindParameter);
 
                 DbParameter NotesParameter = cmd.CreateParameter();
                 NotesParameter.ParameterName = "Notes";
@@ -2355,8 +2091,8 @@ public partial class KBContext : DbContext
                     NotesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(NotesParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(NotesParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -2402,32 +2138,18 @@ public partial class KBContext : DbContext
                 UidParameter.Direction = ParameterDirection.Input;
                 UidParameter.DbType = DbType.String;
                 UidParameter.Size = 1000;
-                if (Uid != null)
-                {
-                    UidParameter.Value = Uid;
-                }
-                else
-                {
-                    UidParameter.Value = DBNull.Value;
-                }
+                UidParameter.Value = Uid != null ? Uid : DBNull.Value;
 
-                cmd.Parameters.Add(UidParameter);
+                _ = cmd.Parameters.Add(UidParameter);
 
                 DbParameter KindParameter = cmd.CreateParameter();
                 KindParameter.ParameterName = "Kind";
                 KindParameter.Direction = ParameterDirection.Input;
                 KindParameter.DbType = DbType.String;
                 KindParameter.Size = 50;
-                if (Kind != null)
-                {
-                    KindParameter.Value = Kind;
-                }
-                else
-                {
-                    KindParameter.Value = DBNull.Value;
-                }
+                KindParameter.Value = Kind != null ? Kind : DBNull.Value;
 
-                cmd.Parameters.Add(KindParameter);
+                _ = cmd.Parameters.Add(KindParameter);
 
                 DbParameter NotesParameter = cmd.CreateParameter();
                 NotesParameter.ParameterName = "Notes";
@@ -2443,8 +2165,8 @@ public partial class KBContext : DbContext
                     NotesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(NotesParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(NotesParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -2500,7 +2222,7 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -2527,14 +2249,9 @@ public partial class KBContext : DbContext
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         result.Add(row);
                     }
@@ -2596,7 +2313,7 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -2623,14 +2340,9 @@ public partial class KBContext : DbContext
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         result.Add(row);
                     }
@@ -2683,16 +2395,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -2714,50 +2419,25 @@ public partial class KBContext : DbContext
                             row.SourceSnapshotId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_snapshot_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("source_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_path")))
-                        {
-                            row.SourcePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourcePath = null;
-                        }
+                        row.SourcePath = fieldNames.Contains("source_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("title") && !reader.IsDBNull(reader.GetOrdinal(@"title")))
-                        {
-                            row.Title = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"title")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Title = null;
-                        }
+                        row.Title = fieldNames.Contains("title") && !reader.IsDBNull(reader.GetOrdinal(@"title"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"title")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language")))
-                        {
-                            row.Language = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Language = null;
-                        }
+                        row.Language = fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("url") && !reader.IsDBNull(reader.GetOrdinal(@"url")))
-                        {
-                            row.Url = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"url")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Url = null;
-                        }
+                        row.Url = fieldNames.Contains("url") && !reader.IsDBNull(reader.GetOrdinal(@"url"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"url")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("raw_markdown") && !reader.IsDBNull(reader.GetOrdinal(@"raw_markdown")))
-                        {
-                            row.RawMarkdown = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"raw_markdown")), typeof(string));
-                        }
-                        else
-                        {
-                            row.RawMarkdown = null;
-                        }
+                        row.RawMarkdown = fieldNames.Contains("raw_markdown") && !reader.IsDBNull(reader.GetOrdinal(@"raw_markdown"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"raw_markdown")), typeof(string))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -2774,51 +2454,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -2871,16 +2531,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -2902,50 +2555,25 @@ public partial class KBContext : DbContext
                             row.SourceSnapshotId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_snapshot_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("source_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_path")))
-                        {
-                            row.SourcePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourcePath = null;
-                        }
+                        row.SourcePath = fieldNames.Contains("source_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("title") && !reader.IsDBNull(reader.GetOrdinal(@"title")))
-                        {
-                            row.Title = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"title")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Title = null;
-                        }
+                        row.Title = fieldNames.Contains("title") && !reader.IsDBNull(reader.GetOrdinal(@"title"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"title")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language")))
-                        {
-                            row.Language = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Language = null;
-                        }
+                        row.Language = fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("url") && !reader.IsDBNull(reader.GetOrdinal(@"url")))
-                        {
-                            row.Url = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"url")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Url = null;
-                        }
+                        row.Url = fieldNames.Contains("url") && !reader.IsDBNull(reader.GetOrdinal(@"url"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"url")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("raw_markdown") && !reader.IsDBNull(reader.GetOrdinal(@"raw_markdown")))
-                        {
-                            row.RawMarkdown = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"raw_markdown")), typeof(string));
-                        }
-                        else
-                        {
-                            row.RawMarkdown = null;
-                        }
+                        row.RawMarkdown = fieldNames.Contains("raw_markdown") && !reader.IsDBNull(reader.GetOrdinal(@"raw_markdown"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"raw_markdown")), typeof(string))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -2962,51 +2590,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -3059,16 +2667,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -3090,230 +2691,105 @@ public partial class KBContext : DbContext
                             row.ApiFeatureId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_feature_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind")))
-                        {
-                            row.Kind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Kind = null;
-                        }
+                        row.Kind = fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("method_kind") && !reader.IsDBNull(reader.GetOrdinal(@"method_kind")))
-                        {
-                            row.MethodKind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"method_kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.MethodKind = null;
-                        }
+                        row.MethodKind = fieldNames.Contains("method_kind") && !reader.IsDBNull(reader.GetOrdinal(@"method_kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"method_kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility")))
-                        {
-                            row.Accessibility = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Accessibility = null;
-                        }
+                        row.Accessibility = fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static")))
-                        {
-                            row.IsStatic = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsStatic = null;
-                        }
+                        row.IsStatic = fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_extension_method") && !reader.IsDBNull(reader.GetOrdinal(@"is_extension_method")))
-                        {
-                            row.IsExtensionMethod = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_extension_method")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsExtensionMethod = null;
-                        }
+                        row.IsExtensionMethod = fieldNames.Contains("is_extension_method") && !reader.IsDBNull(reader.GetOrdinal(@"is_extension_method"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_extension_method")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_async") && !reader.IsDBNull(reader.GetOrdinal(@"is_async")))
-                        {
-                            row.IsAsync = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_async")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAsync = null;
-                        }
+                        row.IsAsync = fieldNames.Contains("is_async") && !reader.IsDBNull(reader.GetOrdinal(@"is_async"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_async")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_virtual") && !reader.IsDBNull(reader.GetOrdinal(@"is_virtual")))
-                        {
-                            row.IsVirtual = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_virtual")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsVirtual = null;
-                        }
+                        row.IsVirtual = fieldNames.Contains("is_virtual") && !reader.IsDBNull(reader.GetOrdinal(@"is_virtual"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_virtual")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_override") && !reader.IsDBNull(reader.GetOrdinal(@"is_override")))
-                        {
-                            row.IsOverride = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_override")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsOverride = null;
-                        }
+                        row.IsOverride = fieldNames.Contains("is_override") && !reader.IsDBNull(reader.GetOrdinal(@"is_override"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_override")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract")))
-                        {
-                            row.IsAbstract = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAbstract = null;
-                        }
+                        row.IsAbstract = fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed")))
-                        {
-                            row.IsSealed = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsSealed = null;
-                        }
+                        row.IsSealed = fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_readonly") && !reader.IsDBNull(reader.GetOrdinal(@"is_readonly")))
-                        {
-                            row.IsReadonly = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_readonly")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsReadonly = null;
-                        }
+                        row.IsReadonly = fieldNames.Contains("is_readonly") && !reader.IsDBNull(reader.GetOrdinal(@"is_readonly"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_readonly")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_const") && !reader.IsDBNull(reader.GetOrdinal(@"is_const")))
-                        {
-                            row.IsConst = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_const")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsConst = null;
-                        }
+                        row.IsConst = fieldNames.Contains("is_const") && !reader.IsDBNull(reader.GetOrdinal(@"is_const"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_const")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_unsafe") && !reader.IsDBNull(reader.GetOrdinal(@"is_unsafe")))
-                        {
-                            row.IsUnsafe = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_unsafe")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsUnsafe = null;
-                        }
+                        row.IsUnsafe = fieldNames.Contains("is_unsafe") && !reader.IsDBNull(reader.GetOrdinal(@"is_unsafe"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_unsafe")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("return_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"return_type_uid")))
-                        {
-                            row.ReturnTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ReturnTypeUid = null;
-                        }
+                        row.ReturnTypeUid = fieldNames.Contains("return_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"return_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("return_nullable") && !reader.IsDBNull(reader.GetOrdinal(@"return_nullable")))
-                        {
-                            row.ReturnNullable = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_nullable")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ReturnNullable = null;
-                        }
+                        row.ReturnNullable = fieldNames.Contains("return_nullable") && !reader.IsDBNull(reader.GetOrdinal(@"return_nullable"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_nullable")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters")))
-                        {
-                            row.GenericParameters = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericParameters = null;
-                        }
+                        row.GenericParameters = fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints")))
-                        {
-                            row.GenericConstraints = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericConstraints = null;
-                        }
+                        row.GenericConstraints = fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary")))
-                        {
-                            row.Summary = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Summary = null;
-                        }
+                        row.Summary = fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks")))
-                        {
-                            row.Remarks = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Remarks = null;
-                        }
+                        row.Remarks = fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes")))
-                        {
-                            row.Attributes = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Attributes = null;
-                        }
+                        row.Attributes = fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path")))
-                        {
-                            row.SourceFilePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourceFilePath = null;
-                        }
+                        row.SourceFilePath = fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line")))
-                        {
-                            row.SourceStartLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceStartLine = null;
-                        }
+                        row.SourceStartLine = fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line")))
-                        {
-                            row.SourceEndLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceEndLine = null;
-                        }
+                        row.SourceEndLine = fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("member_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"member_uid_hash")))
-                        {
-                            row.MemberUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"member_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.MemberUidHash = null;
-                        }
+                        row.MemberUidHash = fieldNames.Contains("member_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"member_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"member_uid_hash")), typeof(byte[]))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -3325,60 +2801,35 @@ public partial class KBContext : DbContext
                             row.CreatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"created_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("updated_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"updated_ingestion_run_id")))
-                        {
-                            row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.UpdatedIngestionRunId = null;
-                        }
+                        row.UpdatedIngestionRunId = fieldNames.Contains("updated_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"updated_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid))
+                            : null;
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -3431,16 +2882,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -3462,230 +2906,105 @@ public partial class KBContext : DbContext
                             row.ApiFeatureId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_feature_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind")))
-                        {
-                            row.Kind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Kind = null;
-                        }
+                        row.Kind = fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("method_kind") && !reader.IsDBNull(reader.GetOrdinal(@"method_kind")))
-                        {
-                            row.MethodKind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"method_kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.MethodKind = null;
-                        }
+                        row.MethodKind = fieldNames.Contains("method_kind") && !reader.IsDBNull(reader.GetOrdinal(@"method_kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"method_kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility")))
-                        {
-                            row.Accessibility = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Accessibility = null;
-                        }
+                        row.Accessibility = fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static")))
-                        {
-                            row.IsStatic = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsStatic = null;
-                        }
+                        row.IsStatic = fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_extension_method") && !reader.IsDBNull(reader.GetOrdinal(@"is_extension_method")))
-                        {
-                            row.IsExtensionMethod = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_extension_method")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsExtensionMethod = null;
-                        }
+                        row.IsExtensionMethod = fieldNames.Contains("is_extension_method") && !reader.IsDBNull(reader.GetOrdinal(@"is_extension_method"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_extension_method")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_async") && !reader.IsDBNull(reader.GetOrdinal(@"is_async")))
-                        {
-                            row.IsAsync = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_async")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAsync = null;
-                        }
+                        row.IsAsync = fieldNames.Contains("is_async") && !reader.IsDBNull(reader.GetOrdinal(@"is_async"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_async")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_virtual") && !reader.IsDBNull(reader.GetOrdinal(@"is_virtual")))
-                        {
-                            row.IsVirtual = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_virtual")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsVirtual = null;
-                        }
+                        row.IsVirtual = fieldNames.Contains("is_virtual") && !reader.IsDBNull(reader.GetOrdinal(@"is_virtual"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_virtual")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_override") && !reader.IsDBNull(reader.GetOrdinal(@"is_override")))
-                        {
-                            row.IsOverride = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_override")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsOverride = null;
-                        }
+                        row.IsOverride = fieldNames.Contains("is_override") && !reader.IsDBNull(reader.GetOrdinal(@"is_override"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_override")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract")))
-                        {
-                            row.IsAbstract = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAbstract = null;
-                        }
+                        row.IsAbstract = fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed")))
-                        {
-                            row.IsSealed = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsSealed = null;
-                        }
+                        row.IsSealed = fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_readonly") && !reader.IsDBNull(reader.GetOrdinal(@"is_readonly")))
-                        {
-                            row.IsReadonly = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_readonly")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsReadonly = null;
-                        }
+                        row.IsReadonly = fieldNames.Contains("is_readonly") && !reader.IsDBNull(reader.GetOrdinal(@"is_readonly"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_readonly")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_const") && !reader.IsDBNull(reader.GetOrdinal(@"is_const")))
-                        {
-                            row.IsConst = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_const")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsConst = null;
-                        }
+                        row.IsConst = fieldNames.Contains("is_const") && !reader.IsDBNull(reader.GetOrdinal(@"is_const"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_const")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_unsafe") && !reader.IsDBNull(reader.GetOrdinal(@"is_unsafe")))
-                        {
-                            row.IsUnsafe = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_unsafe")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsUnsafe = null;
-                        }
+                        row.IsUnsafe = fieldNames.Contains("is_unsafe") && !reader.IsDBNull(reader.GetOrdinal(@"is_unsafe"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_unsafe")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("return_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"return_type_uid")))
-                        {
-                            row.ReturnTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ReturnTypeUid = null;
-                        }
+                        row.ReturnTypeUid = fieldNames.Contains("return_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"return_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("return_nullable") && !reader.IsDBNull(reader.GetOrdinal(@"return_nullable")))
-                        {
-                            row.ReturnNullable = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_nullable")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ReturnNullable = null;
-                        }
+                        row.ReturnNullable = fieldNames.Contains("return_nullable") && !reader.IsDBNull(reader.GetOrdinal(@"return_nullable"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_nullable")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters")))
-                        {
-                            row.GenericParameters = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericParameters = null;
-                        }
+                        row.GenericParameters = fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints")))
-                        {
-                            row.GenericConstraints = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericConstraints = null;
-                        }
+                        row.GenericConstraints = fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary")))
-                        {
-                            row.Summary = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Summary = null;
-                        }
+                        row.Summary = fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks")))
-                        {
-                            row.Remarks = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Remarks = null;
-                        }
+                        row.Remarks = fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes")))
-                        {
-                            row.Attributes = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Attributes = null;
-                        }
+                        row.Attributes = fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path")))
-                        {
-                            row.SourceFilePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourceFilePath = null;
-                        }
+                        row.SourceFilePath = fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line")))
-                        {
-                            row.SourceStartLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceStartLine = null;
-                        }
+                        row.SourceStartLine = fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line")))
-                        {
-                            row.SourceEndLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceEndLine = null;
-                        }
+                        row.SourceEndLine = fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("member_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"member_uid_hash")))
-                        {
-                            row.MemberUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"member_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.MemberUidHash = null;
-                        }
+                        row.MemberUidHash = fieldNames.Contains("member_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"member_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"member_uid_hash")), typeof(byte[]))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -3697,60 +3016,35 @@ public partial class KBContext : DbContext
                             row.CreatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"created_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("updated_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"updated_ingestion_run_id")))
-                        {
-                            row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.UpdatedIngestionRunId = null;
-                        }
+                        row.UpdatedIngestionRunId = fieldNames.Contains("updated_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"updated_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid))
+                            : null;
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -3803,16 +3097,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -3824,14 +3111,9 @@ public partial class KBContext : DbContext
                             row.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("api_type_id") && !reader.IsDBNull(reader.GetOrdinal(@"api_type_id")))
-                        {
-                            row.ApiTypeId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_type_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.ApiTypeId = null;
-                        }
+                        row.ApiTypeId = fieldNames.Contains("api_type_id") && !reader.IsDBNull(reader.GetOrdinal(@"api_type_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_type_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("semantic_uid") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid")))
                         {
@@ -3843,41 +3125,21 @@ public partial class KBContext : DbContext
                             row.TruthRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"truth_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language")))
-                        {
-                            row.Language = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Language = null;
-                        }
+                        row.Language = fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("description") && !reader.IsDBNull(reader.GetOrdinal(@"description")))
-                        {
-                            row.Description = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"description")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Description = null;
-                        }
+                        row.Description = fieldNames.Contains("description") && !reader.IsDBNull(reader.GetOrdinal(@"description"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"description")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("tags") && !reader.IsDBNull(reader.GetOrdinal(@"tags")))
-                        {
-                            row.Tags = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"tags")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Tags = null;
-                        }
+                        row.Tags = fieldNames.Contains("tags") && !reader.IsDBNull(reader.GetOrdinal(@"tags"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"tags")), typeof(string))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -3894,51 +3156,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -3991,16 +3233,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -4012,14 +3247,9 @@ public partial class KBContext : DbContext
                             row.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("api_type_id") && !reader.IsDBNull(reader.GetOrdinal(@"api_type_id")))
-                        {
-                            row.ApiTypeId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_type_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.ApiTypeId = null;
-                        }
+                        row.ApiTypeId = fieldNames.Contains("api_type_id") && !reader.IsDBNull(reader.GetOrdinal(@"api_type_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_type_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("semantic_uid") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid")))
                         {
@@ -4031,41 +3261,21 @@ public partial class KBContext : DbContext
                             row.TruthRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"truth_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language")))
-                        {
-                            row.Language = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Language = null;
-                        }
+                        row.Language = fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("description") && !reader.IsDBNull(reader.GetOrdinal(@"description")))
-                        {
-                            row.Description = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"description")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Description = null;
-                        }
+                        row.Description = fieldNames.Contains("description") && !reader.IsDBNull(reader.GetOrdinal(@"description"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"description")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("tags") && !reader.IsDBNull(reader.GetOrdinal(@"tags")))
-                        {
-                            row.Tags = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"tags")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Tags = null;
-                        }
+                        row.Tags = fieldNames.Contains("tags") && !reader.IsDBNull(reader.GetOrdinal(@"tags"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"tags")), typeof(string))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -4082,51 +3292,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -4179,16 +3369,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -4210,194 +3393,89 @@ public partial class KBContext : DbContext
                             row.SourceSnapshotId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_snapshot_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("namespace_path") && !reader.IsDBNull(reader.GetOrdinal(@"namespace_path")))
-                        {
-                            row.NamespacePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"namespace_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.NamespacePath = null;
-                        }
+                        row.NamespacePath = fieldNames.Contains("namespace_path") && !reader.IsDBNull(reader.GetOrdinal(@"namespace_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"namespace_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind")))
-                        {
-                            row.Kind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Kind = null;
-                        }
+                        row.Kind = fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility")))
-                        {
-                            row.Accessibility = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Accessibility = null;
-                        }
+                        row.Accessibility = fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static")))
-                        {
-                            row.IsStatic = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsStatic = null;
-                        }
+                        row.IsStatic = fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_generic") && !reader.IsDBNull(reader.GetOrdinal(@"is_generic")))
-                        {
-                            row.IsGeneric = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_generic")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsGeneric = null;
-                        }
+                        row.IsGeneric = fieldNames.Contains("is_generic") && !reader.IsDBNull(reader.GetOrdinal(@"is_generic"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_generic")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract")))
-                        {
-                            row.IsAbstract = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAbstract = null;
-                        }
+                        row.IsAbstract = fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed")))
-                        {
-                            row.IsSealed = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsSealed = null;
-                        }
+                        row.IsSealed = fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_record") && !reader.IsDBNull(reader.GetOrdinal(@"is_record")))
-                        {
-                            row.IsRecord = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_record")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsRecord = null;
-                        }
+                        row.IsRecord = fieldNames.Contains("is_record") && !reader.IsDBNull(reader.GetOrdinal(@"is_record"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_record")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_ref_like") && !reader.IsDBNull(reader.GetOrdinal(@"is_ref_like")))
-                        {
-                            row.IsRefLike = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_ref_like")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsRefLike = null;
-                        }
+                        row.IsRefLike = fieldNames.Contains("is_ref_like") && !reader.IsDBNull(reader.GetOrdinal(@"is_ref_like"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_ref_like")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("base_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"base_type_uid")))
-                        {
-                            row.BaseTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"base_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.BaseTypeUid = null;
-                        }
+                        row.BaseTypeUid = fieldNames.Contains("base_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"base_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"base_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("interfaces") && !reader.IsDBNull(reader.GetOrdinal(@"interfaces")))
-                        {
-                            row.Interfaces = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"interfaces")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Interfaces = null;
-                        }
+                        row.Interfaces = fieldNames.Contains("interfaces") && !reader.IsDBNull(reader.GetOrdinal(@"interfaces"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"interfaces")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("containing_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"containing_type_uid")))
-                        {
-                            row.ContainingTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"containing_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ContainingTypeUid = null;
-                        }
+                        row.ContainingTypeUid = fieldNames.Contains("containing_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"containing_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"containing_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters")))
-                        {
-                            row.GenericParameters = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericParameters = null;
-                        }
+                        row.GenericParameters = fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints")))
-                        {
-                            row.GenericConstraints = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericConstraints = null;
-                        }
+                        row.GenericConstraints = fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary")))
-                        {
-                            row.Summary = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Summary = null;
-                        }
+                        row.Summary = fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks")))
-                        {
-                            row.Remarks = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Remarks = null;
-                        }
+                        row.Remarks = fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes")))
-                        {
-                            row.Attributes = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Attributes = null;
-                        }
+                        row.Attributes = fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path")))
-                        {
-                            row.SourceFilePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourceFilePath = null;
-                        }
+                        row.SourceFilePath = fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line")))
-                        {
-                            row.SourceStartLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceStartLine = null;
-                        }
+                        row.SourceStartLine = fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line")))
-                        {
-                            row.SourceEndLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceEndLine = null;
-                        }
+                        row.SourceEndLine = fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -4414,51 +3492,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -4511,16 +3569,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -4542,194 +3593,89 @@ public partial class KBContext : DbContext
                             row.SourceSnapshotId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_snapshot_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("namespace_path") && !reader.IsDBNull(reader.GetOrdinal(@"namespace_path")))
-                        {
-                            row.NamespacePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"namespace_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.NamespacePath = null;
-                        }
+                        row.NamespacePath = fieldNames.Contains("namespace_path") && !reader.IsDBNull(reader.GetOrdinal(@"namespace_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"namespace_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind")))
-                        {
-                            row.Kind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Kind = null;
-                        }
+                        row.Kind = fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility")))
-                        {
-                            row.Accessibility = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Accessibility = null;
-                        }
+                        row.Accessibility = fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static")))
-                        {
-                            row.IsStatic = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsStatic = null;
-                        }
+                        row.IsStatic = fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_generic") && !reader.IsDBNull(reader.GetOrdinal(@"is_generic")))
-                        {
-                            row.IsGeneric = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_generic")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsGeneric = null;
-                        }
+                        row.IsGeneric = fieldNames.Contains("is_generic") && !reader.IsDBNull(reader.GetOrdinal(@"is_generic"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_generic")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract")))
-                        {
-                            row.IsAbstract = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAbstract = null;
-                        }
+                        row.IsAbstract = fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed")))
-                        {
-                            row.IsSealed = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsSealed = null;
-                        }
+                        row.IsSealed = fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_record") && !reader.IsDBNull(reader.GetOrdinal(@"is_record")))
-                        {
-                            row.IsRecord = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_record")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsRecord = null;
-                        }
+                        row.IsRecord = fieldNames.Contains("is_record") && !reader.IsDBNull(reader.GetOrdinal(@"is_record"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_record")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_ref_like") && !reader.IsDBNull(reader.GetOrdinal(@"is_ref_like")))
-                        {
-                            row.IsRefLike = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_ref_like")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsRefLike = null;
-                        }
+                        row.IsRefLike = fieldNames.Contains("is_ref_like") && !reader.IsDBNull(reader.GetOrdinal(@"is_ref_like"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_ref_like")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("base_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"base_type_uid")))
-                        {
-                            row.BaseTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"base_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.BaseTypeUid = null;
-                        }
+                        row.BaseTypeUid = fieldNames.Contains("base_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"base_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"base_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("interfaces") && !reader.IsDBNull(reader.GetOrdinal(@"interfaces")))
-                        {
-                            row.Interfaces = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"interfaces")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Interfaces = null;
-                        }
+                        row.Interfaces = fieldNames.Contains("interfaces") && !reader.IsDBNull(reader.GetOrdinal(@"interfaces"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"interfaces")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("containing_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"containing_type_uid")))
-                        {
-                            row.ContainingTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"containing_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ContainingTypeUid = null;
-                        }
+                        row.ContainingTypeUid = fieldNames.Contains("containing_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"containing_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"containing_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters")))
-                        {
-                            row.GenericParameters = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericParameters = null;
-                        }
+                        row.GenericParameters = fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints")))
-                        {
-                            row.GenericConstraints = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericConstraints = null;
-                        }
+                        row.GenericConstraints = fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary")))
-                        {
-                            row.Summary = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Summary = null;
-                        }
+                        row.Summary = fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks")))
-                        {
-                            row.Remarks = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Remarks = null;
-                        }
+                        row.Remarks = fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes")))
-                        {
-                            row.Attributes = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Attributes = null;
-                        }
+                        row.Attributes = fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path")))
-                        {
-                            row.SourceFilePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourceFilePath = null;
-                        }
+                        row.SourceFilePath = fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line")))
-                        {
-                            row.SourceStartLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceStartLine = null;
-                        }
+                        row.SourceStartLine = fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line")))
-                        {
-                            row.SourceEndLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceEndLine = null;
-                        }
+                        row.SourceEndLine = fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -4746,51 +3692,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -4842,32 +3768,18 @@ public partial class KBContext : DbContext
                 UidParameter.Direction = ParameterDirection.Input;
                 UidParameter.DbType = DbType.String;
                 UidParameter.Size = 1000;
-                if (Uid != null)
-                {
-                    UidParameter.Value = Uid;
-                }
-                else
-                {
-                    UidParameter.Value = DBNull.Value;
-                }
+                UidParameter.Value = Uid != null ? Uid : DBNull.Value;
 
-                cmd.Parameters.Add(UidParameter);
+                _ = cmd.Parameters.Add(UidParameter);
 
                 DbParameter KindParameter = cmd.CreateParameter();
                 KindParameter.ParameterName = "Kind";
                 KindParameter.Direction = ParameterDirection.Input;
                 KindParameter.DbType = DbType.String;
                 KindParameter.Size = 50;
-                if (Kind != null)
-                {
-                    KindParameter.Value = Kind;
-                }
-                else
-                {
-                    KindParameter.Value = DBNull.Value;
-                }
+                KindParameter.Value = Kind != null ? Kind : DBNull.Value;
 
-                cmd.Parameters.Add(KindParameter);
+                _ = cmd.Parameters.Add(KindParameter);
 
                 DbParameter NotesParameter = cmd.CreateParameter();
                 NotesParameter.ParameterName = "Notes";
@@ -4883,8 +3795,8 @@ public partial class KBContext : DbContext
                     NotesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(NotesParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(NotesParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -4930,32 +3842,18 @@ public partial class KBContext : DbContext
                 UidParameter.Direction = ParameterDirection.Input;
                 UidParameter.DbType = DbType.String;
                 UidParameter.Size = 1000;
-                if (Uid != null)
-                {
-                    UidParameter.Value = Uid;
-                }
-                else
-                {
-                    UidParameter.Value = DBNull.Value;
-                }
+                UidParameter.Value = Uid != null ? Uid : DBNull.Value;
 
-                cmd.Parameters.Add(UidParameter);
+                _ = cmd.Parameters.Add(UidParameter);
 
                 DbParameter KindParameter = cmd.CreateParameter();
                 KindParameter.ParameterName = "Kind";
                 KindParameter.Direction = ParameterDirection.Input;
                 KindParameter.DbType = DbType.String;
                 KindParameter.Size = 50;
-                if (Kind != null)
-                {
-                    KindParameter.Value = Kind;
-                }
-                else
-                {
-                    KindParameter.Value = DBNull.Value;
-                }
+                KindParameter.Value = Kind != null ? Kind : DBNull.Value;
 
-                cmd.Parameters.Add(KindParameter);
+                _ = cmd.Parameters.Add(KindParameter);
 
                 DbParameter NotesParameter = cmd.CreateParameter();
                 NotesParameter.ParameterName = "Notes";
@@ -4971,8 +3869,8 @@ public partial class KBContext : DbContext
                     NotesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(NotesParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(NotesParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -5018,16 +3916,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter TruthRunIdParameter = cmd.CreateParameter();
                 TruthRunIdParameter.ParameterName = "TruthRunId";
@@ -5043,7 +3934,7 @@ public partial class KBContext : DbContext
                     TruthRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(TruthRunIdParameter);
+                _ = cmd.Parameters.Add(TruthRunIdParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -5059,39 +3950,25 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter NameParameter = cmd.CreateParameter();
                 NameParameter.ParameterName = "Name";
                 NameParameter.Direction = ParameterDirection.Input;
                 NameParameter.DbType = DbType.String;
                 NameParameter.Size = 400;
-                if (Name != null)
-                {
-                    NameParameter.Value = Name;
-                }
-                else
-                {
-                    NameParameter.Value = DBNull.Value;
-                }
+                NameParameter.Value = Name != null ? Name : DBNull.Value;
 
-                cmd.Parameters.Add(NameParameter);
+                _ = cmd.Parameters.Add(NameParameter);
 
                 DbParameter LanguageParameter = cmd.CreateParameter();
                 LanguageParameter.ParameterName = "Language";
                 LanguageParameter.Direction = ParameterDirection.Input;
                 LanguageParameter.DbType = DbType.String;
                 LanguageParameter.Size = 200;
-                if (Language != null)
-                {
-                    LanguageParameter.Value = Language;
-                }
-                else
-                {
-                    LanguageParameter.Value = DBNull.Value;
-                }
+                LanguageParameter.Value = Language != null ? Language : DBNull.Value;
 
-                cmd.Parameters.Add(LanguageParameter);
+                _ = cmd.Parameters.Add(LanguageParameter);
 
                 DbParameter DescriptionParameter = cmd.CreateParameter();
                 DescriptionParameter.ParameterName = "Description";
@@ -5107,7 +3984,7 @@ public partial class KBContext : DbContext
                     DescriptionParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(DescriptionParameter);
+                _ = cmd.Parameters.Add(DescriptionParameter);
 
                 DbParameter TagsParameter = cmd.CreateParameter();
                 TagsParameter.ParameterName = "Tags";
@@ -5123,8 +4000,8 @@ public partial class KBContext : DbContext
                     TagsParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(TagsParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(TagsParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -5170,16 +4047,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter TruthRunIdParameter = cmd.CreateParameter();
                 TruthRunIdParameter.ParameterName = "TruthRunId";
@@ -5195,7 +4065,7 @@ public partial class KBContext : DbContext
                     TruthRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(TruthRunIdParameter);
+                _ = cmd.Parameters.Add(TruthRunIdParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -5211,39 +4081,25 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter NameParameter = cmd.CreateParameter();
                 NameParameter.ParameterName = "Name";
                 NameParameter.Direction = ParameterDirection.Input;
                 NameParameter.DbType = DbType.String;
                 NameParameter.Size = 400;
-                if (Name != null)
-                {
-                    NameParameter.Value = Name;
-                }
-                else
-                {
-                    NameParameter.Value = DBNull.Value;
-                }
+                NameParameter.Value = Name != null ? Name : DBNull.Value;
 
-                cmd.Parameters.Add(NameParameter);
+                _ = cmd.Parameters.Add(NameParameter);
 
                 DbParameter LanguageParameter = cmd.CreateParameter();
                 LanguageParameter.ParameterName = "Language";
                 LanguageParameter.Direction = ParameterDirection.Input;
                 LanguageParameter.DbType = DbType.String;
                 LanguageParameter.Size = 200;
-                if (Language != null)
-                {
-                    LanguageParameter.Value = Language;
-                }
-                else
-                {
-                    LanguageParameter.Value = DBNull.Value;
-                }
+                LanguageParameter.Value = Language != null ? Language : DBNull.Value;
 
-                cmd.Parameters.Add(LanguageParameter);
+                _ = cmd.Parameters.Add(LanguageParameter);
 
                 DbParameter DescriptionParameter = cmd.CreateParameter();
                 DescriptionParameter.ParameterName = "Description";
@@ -5259,7 +4115,7 @@ public partial class KBContext : DbContext
                     DescriptionParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(DescriptionParameter);
+                _ = cmd.Parameters.Add(DescriptionParameter);
 
                 DbParameter TagsParameter = cmd.CreateParameter();
                 TagsParameter.ParameterName = "Tags";
@@ -5275,8 +4131,8 @@ public partial class KBContext : DbContext
                     TagsParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(TagsParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(TagsParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -5322,16 +4178,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter ApiTypeIdParameter = cmd.CreateParameter();
                 ApiTypeIdParameter.ParameterName = "ApiTypeId";
@@ -5347,7 +4196,7 @@ public partial class KBContext : DbContext
                     ApiTypeIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(ApiTypeIdParameter);
+                _ = cmd.Parameters.Add(ApiTypeIdParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -5363,71 +4212,43 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter NameParameter = cmd.CreateParameter();
                 NameParameter.ParameterName = "Name";
                 NameParameter.Direction = ParameterDirection.Input;
                 NameParameter.DbType = DbType.String;
                 NameParameter.Size = 400;
-                if (Name != null)
-                {
-                    NameParameter.Value = Name;
-                }
-                else
-                {
-                    NameParameter.Value = DBNull.Value;
-                }
+                NameParameter.Value = Name != null ? Name : DBNull.Value;
 
-                cmd.Parameters.Add(NameParameter);
+                _ = cmd.Parameters.Add(NameParameter);
 
                 DbParameter KindParameter = cmd.CreateParameter();
                 KindParameter.ParameterName = "Kind";
                 KindParameter.Direction = ParameterDirection.Input;
                 KindParameter.DbType = DbType.String;
                 KindParameter.Size = 200;
-                if (Kind != null)
-                {
-                    KindParameter.Value = Kind;
-                }
-                else
-                {
-                    KindParameter.Value = DBNull.Value;
-                }
+                KindParameter.Value = Kind != null ? Kind : DBNull.Value;
 
-                cmd.Parameters.Add(KindParameter);
+                _ = cmd.Parameters.Add(KindParameter);
 
                 DbParameter MethodKindParameter = cmd.CreateParameter();
                 MethodKindParameter.ParameterName = "MethodKind";
                 MethodKindParameter.Direction = ParameterDirection.Input;
                 MethodKindParameter.DbType = DbType.String;
                 MethodKindParameter.Size = 200;
-                if (MethodKind != null)
-                {
-                    MethodKindParameter.Value = MethodKind;
-                }
-                else
-                {
-                    MethodKindParameter.Value = DBNull.Value;
-                }
+                MethodKindParameter.Value = MethodKind != null ? MethodKind : DBNull.Value;
 
-                cmd.Parameters.Add(MethodKindParameter);
+                _ = cmd.Parameters.Add(MethodKindParameter);
 
                 DbParameter AccessibilityParameter = cmd.CreateParameter();
                 AccessibilityParameter.ParameterName = "Accessibility";
                 AccessibilityParameter.Direction = ParameterDirection.Input;
                 AccessibilityParameter.DbType = DbType.String;
                 AccessibilityParameter.Size = 200;
-                if (Accessibility != null)
-                {
-                    AccessibilityParameter.Value = Accessibility;
-                }
-                else
-                {
-                    AccessibilityParameter.Value = DBNull.Value;
-                }
+                AccessibilityParameter.Value = Accessibility != null ? Accessibility : DBNull.Value;
 
-                cmd.Parameters.Add(AccessibilityParameter);
+                _ = cmd.Parameters.Add(AccessibilityParameter);
 
                 DbParameter IsStaticParameter = cmd.CreateParameter();
                 IsStaticParameter.ParameterName = "IsStatic";
@@ -5443,7 +4264,7 @@ public partial class KBContext : DbContext
                     IsStaticParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsStaticParameter);
+                _ = cmd.Parameters.Add(IsStaticParameter);
 
                 DbParameter IsExtensionMethodParameter = cmd.CreateParameter();
                 IsExtensionMethodParameter.ParameterName = "IsExtensionMethod";
@@ -5459,7 +4280,7 @@ public partial class KBContext : DbContext
                     IsExtensionMethodParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsExtensionMethodParameter);
+                _ = cmd.Parameters.Add(IsExtensionMethodParameter);
 
                 DbParameter IsAsyncParameter = cmd.CreateParameter();
                 IsAsyncParameter.ParameterName = "IsAsync";
@@ -5475,7 +4296,7 @@ public partial class KBContext : DbContext
                     IsAsyncParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsAsyncParameter);
+                _ = cmd.Parameters.Add(IsAsyncParameter);
 
                 DbParameter IsVirtualParameter = cmd.CreateParameter();
                 IsVirtualParameter.ParameterName = "IsVirtual";
@@ -5491,7 +4312,7 @@ public partial class KBContext : DbContext
                     IsVirtualParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsVirtualParameter);
+                _ = cmd.Parameters.Add(IsVirtualParameter);
 
                 DbParameter IsOverrideParameter = cmd.CreateParameter();
                 IsOverrideParameter.ParameterName = "IsOverride";
@@ -5507,7 +4328,7 @@ public partial class KBContext : DbContext
                     IsOverrideParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsOverrideParameter);
+                _ = cmd.Parameters.Add(IsOverrideParameter);
 
                 DbParameter IsAbstractParameter = cmd.CreateParameter();
                 IsAbstractParameter.ParameterName = "IsAbstract";
@@ -5523,7 +4344,7 @@ public partial class KBContext : DbContext
                     IsAbstractParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsAbstractParameter);
+                _ = cmd.Parameters.Add(IsAbstractParameter);
 
                 DbParameter IsSealedParameter = cmd.CreateParameter();
                 IsSealedParameter.ParameterName = "IsSealed";
@@ -5539,7 +4360,7 @@ public partial class KBContext : DbContext
                     IsSealedParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsSealedParameter);
+                _ = cmd.Parameters.Add(IsSealedParameter);
 
                 DbParameter IsReadOnlyParameter = cmd.CreateParameter();
                 IsReadOnlyParameter.ParameterName = "IsReadOnly";
@@ -5555,7 +4376,7 @@ public partial class KBContext : DbContext
                     IsReadOnlyParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsReadOnlyParameter);
+                _ = cmd.Parameters.Add(IsReadOnlyParameter);
 
                 DbParameter IsConstParameter = cmd.CreateParameter();
                 IsConstParameter.ParameterName = "IsConst";
@@ -5571,7 +4392,7 @@ public partial class KBContext : DbContext
                     IsConstParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsConstParameter);
+                _ = cmd.Parameters.Add(IsConstParameter);
 
                 DbParameter IsUnsafeParameter = cmd.CreateParameter();
                 IsUnsafeParameter.ParameterName = "IsUnsafe";
@@ -5587,39 +4408,25 @@ public partial class KBContext : DbContext
                     IsUnsafeParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsUnsafeParameter);
+                _ = cmd.Parameters.Add(IsUnsafeParameter);
 
                 DbParameter ReturnTypeUidParameter = cmd.CreateParameter();
                 ReturnTypeUidParameter.ParameterName = "ReturnTypeUid";
                 ReturnTypeUidParameter.Direction = ParameterDirection.Input;
                 ReturnTypeUidParameter.DbType = DbType.String;
                 ReturnTypeUidParameter.Size = 1000;
-                if (ReturnTypeUid != null)
-                {
-                    ReturnTypeUidParameter.Value = ReturnTypeUid;
-                }
-                else
-                {
-                    ReturnTypeUidParameter.Value = DBNull.Value;
-                }
+                ReturnTypeUidParameter.Value = ReturnTypeUid != null ? ReturnTypeUid : DBNull.Value;
 
-                cmd.Parameters.Add(ReturnTypeUidParameter);
+                _ = cmd.Parameters.Add(ReturnTypeUidParameter);
 
                 DbParameter ReturnNullableParameter = cmd.CreateParameter();
                 ReturnNullableParameter.ParameterName = "ReturnNullable";
                 ReturnNullableParameter.Direction = ParameterDirection.Input;
                 ReturnNullableParameter.DbType = DbType.String;
                 ReturnNullableParameter.Size = 50;
-                if (ReturnNullable != null)
-                {
-                    ReturnNullableParameter.Value = ReturnNullable;
-                }
-                else
-                {
-                    ReturnNullableParameter.Value = DBNull.Value;
-                }
+                ReturnNullableParameter.Value = ReturnNullable != null ? ReturnNullable : DBNull.Value;
 
-                cmd.Parameters.Add(ReturnNullableParameter);
+                _ = cmd.Parameters.Add(ReturnNullableParameter);
 
                 DbParameter GenericParametersParameter = cmd.CreateParameter();
                 GenericParametersParameter.ParameterName = "GenericParameters";
@@ -5635,7 +4442,7 @@ public partial class KBContext : DbContext
                     GenericParametersParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(GenericParametersParameter);
+                _ = cmd.Parameters.Add(GenericParametersParameter);
 
                 DbParameter GenericConstraintsParameter = cmd.CreateParameter();
                 GenericConstraintsParameter.ParameterName = "GenericConstraints";
@@ -5651,7 +4458,7 @@ public partial class KBContext : DbContext
                     GenericConstraintsParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(GenericConstraintsParameter);
+                _ = cmd.Parameters.Add(GenericConstraintsParameter);
 
                 DbParameter SummaryParameter = cmd.CreateParameter();
                 SummaryParameter.ParameterName = "Summary";
@@ -5667,7 +4474,7 @@ public partial class KBContext : DbContext
                     SummaryParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SummaryParameter);
+                _ = cmd.Parameters.Add(SummaryParameter);
 
                 DbParameter RemarksParameter = cmd.CreateParameter();
                 RemarksParameter.ParameterName = "Remarks";
@@ -5683,7 +4490,7 @@ public partial class KBContext : DbContext
                     RemarksParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(RemarksParameter);
+                _ = cmd.Parameters.Add(RemarksParameter);
 
                 DbParameter AttributesParameter = cmd.CreateParameter();
                 AttributesParameter.ParameterName = "Attributes";
@@ -5699,7 +4506,7 @@ public partial class KBContext : DbContext
                     AttributesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AttributesParameter);
+                _ = cmd.Parameters.Add(AttributesParameter);
 
                 DbParameter SourceFilePathParameter = cmd.CreateParameter();
                 SourceFilePathParameter.ParameterName = "SourceFilePath";
@@ -5715,7 +4522,7 @@ public partial class KBContext : DbContext
                     SourceFilePathParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceFilePathParameter);
+                _ = cmd.Parameters.Add(SourceFilePathParameter);
 
                 DbParameter SourceStartLineParameter = cmd.CreateParameter();
                 SourceStartLineParameter.ParameterName = "SourceStartLine";
@@ -5733,7 +4540,7 @@ public partial class KBContext : DbContext
                     SourceStartLineParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceStartLineParameter);
+                _ = cmd.Parameters.Add(SourceStartLineParameter);
 
                 DbParameter SourceEndLineParameter = cmd.CreateParameter();
                 SourceEndLineParameter.ParameterName = "SourceEndLine";
@@ -5751,8 +4558,8 @@ public partial class KBContext : DbContext
                     SourceEndLineParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceEndLineParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(SourceEndLineParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -5798,16 +4605,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter ApiTypeIdParameter = cmd.CreateParameter();
                 ApiTypeIdParameter.ParameterName = "ApiTypeId";
@@ -5823,7 +4623,7 @@ public partial class KBContext : DbContext
                     ApiTypeIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(ApiTypeIdParameter);
+                _ = cmd.Parameters.Add(ApiTypeIdParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -5839,71 +4639,43 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter NameParameter = cmd.CreateParameter();
                 NameParameter.ParameterName = "Name";
                 NameParameter.Direction = ParameterDirection.Input;
                 NameParameter.DbType = DbType.String;
                 NameParameter.Size = 400;
-                if (Name != null)
-                {
-                    NameParameter.Value = Name;
-                }
-                else
-                {
-                    NameParameter.Value = DBNull.Value;
-                }
+                NameParameter.Value = Name != null ? Name : DBNull.Value;
 
-                cmd.Parameters.Add(NameParameter);
+                _ = cmd.Parameters.Add(NameParameter);
 
                 DbParameter KindParameter = cmd.CreateParameter();
                 KindParameter.ParameterName = "Kind";
                 KindParameter.Direction = ParameterDirection.Input;
                 KindParameter.DbType = DbType.String;
                 KindParameter.Size = 200;
-                if (Kind != null)
-                {
-                    KindParameter.Value = Kind;
-                }
-                else
-                {
-                    KindParameter.Value = DBNull.Value;
-                }
+                KindParameter.Value = Kind != null ? Kind : DBNull.Value;
 
-                cmd.Parameters.Add(KindParameter);
+                _ = cmd.Parameters.Add(KindParameter);
 
                 DbParameter MethodKindParameter = cmd.CreateParameter();
                 MethodKindParameter.ParameterName = "MethodKind";
                 MethodKindParameter.Direction = ParameterDirection.Input;
                 MethodKindParameter.DbType = DbType.String;
                 MethodKindParameter.Size = 200;
-                if (MethodKind != null)
-                {
-                    MethodKindParameter.Value = MethodKind;
-                }
-                else
-                {
-                    MethodKindParameter.Value = DBNull.Value;
-                }
+                MethodKindParameter.Value = MethodKind != null ? MethodKind : DBNull.Value;
 
-                cmd.Parameters.Add(MethodKindParameter);
+                _ = cmd.Parameters.Add(MethodKindParameter);
 
                 DbParameter AccessibilityParameter = cmd.CreateParameter();
                 AccessibilityParameter.ParameterName = "Accessibility";
                 AccessibilityParameter.Direction = ParameterDirection.Input;
                 AccessibilityParameter.DbType = DbType.String;
                 AccessibilityParameter.Size = 200;
-                if (Accessibility != null)
-                {
-                    AccessibilityParameter.Value = Accessibility;
-                }
-                else
-                {
-                    AccessibilityParameter.Value = DBNull.Value;
-                }
+                AccessibilityParameter.Value = Accessibility != null ? Accessibility : DBNull.Value;
 
-                cmd.Parameters.Add(AccessibilityParameter);
+                _ = cmd.Parameters.Add(AccessibilityParameter);
 
                 DbParameter IsStaticParameter = cmd.CreateParameter();
                 IsStaticParameter.ParameterName = "IsStatic";
@@ -5919,7 +4691,7 @@ public partial class KBContext : DbContext
                     IsStaticParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsStaticParameter);
+                _ = cmd.Parameters.Add(IsStaticParameter);
 
                 DbParameter IsExtensionMethodParameter = cmd.CreateParameter();
                 IsExtensionMethodParameter.ParameterName = "IsExtensionMethod";
@@ -5935,7 +4707,7 @@ public partial class KBContext : DbContext
                     IsExtensionMethodParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsExtensionMethodParameter);
+                _ = cmd.Parameters.Add(IsExtensionMethodParameter);
 
                 DbParameter IsAsyncParameter = cmd.CreateParameter();
                 IsAsyncParameter.ParameterName = "IsAsync";
@@ -5951,7 +4723,7 @@ public partial class KBContext : DbContext
                     IsAsyncParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsAsyncParameter);
+                _ = cmd.Parameters.Add(IsAsyncParameter);
 
                 DbParameter IsVirtualParameter = cmd.CreateParameter();
                 IsVirtualParameter.ParameterName = "IsVirtual";
@@ -5967,7 +4739,7 @@ public partial class KBContext : DbContext
                     IsVirtualParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsVirtualParameter);
+                _ = cmd.Parameters.Add(IsVirtualParameter);
 
                 DbParameter IsOverrideParameter = cmd.CreateParameter();
                 IsOverrideParameter.ParameterName = "IsOverride";
@@ -5983,7 +4755,7 @@ public partial class KBContext : DbContext
                     IsOverrideParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsOverrideParameter);
+                _ = cmd.Parameters.Add(IsOverrideParameter);
 
                 DbParameter IsAbstractParameter = cmd.CreateParameter();
                 IsAbstractParameter.ParameterName = "IsAbstract";
@@ -5999,7 +4771,7 @@ public partial class KBContext : DbContext
                     IsAbstractParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsAbstractParameter);
+                _ = cmd.Parameters.Add(IsAbstractParameter);
 
                 DbParameter IsSealedParameter = cmd.CreateParameter();
                 IsSealedParameter.ParameterName = "IsSealed";
@@ -6015,7 +4787,7 @@ public partial class KBContext : DbContext
                     IsSealedParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsSealedParameter);
+                _ = cmd.Parameters.Add(IsSealedParameter);
 
                 DbParameter IsReadOnlyParameter = cmd.CreateParameter();
                 IsReadOnlyParameter.ParameterName = "IsReadOnly";
@@ -6031,7 +4803,7 @@ public partial class KBContext : DbContext
                     IsReadOnlyParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsReadOnlyParameter);
+                _ = cmd.Parameters.Add(IsReadOnlyParameter);
 
                 DbParameter IsConstParameter = cmd.CreateParameter();
                 IsConstParameter.ParameterName = "IsConst";
@@ -6047,7 +4819,7 @@ public partial class KBContext : DbContext
                     IsConstParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsConstParameter);
+                _ = cmd.Parameters.Add(IsConstParameter);
 
                 DbParameter IsUnsafeParameter = cmd.CreateParameter();
                 IsUnsafeParameter.ParameterName = "IsUnsafe";
@@ -6063,39 +4835,25 @@ public partial class KBContext : DbContext
                     IsUnsafeParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsUnsafeParameter);
+                _ = cmd.Parameters.Add(IsUnsafeParameter);
 
                 DbParameter ReturnTypeUidParameter = cmd.CreateParameter();
                 ReturnTypeUidParameter.ParameterName = "ReturnTypeUid";
                 ReturnTypeUidParameter.Direction = ParameterDirection.Input;
                 ReturnTypeUidParameter.DbType = DbType.String;
                 ReturnTypeUidParameter.Size = 1000;
-                if (ReturnTypeUid != null)
-                {
-                    ReturnTypeUidParameter.Value = ReturnTypeUid;
-                }
-                else
-                {
-                    ReturnTypeUidParameter.Value = DBNull.Value;
-                }
+                ReturnTypeUidParameter.Value = ReturnTypeUid != null ? ReturnTypeUid : DBNull.Value;
 
-                cmd.Parameters.Add(ReturnTypeUidParameter);
+                _ = cmd.Parameters.Add(ReturnTypeUidParameter);
 
                 DbParameter ReturnNullableParameter = cmd.CreateParameter();
                 ReturnNullableParameter.ParameterName = "ReturnNullable";
                 ReturnNullableParameter.Direction = ParameterDirection.Input;
                 ReturnNullableParameter.DbType = DbType.String;
                 ReturnNullableParameter.Size = 50;
-                if (ReturnNullable != null)
-                {
-                    ReturnNullableParameter.Value = ReturnNullable;
-                }
-                else
-                {
-                    ReturnNullableParameter.Value = DBNull.Value;
-                }
+                ReturnNullableParameter.Value = ReturnNullable != null ? ReturnNullable : DBNull.Value;
 
-                cmd.Parameters.Add(ReturnNullableParameter);
+                _ = cmd.Parameters.Add(ReturnNullableParameter);
 
                 DbParameter GenericParametersParameter = cmd.CreateParameter();
                 GenericParametersParameter.ParameterName = "GenericParameters";
@@ -6111,7 +4869,7 @@ public partial class KBContext : DbContext
                     GenericParametersParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(GenericParametersParameter);
+                _ = cmd.Parameters.Add(GenericParametersParameter);
 
                 DbParameter GenericConstraintsParameter = cmd.CreateParameter();
                 GenericConstraintsParameter.ParameterName = "GenericConstraints";
@@ -6127,7 +4885,7 @@ public partial class KBContext : DbContext
                     GenericConstraintsParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(GenericConstraintsParameter);
+                _ = cmd.Parameters.Add(GenericConstraintsParameter);
 
                 DbParameter SummaryParameter = cmd.CreateParameter();
                 SummaryParameter.ParameterName = "Summary";
@@ -6143,7 +4901,7 @@ public partial class KBContext : DbContext
                     SummaryParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SummaryParameter);
+                _ = cmd.Parameters.Add(SummaryParameter);
 
                 DbParameter RemarksParameter = cmd.CreateParameter();
                 RemarksParameter.ParameterName = "Remarks";
@@ -6159,7 +4917,7 @@ public partial class KBContext : DbContext
                     RemarksParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(RemarksParameter);
+                _ = cmd.Parameters.Add(RemarksParameter);
 
                 DbParameter AttributesParameter = cmd.CreateParameter();
                 AttributesParameter.ParameterName = "Attributes";
@@ -6175,7 +4933,7 @@ public partial class KBContext : DbContext
                     AttributesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AttributesParameter);
+                _ = cmd.Parameters.Add(AttributesParameter);
 
                 DbParameter SourceFilePathParameter = cmd.CreateParameter();
                 SourceFilePathParameter.ParameterName = "SourceFilePath";
@@ -6191,7 +4949,7 @@ public partial class KBContext : DbContext
                     SourceFilePathParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceFilePathParameter);
+                _ = cmd.Parameters.Add(SourceFilePathParameter);
 
                 DbParameter SourceStartLineParameter = cmd.CreateParameter();
                 SourceStartLineParameter.ParameterName = "SourceStartLine";
@@ -6209,7 +4967,7 @@ public partial class KBContext : DbContext
                     SourceStartLineParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceStartLineParameter);
+                _ = cmd.Parameters.Add(SourceStartLineParameter);
 
                 DbParameter SourceEndLineParameter = cmd.CreateParameter();
                 SourceEndLineParameter.ParameterName = "SourceEndLine";
@@ -6227,8 +4985,8 @@ public partial class KBContext : DbContext
                     SourceEndLineParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceEndLineParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(SourceEndLineParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -6284,55 +5042,34 @@ public partial class KBContext : DbContext
                     api_member_idParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(api_member_idParameter);
+                _ = cmd.Parameters.Add(api_member_idParameter);
 
                 DbParameter nameParameter = cmd.CreateParameter();
                 nameParameter.ParameterName = "name";
                 nameParameter.Direction = ParameterDirection.Input;
                 nameParameter.DbType = DbType.String;
                 nameParameter.Size = 200;
-                if (name != null)
-                {
-                    nameParameter.Value = name;
-                }
-                else
-                {
-                    nameParameter.Value = DBNull.Value;
-                }
+                nameParameter.Value = name != null ? name : DBNull.Value;
 
-                cmd.Parameters.Add(nameParameter);
+                _ = cmd.Parameters.Add(nameParameter);
 
                 DbParameter type_uidParameter = cmd.CreateParameter();
                 type_uidParameter.ParameterName = "type_uid";
                 type_uidParameter.Direction = ParameterDirection.Input;
                 type_uidParameter.DbType = DbType.String;
                 type_uidParameter.Size = 1000;
-                if (type_uid != null)
-                {
-                    type_uidParameter.Value = type_uid;
-                }
-                else
-                {
-                    type_uidParameter.Value = DBNull.Value;
-                }
+                type_uidParameter.Value = type_uid != null ? type_uid : DBNull.Value;
 
-                cmd.Parameters.Add(type_uidParameter);
+                _ = cmd.Parameters.Add(type_uidParameter);
 
                 DbParameter nullable_annotationParameter = cmd.CreateParameter();
                 nullable_annotationParameter.ParameterName = "nullable_annotation";
                 nullable_annotationParameter.Direction = ParameterDirection.Input;
                 nullable_annotationParameter.DbType = DbType.String;
                 nullable_annotationParameter.Size = 50;
-                if (nullable_annotation != null)
-                {
-                    nullable_annotationParameter.Value = nullable_annotation;
-                }
-                else
-                {
-                    nullable_annotationParameter.Value = DBNull.Value;
-                }
+                nullable_annotationParameter.Value = nullable_annotation != null ? nullable_annotation : DBNull.Value;
 
-                cmd.Parameters.Add(nullable_annotationParameter);
+                _ = cmd.Parameters.Add(nullable_annotationParameter);
 
                 DbParameter positionParameter = cmd.CreateParameter();
                 positionParameter.ParameterName = "position";
@@ -6350,23 +5087,16 @@ public partial class KBContext : DbContext
                     positionParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(positionParameter);
+                _ = cmd.Parameters.Add(positionParameter);
 
                 DbParameter modifierParameter = cmd.CreateParameter();
                 modifierParameter.ParameterName = "modifier";
                 modifierParameter.Direction = ParameterDirection.Input;
                 modifierParameter.DbType = DbType.String;
                 modifierParameter.Size = 50;
-                if (modifier != null)
-                {
-                    modifierParameter.Value = modifier;
-                }
-                else
-                {
-                    modifierParameter.Value = DBNull.Value;
-                }
+                modifierParameter.Value = modifier != null ? modifier : DBNull.Value;
 
-                cmd.Parameters.Add(modifierParameter);
+                _ = cmd.Parameters.Add(modifierParameter);
 
                 DbParameter has_default_valueParameter = cmd.CreateParameter();
                 has_default_valueParameter.ParameterName = "has_default_value";
@@ -6382,7 +5112,7 @@ public partial class KBContext : DbContext
                     has_default_valueParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(has_default_valueParameter);
+                _ = cmd.Parameters.Add(has_default_valueParameter);
 
                 DbParameter default_value_literalParameter = cmd.CreateParameter();
                 default_value_literalParameter.ParameterName = "default_value_literal";
@@ -6398,7 +5128,7 @@ public partial class KBContext : DbContext
                     default_value_literalParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(default_value_literalParameter);
+                _ = cmd.Parameters.Add(default_value_literalParameter);
 
                 DbParameter ingestion_run_idParameter = cmd.CreateParameter();
                 ingestion_run_idParameter.ParameterName = "ingestion_run_id";
@@ -6414,7 +5144,7 @@ public partial class KBContext : DbContext
                     ingestion_run_idParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(ingestion_run_idParameter);
+                _ = cmd.Parameters.Add(ingestion_run_idParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     string[] fieldNames;
@@ -6422,70 +5152,55 @@ public partial class KBContext : DbContext
 
                     while (reader.Read())
                     {
-                        SpUpsertApiParameterResult resultRow = new();
-                        if (fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0]))
+                        SpUpsertApiParameterResult resultRow = new()
                         {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid));
-                        }
-                        else if (fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id")))
-                        {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            resultRow.Id = null;
-                        }
+                            Id = fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0])
+                                ? (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid))
+                                : fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id"))
+                                    ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid))
+                                    : null
+                        };
 
                         result.SpUpsertApiParameterResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
                     while (reader.Read())
                     {
-                        SpUpsertApiParameterResult resultRow = new();
-                        if (fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0]))
+                        SpUpsertApiParameterResult resultRow = new()
                         {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid));
-                        }
-                        else if (fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id")))
-                        {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            resultRow.Id = null;
-                        }
+                            Id = fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0])
+                                ? (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid))
+                                : fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id"))
+                                    ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid))
+                                    : null
+                        };
 
                         result.SpUpsertApiParameterResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
                     while (reader.Read())
                     {
-                        SpUpsertApiParameterResult resultRow = new();
-                        if (fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0]))
+                        SpUpsertApiParameterResult resultRow = new()
                         {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid));
-                        }
-                        else if (fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id")))
-                        {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            resultRow.Id = null;
-                        }
+                            Id = fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0])
+                                ? (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid))
+                                : fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id"))
+                                    ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid))
+                                    : null
+                        };
 
                         result.SpUpsertApiParameterResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
                 }
             }
         }
@@ -6544,55 +5259,34 @@ public partial class KBContext : DbContext
                     api_member_idParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(api_member_idParameter);
+                _ = cmd.Parameters.Add(api_member_idParameter);
 
                 DbParameter nameParameter = cmd.CreateParameter();
                 nameParameter.ParameterName = "name";
                 nameParameter.Direction = ParameterDirection.Input;
                 nameParameter.DbType = DbType.String;
                 nameParameter.Size = 200;
-                if (name != null)
-                {
-                    nameParameter.Value = name;
-                }
-                else
-                {
-                    nameParameter.Value = DBNull.Value;
-                }
+                nameParameter.Value = name != null ? name : DBNull.Value;
 
-                cmd.Parameters.Add(nameParameter);
+                _ = cmd.Parameters.Add(nameParameter);
 
                 DbParameter type_uidParameter = cmd.CreateParameter();
                 type_uidParameter.ParameterName = "type_uid";
                 type_uidParameter.Direction = ParameterDirection.Input;
                 type_uidParameter.DbType = DbType.String;
                 type_uidParameter.Size = 1000;
-                if (type_uid != null)
-                {
-                    type_uidParameter.Value = type_uid;
-                }
-                else
-                {
-                    type_uidParameter.Value = DBNull.Value;
-                }
+                type_uidParameter.Value = type_uid != null ? type_uid : DBNull.Value;
 
-                cmd.Parameters.Add(type_uidParameter);
+                _ = cmd.Parameters.Add(type_uidParameter);
 
                 DbParameter nullable_annotationParameter = cmd.CreateParameter();
                 nullable_annotationParameter.ParameterName = "nullable_annotation";
                 nullable_annotationParameter.Direction = ParameterDirection.Input;
                 nullable_annotationParameter.DbType = DbType.String;
                 nullable_annotationParameter.Size = 50;
-                if (nullable_annotation != null)
-                {
-                    nullable_annotationParameter.Value = nullable_annotation;
-                }
-                else
-                {
-                    nullable_annotationParameter.Value = DBNull.Value;
-                }
+                nullable_annotationParameter.Value = nullable_annotation != null ? nullable_annotation : DBNull.Value;
 
-                cmd.Parameters.Add(nullable_annotationParameter);
+                _ = cmd.Parameters.Add(nullable_annotationParameter);
 
                 DbParameter positionParameter = cmd.CreateParameter();
                 positionParameter.ParameterName = "position";
@@ -6610,23 +5304,16 @@ public partial class KBContext : DbContext
                     positionParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(positionParameter);
+                _ = cmd.Parameters.Add(positionParameter);
 
                 DbParameter modifierParameter = cmd.CreateParameter();
                 modifierParameter.ParameterName = "modifier";
                 modifierParameter.Direction = ParameterDirection.Input;
                 modifierParameter.DbType = DbType.String;
                 modifierParameter.Size = 50;
-                if (modifier != null)
-                {
-                    modifierParameter.Value = modifier;
-                }
-                else
-                {
-                    modifierParameter.Value = DBNull.Value;
-                }
+                modifierParameter.Value = modifier != null ? modifier : DBNull.Value;
 
-                cmd.Parameters.Add(modifierParameter);
+                _ = cmd.Parameters.Add(modifierParameter);
 
                 DbParameter has_default_valueParameter = cmd.CreateParameter();
                 has_default_valueParameter.ParameterName = "has_default_value";
@@ -6642,7 +5329,7 @@ public partial class KBContext : DbContext
                     has_default_valueParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(has_default_valueParameter);
+                _ = cmd.Parameters.Add(has_default_valueParameter);
 
                 DbParameter default_value_literalParameter = cmd.CreateParameter();
                 default_value_literalParameter.ParameterName = "default_value_literal";
@@ -6658,7 +5345,7 @@ public partial class KBContext : DbContext
                     default_value_literalParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(default_value_literalParameter);
+                _ = cmd.Parameters.Add(default_value_literalParameter);
 
                 DbParameter ingestion_run_idParameter = cmd.CreateParameter();
                 ingestion_run_idParameter.ParameterName = "ingestion_run_id";
@@ -6674,7 +5361,7 @@ public partial class KBContext : DbContext
                     ingestion_run_idParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(ingestion_run_idParameter);
+                _ = cmd.Parameters.Add(ingestion_run_idParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     string[] fieldNames;
@@ -6682,70 +5369,55 @@ public partial class KBContext : DbContext
 
                     while (reader.Read())
                     {
-                        SpUpsertApiParameterResult resultRow = new();
-                        if (fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0]))
+                        SpUpsertApiParameterResult resultRow = new()
                         {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid));
-                        }
-                        else if (fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id")))
-                        {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            resultRow.Id = null;
-                        }
+                            Id = fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0])
+                                ? (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid))
+                                : fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id"))
+                                    ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid))
+                                    : null
+                        };
 
                         result.SpUpsertApiParameterResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
                     while (reader.Read())
                     {
-                        SpUpsertApiParameterResult resultRow = new();
-                        if (fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0]))
+                        SpUpsertApiParameterResult resultRow = new()
                         {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid));
-                        }
-                        else if (fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id")))
-                        {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            resultRow.Id = null;
-                        }
+                            Id = fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0])
+                                ? (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid))
+                                : fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id"))
+                                    ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid))
+                                    : null
+                        };
 
                         result.SpUpsertApiParameterResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
                     while (reader.Read())
                     {
-                        SpUpsertApiParameterResult resultRow = new();
-                        if (fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0]))
+                        SpUpsertApiParameterResult resultRow = new()
                         {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid));
-                        }
-                        else if (fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id")))
-                        {
-                            resultRow.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            resultRow.Id = null;
-                        }
+                            Id = fieldNames.Length == 1 && string.IsNullOrEmpty(fieldNames[0])
+                                ? (Guid)Convert.ChangeType(reader.GetValue(0), typeof(Guid))
+                                : fieldNames.Contains(@"id") && !reader.IsDBNull(reader.GetOrdinal(@"id"))
+                                    ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid))
+                                    : null
+                        };
 
                         result.SpUpsertApiParameterResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
                 }
             }
         }
@@ -6794,16 +5466,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter SourceSnapshotIdParameter = cmd.CreateParameter();
                 SourceSnapshotIdParameter.ParameterName = "SourceSnapshotId";
@@ -6819,7 +5484,7 @@ public partial class KBContext : DbContext
                     SourceSnapshotIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceSnapshotIdParameter);
+                _ = cmd.Parameters.Add(SourceSnapshotIdParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -6835,71 +5500,43 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter NameParameter = cmd.CreateParameter();
                 NameParameter.ParameterName = "Name";
                 NameParameter.Direction = ParameterDirection.Input;
                 NameParameter.DbType = DbType.String;
                 NameParameter.Size = 400;
-                if (Name != null)
-                {
-                    NameParameter.Value = Name;
-                }
-                else
-                {
-                    NameParameter.Value = DBNull.Value;
-                }
+                NameParameter.Value = Name != null ? Name : DBNull.Value;
 
-                cmd.Parameters.Add(NameParameter);
+                _ = cmd.Parameters.Add(NameParameter);
 
                 DbParameter NamespacePathParameter = cmd.CreateParameter();
                 NamespacePathParameter.ParameterName = "NamespacePath";
                 NamespacePathParameter.Direction = ParameterDirection.Input;
                 NamespacePathParameter.DbType = DbType.String;
                 NamespacePathParameter.Size = 1000;
-                if (NamespacePath != null)
-                {
-                    NamespacePathParameter.Value = NamespacePath;
-                }
-                else
-                {
-                    NamespacePathParameter.Value = DBNull.Value;
-                }
+                NamespacePathParameter.Value = NamespacePath != null ? NamespacePath : DBNull.Value;
 
-                cmd.Parameters.Add(NamespacePathParameter);
+                _ = cmd.Parameters.Add(NamespacePathParameter);
 
                 DbParameter KindParameter = cmd.CreateParameter();
                 KindParameter.ParameterName = "Kind";
                 KindParameter.Direction = ParameterDirection.Input;
                 KindParameter.DbType = DbType.String;
                 KindParameter.Size = 200;
-                if (Kind != null)
-                {
-                    KindParameter.Value = Kind;
-                }
-                else
-                {
-                    KindParameter.Value = DBNull.Value;
-                }
+                KindParameter.Value = Kind != null ? Kind : DBNull.Value;
 
-                cmd.Parameters.Add(KindParameter);
+                _ = cmd.Parameters.Add(KindParameter);
 
                 DbParameter AccessibilityParameter = cmd.CreateParameter();
                 AccessibilityParameter.ParameterName = "Accessibility";
                 AccessibilityParameter.Direction = ParameterDirection.Input;
                 AccessibilityParameter.DbType = DbType.String;
                 AccessibilityParameter.Size = 200;
-                if (Accessibility != null)
-                {
-                    AccessibilityParameter.Value = Accessibility;
-                }
-                else
-                {
-                    AccessibilityParameter.Value = DBNull.Value;
-                }
+                AccessibilityParameter.Value = Accessibility != null ? Accessibility : DBNull.Value;
 
-                cmd.Parameters.Add(AccessibilityParameter);
+                _ = cmd.Parameters.Add(AccessibilityParameter);
 
                 DbParameter IsStaticParameter = cmd.CreateParameter();
                 IsStaticParameter.ParameterName = "IsStatic";
@@ -6915,7 +5552,7 @@ public partial class KBContext : DbContext
                     IsStaticParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsStaticParameter);
+                _ = cmd.Parameters.Add(IsStaticParameter);
 
                 DbParameter IsGenericParameter = cmd.CreateParameter();
                 IsGenericParameter.ParameterName = "IsGeneric";
@@ -6931,7 +5568,7 @@ public partial class KBContext : DbContext
                     IsGenericParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsGenericParameter);
+                _ = cmd.Parameters.Add(IsGenericParameter);
 
                 DbParameter IsAbstractParameter = cmd.CreateParameter();
                 IsAbstractParameter.ParameterName = "IsAbstract";
@@ -6947,7 +5584,7 @@ public partial class KBContext : DbContext
                     IsAbstractParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsAbstractParameter);
+                _ = cmd.Parameters.Add(IsAbstractParameter);
 
                 DbParameter IsSealedParameter = cmd.CreateParameter();
                 IsSealedParameter.ParameterName = "IsSealed";
@@ -6963,7 +5600,7 @@ public partial class KBContext : DbContext
                     IsSealedParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsSealedParameter);
+                _ = cmd.Parameters.Add(IsSealedParameter);
 
                 DbParameter IsRecordParameter = cmd.CreateParameter();
                 IsRecordParameter.ParameterName = "IsRecord";
@@ -6979,7 +5616,7 @@ public partial class KBContext : DbContext
                     IsRecordParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsRecordParameter);
+                _ = cmd.Parameters.Add(IsRecordParameter);
 
                 DbParameter IsRefLikeParameter = cmd.CreateParameter();
                 IsRefLikeParameter.ParameterName = "IsRefLike";
@@ -6995,23 +5632,16 @@ public partial class KBContext : DbContext
                     IsRefLikeParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsRefLikeParameter);
+                _ = cmd.Parameters.Add(IsRefLikeParameter);
 
                 DbParameter BaseTypeUidParameter = cmd.CreateParameter();
                 BaseTypeUidParameter.ParameterName = "BaseTypeUid";
                 BaseTypeUidParameter.Direction = ParameterDirection.Input;
                 BaseTypeUidParameter.DbType = DbType.String;
                 BaseTypeUidParameter.Size = 1000;
-                if (BaseTypeUid != null)
-                {
-                    BaseTypeUidParameter.Value = BaseTypeUid;
-                }
-                else
-                {
-                    BaseTypeUidParameter.Value = DBNull.Value;
-                }
+                BaseTypeUidParameter.Value = BaseTypeUid != null ? BaseTypeUid : DBNull.Value;
 
-                cmd.Parameters.Add(BaseTypeUidParameter);
+                _ = cmd.Parameters.Add(BaseTypeUidParameter);
 
                 DbParameter InterfacesParameter = cmd.CreateParameter();
                 InterfacesParameter.ParameterName = "Interfaces";
@@ -7027,23 +5657,16 @@ public partial class KBContext : DbContext
                     InterfacesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(InterfacesParameter);
+                _ = cmd.Parameters.Add(InterfacesParameter);
 
                 DbParameter ContainingTypeUidParameter = cmd.CreateParameter();
                 ContainingTypeUidParameter.ParameterName = "ContainingTypeUid";
                 ContainingTypeUidParameter.Direction = ParameterDirection.Input;
                 ContainingTypeUidParameter.DbType = DbType.String;
                 ContainingTypeUidParameter.Size = 1000;
-                if (ContainingTypeUid != null)
-                {
-                    ContainingTypeUidParameter.Value = ContainingTypeUid;
-                }
-                else
-                {
-                    ContainingTypeUidParameter.Value = DBNull.Value;
-                }
+                ContainingTypeUidParameter.Value = ContainingTypeUid != null ? ContainingTypeUid : DBNull.Value;
 
-                cmd.Parameters.Add(ContainingTypeUidParameter);
+                _ = cmd.Parameters.Add(ContainingTypeUidParameter);
 
                 DbParameter GenericParametersParameter = cmd.CreateParameter();
                 GenericParametersParameter.ParameterName = "GenericParameters";
@@ -7059,7 +5682,7 @@ public partial class KBContext : DbContext
                     GenericParametersParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(GenericParametersParameter);
+                _ = cmd.Parameters.Add(GenericParametersParameter);
 
                 DbParameter GenericConstraintsParameter = cmd.CreateParameter();
                 GenericConstraintsParameter.ParameterName = "GenericConstraints";
@@ -7075,7 +5698,7 @@ public partial class KBContext : DbContext
                     GenericConstraintsParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(GenericConstraintsParameter);
+                _ = cmd.Parameters.Add(GenericConstraintsParameter);
 
                 DbParameter SummaryParameter = cmd.CreateParameter();
                 SummaryParameter.ParameterName = "Summary";
@@ -7091,7 +5714,7 @@ public partial class KBContext : DbContext
                     SummaryParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SummaryParameter);
+                _ = cmd.Parameters.Add(SummaryParameter);
 
                 DbParameter RemarksParameter = cmd.CreateParameter();
                 RemarksParameter.ParameterName = "Remarks";
@@ -7107,7 +5730,7 @@ public partial class KBContext : DbContext
                     RemarksParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(RemarksParameter);
+                _ = cmd.Parameters.Add(RemarksParameter);
 
                 DbParameter AttributesParameter = cmd.CreateParameter();
                 AttributesParameter.ParameterName = "Attributes";
@@ -7123,7 +5746,7 @@ public partial class KBContext : DbContext
                     AttributesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AttributesParameter);
+                _ = cmd.Parameters.Add(AttributesParameter);
 
                 DbParameter SourceFilePathParameter = cmd.CreateParameter();
                 SourceFilePathParameter.ParameterName = "SourceFilePath";
@@ -7139,7 +5762,7 @@ public partial class KBContext : DbContext
                     SourceFilePathParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceFilePathParameter);
+                _ = cmd.Parameters.Add(SourceFilePathParameter);
 
                 DbParameter SourceStartLineParameter = cmd.CreateParameter();
                 SourceStartLineParameter.ParameterName = "SourceStartLine";
@@ -7157,7 +5780,7 @@ public partial class KBContext : DbContext
                     SourceStartLineParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceStartLineParameter);
+                _ = cmd.Parameters.Add(SourceStartLineParameter);
 
                 DbParameter SourceEndLineParameter = cmd.CreateParameter();
                 SourceEndLineParameter.ParameterName = "SourceEndLine";
@@ -7175,8 +5798,8 @@ public partial class KBContext : DbContext
                     SourceEndLineParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceEndLineParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(SourceEndLineParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -7222,16 +5845,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter SourceSnapshotIdParameter = cmd.CreateParameter();
                 SourceSnapshotIdParameter.ParameterName = "SourceSnapshotId";
@@ -7247,7 +5863,7 @@ public partial class KBContext : DbContext
                     SourceSnapshotIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceSnapshotIdParameter);
+                _ = cmd.Parameters.Add(SourceSnapshotIdParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -7263,71 +5879,43 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter NameParameter = cmd.CreateParameter();
                 NameParameter.ParameterName = "Name";
                 NameParameter.Direction = ParameterDirection.Input;
                 NameParameter.DbType = DbType.String;
                 NameParameter.Size = 400;
-                if (Name != null)
-                {
-                    NameParameter.Value = Name;
-                }
-                else
-                {
-                    NameParameter.Value = DBNull.Value;
-                }
+                NameParameter.Value = Name != null ? Name : DBNull.Value;
 
-                cmd.Parameters.Add(NameParameter);
+                _ = cmd.Parameters.Add(NameParameter);
 
                 DbParameter NamespacePathParameter = cmd.CreateParameter();
                 NamespacePathParameter.ParameterName = "NamespacePath";
                 NamespacePathParameter.Direction = ParameterDirection.Input;
                 NamespacePathParameter.DbType = DbType.String;
                 NamespacePathParameter.Size = 1000;
-                if (NamespacePath != null)
-                {
-                    NamespacePathParameter.Value = NamespacePath;
-                }
-                else
-                {
-                    NamespacePathParameter.Value = DBNull.Value;
-                }
+                NamespacePathParameter.Value = NamespacePath != null ? NamespacePath : DBNull.Value;
 
-                cmd.Parameters.Add(NamespacePathParameter);
+                _ = cmd.Parameters.Add(NamespacePathParameter);
 
                 DbParameter KindParameter = cmd.CreateParameter();
                 KindParameter.ParameterName = "Kind";
                 KindParameter.Direction = ParameterDirection.Input;
                 KindParameter.DbType = DbType.String;
                 KindParameter.Size = 200;
-                if (Kind != null)
-                {
-                    KindParameter.Value = Kind;
-                }
-                else
-                {
-                    KindParameter.Value = DBNull.Value;
-                }
+                KindParameter.Value = Kind != null ? Kind : DBNull.Value;
 
-                cmd.Parameters.Add(KindParameter);
+                _ = cmd.Parameters.Add(KindParameter);
 
                 DbParameter AccessibilityParameter = cmd.CreateParameter();
                 AccessibilityParameter.ParameterName = "Accessibility";
                 AccessibilityParameter.Direction = ParameterDirection.Input;
                 AccessibilityParameter.DbType = DbType.String;
                 AccessibilityParameter.Size = 200;
-                if (Accessibility != null)
-                {
-                    AccessibilityParameter.Value = Accessibility;
-                }
-                else
-                {
-                    AccessibilityParameter.Value = DBNull.Value;
-                }
+                AccessibilityParameter.Value = Accessibility != null ? Accessibility : DBNull.Value;
 
-                cmd.Parameters.Add(AccessibilityParameter);
+                _ = cmd.Parameters.Add(AccessibilityParameter);
 
                 DbParameter IsStaticParameter = cmd.CreateParameter();
                 IsStaticParameter.ParameterName = "IsStatic";
@@ -7343,7 +5931,7 @@ public partial class KBContext : DbContext
                     IsStaticParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsStaticParameter);
+                _ = cmd.Parameters.Add(IsStaticParameter);
 
                 DbParameter IsGenericParameter = cmd.CreateParameter();
                 IsGenericParameter.ParameterName = "IsGeneric";
@@ -7359,7 +5947,7 @@ public partial class KBContext : DbContext
                     IsGenericParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsGenericParameter);
+                _ = cmd.Parameters.Add(IsGenericParameter);
 
                 DbParameter IsAbstractParameter = cmd.CreateParameter();
                 IsAbstractParameter.ParameterName = "IsAbstract";
@@ -7375,7 +5963,7 @@ public partial class KBContext : DbContext
                     IsAbstractParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsAbstractParameter);
+                _ = cmd.Parameters.Add(IsAbstractParameter);
 
                 DbParameter IsSealedParameter = cmd.CreateParameter();
                 IsSealedParameter.ParameterName = "IsSealed";
@@ -7391,7 +5979,7 @@ public partial class KBContext : DbContext
                     IsSealedParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsSealedParameter);
+                _ = cmd.Parameters.Add(IsSealedParameter);
 
                 DbParameter IsRecordParameter = cmd.CreateParameter();
                 IsRecordParameter.ParameterName = "IsRecord";
@@ -7407,7 +5995,7 @@ public partial class KBContext : DbContext
                     IsRecordParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsRecordParameter);
+                _ = cmd.Parameters.Add(IsRecordParameter);
 
                 DbParameter IsRefLikeParameter = cmd.CreateParameter();
                 IsRefLikeParameter.ParameterName = "IsRefLike";
@@ -7423,23 +6011,16 @@ public partial class KBContext : DbContext
                     IsRefLikeParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IsRefLikeParameter);
+                _ = cmd.Parameters.Add(IsRefLikeParameter);
 
                 DbParameter BaseTypeUidParameter = cmd.CreateParameter();
                 BaseTypeUidParameter.ParameterName = "BaseTypeUid";
                 BaseTypeUidParameter.Direction = ParameterDirection.Input;
                 BaseTypeUidParameter.DbType = DbType.String;
                 BaseTypeUidParameter.Size = 1000;
-                if (BaseTypeUid != null)
-                {
-                    BaseTypeUidParameter.Value = BaseTypeUid;
-                }
-                else
-                {
-                    BaseTypeUidParameter.Value = DBNull.Value;
-                }
+                BaseTypeUidParameter.Value = BaseTypeUid != null ? BaseTypeUid : DBNull.Value;
 
-                cmd.Parameters.Add(BaseTypeUidParameter);
+                _ = cmd.Parameters.Add(BaseTypeUidParameter);
 
                 DbParameter InterfacesParameter = cmd.CreateParameter();
                 InterfacesParameter.ParameterName = "Interfaces";
@@ -7455,23 +6036,16 @@ public partial class KBContext : DbContext
                     InterfacesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(InterfacesParameter);
+                _ = cmd.Parameters.Add(InterfacesParameter);
 
                 DbParameter ContainingTypeUidParameter = cmd.CreateParameter();
                 ContainingTypeUidParameter.ParameterName = "ContainingTypeUid";
                 ContainingTypeUidParameter.Direction = ParameterDirection.Input;
                 ContainingTypeUidParameter.DbType = DbType.String;
                 ContainingTypeUidParameter.Size = 1000;
-                if (ContainingTypeUid != null)
-                {
-                    ContainingTypeUidParameter.Value = ContainingTypeUid;
-                }
-                else
-                {
-                    ContainingTypeUidParameter.Value = DBNull.Value;
-                }
+                ContainingTypeUidParameter.Value = ContainingTypeUid != null ? ContainingTypeUid : DBNull.Value;
 
-                cmd.Parameters.Add(ContainingTypeUidParameter);
+                _ = cmd.Parameters.Add(ContainingTypeUidParameter);
 
                 DbParameter GenericParametersParameter = cmd.CreateParameter();
                 GenericParametersParameter.ParameterName = "GenericParameters";
@@ -7487,7 +6061,7 @@ public partial class KBContext : DbContext
                     GenericParametersParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(GenericParametersParameter);
+                _ = cmd.Parameters.Add(GenericParametersParameter);
 
                 DbParameter GenericConstraintsParameter = cmd.CreateParameter();
                 GenericConstraintsParameter.ParameterName = "GenericConstraints";
@@ -7503,7 +6077,7 @@ public partial class KBContext : DbContext
                     GenericConstraintsParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(GenericConstraintsParameter);
+                _ = cmd.Parameters.Add(GenericConstraintsParameter);
 
                 DbParameter SummaryParameter = cmd.CreateParameter();
                 SummaryParameter.ParameterName = "Summary";
@@ -7519,7 +6093,7 @@ public partial class KBContext : DbContext
                     SummaryParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SummaryParameter);
+                _ = cmd.Parameters.Add(SummaryParameter);
 
                 DbParameter RemarksParameter = cmd.CreateParameter();
                 RemarksParameter.ParameterName = "Remarks";
@@ -7535,7 +6109,7 @@ public partial class KBContext : DbContext
                     RemarksParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(RemarksParameter);
+                _ = cmd.Parameters.Add(RemarksParameter);
 
                 DbParameter AttributesParameter = cmd.CreateParameter();
                 AttributesParameter.ParameterName = "Attributes";
@@ -7551,7 +6125,7 @@ public partial class KBContext : DbContext
                     AttributesParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AttributesParameter);
+                _ = cmd.Parameters.Add(AttributesParameter);
 
                 DbParameter SourceFilePathParameter = cmd.CreateParameter();
                 SourceFilePathParameter.ParameterName = "SourceFilePath";
@@ -7567,7 +6141,7 @@ public partial class KBContext : DbContext
                     SourceFilePathParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceFilePathParameter);
+                _ = cmd.Parameters.Add(SourceFilePathParameter);
 
                 DbParameter SourceStartLineParameter = cmd.CreateParameter();
                 SourceStartLineParameter.ParameterName = "SourceStartLine";
@@ -7585,7 +6159,7 @@ public partial class KBContext : DbContext
                     SourceStartLineParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceStartLineParameter);
+                _ = cmd.Parameters.Add(SourceStartLineParameter);
 
                 DbParameter SourceEndLineParameter = cmd.CreateParameter();
                 SourceEndLineParameter.ParameterName = "SourceEndLine";
@@ -7603,8 +6177,8 @@ public partial class KBContext : DbContext
                     SourceEndLineParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceEndLineParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(SourceEndLineParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -7650,16 +6224,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter SourceSnapshotIdParameter = cmd.CreateParameter();
                 SourceSnapshotIdParameter.ParameterName = "SourceSnapshotId";
@@ -7675,7 +6242,7 @@ public partial class KBContext : DbContext
                     SourceSnapshotIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceSnapshotIdParameter);
+                _ = cmd.Parameters.Add(SourceSnapshotIdParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -7691,7 +6258,7 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter SourcePathParameter = cmd.CreateParameter();
                 SourcePathParameter.ParameterName = "SourcePath";
@@ -7707,39 +6274,25 @@ public partial class KBContext : DbContext
                     SourcePathParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourcePathParameter);
+                _ = cmd.Parameters.Add(SourcePathParameter);
 
                 DbParameter TitleParameter = cmd.CreateParameter();
                 TitleParameter.ParameterName = "Title";
                 TitleParameter.Direction = ParameterDirection.Input;
                 TitleParameter.DbType = DbType.String;
                 TitleParameter.Size = 400;
-                if (Title != null)
-                {
-                    TitleParameter.Value = Title;
-                }
-                else
-                {
-                    TitleParameter.Value = DBNull.Value;
-                }
+                TitleParameter.Value = Title != null ? Title : DBNull.Value;
 
-                cmd.Parameters.Add(TitleParameter);
+                _ = cmd.Parameters.Add(TitleParameter);
 
                 DbParameter LanguageParameter = cmd.CreateParameter();
                 LanguageParameter.ParameterName = "Language";
                 LanguageParameter.Direction = ParameterDirection.Input;
                 LanguageParameter.DbType = DbType.String;
                 LanguageParameter.Size = 200;
-                if (Language != null)
-                {
-                    LanguageParameter.Value = Language;
-                }
-                else
-                {
-                    LanguageParameter.Value = DBNull.Value;
-                }
+                LanguageParameter.Value = Language != null ? Language : DBNull.Value;
 
-                cmd.Parameters.Add(LanguageParameter);
+                _ = cmd.Parameters.Add(LanguageParameter);
 
                 DbParameter UrlParameter = cmd.CreateParameter();
                 UrlParameter.ParameterName = "Url";
@@ -7755,7 +6308,7 @@ public partial class KBContext : DbContext
                     UrlParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(UrlParameter);
+                _ = cmd.Parameters.Add(UrlParameter);
 
                 DbParameter RawMarkdownParameter = cmd.CreateParameter();
                 RawMarkdownParameter.ParameterName = "RawMarkdown";
@@ -7771,8 +6324,8 @@ public partial class KBContext : DbContext
                     RawMarkdownParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(RawMarkdownParameter);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(RawMarkdownParameter);
+                _ = cmd.ExecuteNonQuery();
             }
         }
         finally
@@ -7818,16 +6371,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter SourceSnapshotIdParameter = cmd.CreateParameter();
                 SourceSnapshotIdParameter.ParameterName = "SourceSnapshotId";
@@ -7843,7 +6389,7 @@ public partial class KBContext : DbContext
                     SourceSnapshotIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourceSnapshotIdParameter);
+                _ = cmd.Parameters.Add(SourceSnapshotIdParameter);
 
                 DbParameter IngestionRunIdParameter = cmd.CreateParameter();
                 IngestionRunIdParameter.ParameterName = "IngestionRunId";
@@ -7859,7 +6405,7 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
 
                 DbParameter SourcePathParameter = cmd.CreateParameter();
                 SourcePathParameter.ParameterName = "SourcePath";
@@ -7875,39 +6421,25 @@ public partial class KBContext : DbContext
                     SourcePathParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(SourcePathParameter);
+                _ = cmd.Parameters.Add(SourcePathParameter);
 
                 DbParameter TitleParameter = cmd.CreateParameter();
                 TitleParameter.ParameterName = "Title";
                 TitleParameter.Direction = ParameterDirection.Input;
                 TitleParameter.DbType = DbType.String;
                 TitleParameter.Size = 400;
-                if (Title != null)
-                {
-                    TitleParameter.Value = Title;
-                }
-                else
-                {
-                    TitleParameter.Value = DBNull.Value;
-                }
+                TitleParameter.Value = Title != null ? Title : DBNull.Value;
 
-                cmd.Parameters.Add(TitleParameter);
+                _ = cmd.Parameters.Add(TitleParameter);
 
                 DbParameter LanguageParameter = cmd.CreateParameter();
                 LanguageParameter.ParameterName = "Language";
                 LanguageParameter.Direction = ParameterDirection.Input;
                 LanguageParameter.DbType = DbType.String;
                 LanguageParameter.Size = 200;
-                if (Language != null)
-                {
-                    LanguageParameter.Value = Language;
-                }
-                else
-                {
-                    LanguageParameter.Value = DBNull.Value;
-                }
+                LanguageParameter.Value = Language != null ? Language : DBNull.Value;
 
-                cmd.Parameters.Add(LanguageParameter);
+                _ = cmd.Parameters.Add(LanguageParameter);
 
                 DbParameter UrlParameter = cmd.CreateParameter();
                 UrlParameter.ParameterName = "Url";
@@ -7923,7 +6455,7 @@ public partial class KBContext : DbContext
                     UrlParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(UrlParameter);
+                _ = cmd.Parameters.Add(UrlParameter);
 
                 DbParameter RawMarkdownParameter = cmd.CreateParameter();
                 RawMarkdownParameter.ParameterName = "RawMarkdown";
@@ -7939,8 +6471,8 @@ public partial class KBContext : DbContext
                     RawMarkdownParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(RawMarkdownParameter);
-                await cmd.ExecuteNonQueryAsync();
+                _ = cmd.Parameters.Add(RawMarkdownParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
             }
         }
         finally
@@ -7996,7 +6528,7 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     string[] fieldNames;
@@ -8004,57 +6536,41 @@ public partial class KBContext : DbContext
 
                     while (reader.Read())
                     {
-                        SpVerifyIngestionRunResult resultRow = new();
-                        if (fieldNames.Contains(@"category") && !reader.IsDBNull(reader.GetOrdinal(@"category")))
+                        SpVerifyIngestionRunResult resultRow = new()
                         {
-                            resultRow.Category = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"category")), typeof(string));
-                        }
-                        else
-                        {
-                            resultRow.Category = null;
-                        }
+                            Category = fieldNames.Contains(@"category") && !reader.IsDBNull(reader.GetOrdinal(@"category"))
+                                ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"category")), typeof(string))
+                                : null,
 
-                        if (fieldNames.Contains(@"detail") && !reader.IsDBNull(reader.GetOrdinal(@"detail")))
-                        {
-                            resultRow.Detail = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"detail")), typeof(string));
-                        }
-                        else
-                        {
-                            resultRow.Detail = null;
-                        }
+                            Detail = fieldNames.Contains(@"detail") && !reader.IsDBNull(reader.GetOrdinal(@"detail"))
+                                ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"detail")), typeof(string))
+                                : null
+                        };
 
                         result.SpVerifyIngestionRunResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
                     while (reader.Read())
                     {
-                        SpVerifyIngestionRunResult resultRow = new();
-                        if (fieldNames.Contains(@"category") && !reader.IsDBNull(reader.GetOrdinal(@"category")))
+                        SpVerifyIngestionRunResult resultRow = new()
                         {
-                            resultRow.Category = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"category")), typeof(string));
-                        }
-                        else
-                        {
-                            resultRow.Category = null;
-                        }
+                            Category = fieldNames.Contains(@"category") && !reader.IsDBNull(reader.GetOrdinal(@"category"))
+                                ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"category")), typeof(string))
+                                : null,
 
-                        if (fieldNames.Contains(@"detail") && !reader.IsDBNull(reader.GetOrdinal(@"detail")))
-                        {
-                            resultRow.Detail = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"detail")), typeof(string));
-                        }
-                        else
-                        {
-                            resultRow.Detail = null;
-                        }
+                            Detail = fieldNames.Contains(@"detail") && !reader.IsDBNull(reader.GetOrdinal(@"detail"))
+                                ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"detail")), typeof(string))
+                                : null
+                        };
 
                         result.SpVerifyIngestionRunResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
                 }
             }
         }
@@ -8113,7 +6629,7 @@ public partial class KBContext : DbContext
                     IngestionRunIdParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(IngestionRunIdParameter);
+                _ = cmd.Parameters.Add(IngestionRunIdParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     string[] fieldNames;
@@ -8121,57 +6637,41 @@ public partial class KBContext : DbContext
 
                     while (reader.Read())
                     {
-                        SpVerifyIngestionRunResult resultRow = new();
-                        if (fieldNames.Contains(@"category") && !reader.IsDBNull(reader.GetOrdinal(@"category")))
+                        SpVerifyIngestionRunResult resultRow = new()
                         {
-                            resultRow.Category = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"category")), typeof(string));
-                        }
-                        else
-                        {
-                            resultRow.Category = null;
-                        }
+                            Category = fieldNames.Contains(@"category") && !reader.IsDBNull(reader.GetOrdinal(@"category"))
+                                ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"category")), typeof(string))
+                                : null,
 
-                        if (fieldNames.Contains(@"detail") && !reader.IsDBNull(reader.GetOrdinal(@"detail")))
-                        {
-                            resultRow.Detail = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"detail")), typeof(string));
-                        }
-                        else
-                        {
-                            resultRow.Detail = null;
-                        }
+                            Detail = fieldNames.Contains(@"detail") && !reader.IsDBNull(reader.GetOrdinal(@"detail"))
+                                ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"detail")), typeof(string))
+                                : null
+                        };
 
                         result.SpVerifyIngestionRunResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
 
                     fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
 
                     while (reader.Read())
                     {
-                        SpVerifyIngestionRunResult resultRow = new();
-                        if (fieldNames.Contains(@"category") && !reader.IsDBNull(reader.GetOrdinal(@"category")))
+                        SpVerifyIngestionRunResult resultRow = new()
                         {
-                            resultRow.Category = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"category")), typeof(string));
-                        }
-                        else
-                        {
-                            resultRow.Category = null;
-                        }
+                            Category = fieldNames.Contains(@"category") && !reader.IsDBNull(reader.GetOrdinal(@"category"))
+                                ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"category")), typeof(string))
+                                : null,
 
-                        if (fieldNames.Contains(@"detail") && !reader.IsDBNull(reader.GetOrdinal(@"detail")))
-                        {
-                            resultRow.Detail = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"detail")), typeof(string));
-                        }
-                        else
-                        {
-                            resultRow.Detail = null;
-                        }
+                            Detail = fieldNames.Contains(@"detail") && !reader.IsDBNull(reader.GetOrdinal(@"detail"))
+                                ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"detail")), typeof(string))
+                                : null
+                        };
 
                         result.SpVerifyIngestionRunResults.Add(resultRow);
                     }
 
-                    reader.NextResult();
+                    _ = reader.NextResult();
                 }
             }
         }
@@ -8230,22 +6730,17 @@ public partial class KBContext : DbContext
                     InputParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(InputParameter);
+                _ = cmd.Parameters.Add(InputParameter);
 
                 DbParameter returnValueParameter = cmd.CreateParameter();
                 returnValueParameter.Direction = ParameterDirection.ReturnValue;
                 returnValueParameter.DbType = DbType.Binary;
                 returnValueParameter.Size = -1;
-                cmd.Parameters.Add(returnValueParameter);
-                cmd.ExecuteNonQuery();
-                if (returnValueParameter.Value != null && !(returnValueParameter.Value is DBNull))
-                {
-                    result = (byte[])Convert.ChangeType(returnValueParameter.Value, typeof(byte[]));
-                }
-                else
-                {
-                    result = default;
-                }
+                _ = cmd.Parameters.Add(returnValueParameter);
+                _ = cmd.ExecuteNonQuery();
+                result = returnValueParameter.Value is not null and not DBNull
+                    ? (byte[])Convert.ChangeType(returnValueParameter.Value, typeof(byte[]))
+                    : default;
             }
         }
         finally
@@ -8303,22 +6798,17 @@ public partial class KBContext : DbContext
                     InputParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(InputParameter);
+                _ = cmd.Parameters.Add(InputParameter);
 
                 DbParameter returnValueParameter = cmd.CreateParameter();
                 returnValueParameter.Direction = ParameterDirection.ReturnValue;
                 returnValueParameter.DbType = DbType.Binary;
                 returnValueParameter.Size = -1;
-                cmd.Parameters.Add(returnValueParameter);
-                await cmd.ExecuteNonQueryAsync();
-                if (returnValueParameter.Value != null && !(returnValueParameter.Value is DBNull))
-                {
-                    result = (byte[])Convert.ChangeType(returnValueParameter.Value, typeof(byte[]));
-                }
-                else
-                {
-                    result = default;
-                }
+                _ = cmd.Parameters.Add(returnValueParameter);
+                _ = await cmd.ExecuteNonQueryAsync();
+                result = returnValueParameter.Value is not null and not DBNull
+                    ? (byte[])Convert.ChangeType(returnValueParameter.Value, typeof(byte[]))
+                    : default;
             }
         }
         finally
@@ -8367,16 +6857,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter AsOfUtcParameter = cmd.CreateParameter();
                 AsOfUtcParameter.ParameterName = "AsOfUtc";
@@ -8392,7 +6875,7 @@ public partial class KBContext : DbContext
                     AsOfUtcParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AsOfUtcParameter);
+                _ = cmd.Parameters.Add(AsOfUtcParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -8414,50 +6897,25 @@ public partial class KBContext : DbContext
                             row.SourceSnapshotId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_snapshot_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("source_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_path")))
-                        {
-                            row.SourcePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourcePath = null;
-                        }
+                        row.SourcePath = fieldNames.Contains("source_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("title") && !reader.IsDBNull(reader.GetOrdinal(@"title")))
-                        {
-                            row.Title = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"title")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Title = null;
-                        }
+                        row.Title = fieldNames.Contains("title") && !reader.IsDBNull(reader.GetOrdinal(@"title"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"title")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language")))
-                        {
-                            row.Language = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Language = null;
-                        }
+                        row.Language = fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("url") && !reader.IsDBNull(reader.GetOrdinal(@"url")))
-                        {
-                            row.Url = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"url")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Url = null;
-                        }
+                        row.Url = fieldNames.Contains("url") && !reader.IsDBNull(reader.GetOrdinal(@"url"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"url")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("raw_markdown") && !reader.IsDBNull(reader.GetOrdinal(@"raw_markdown")))
-                        {
-                            row.RawMarkdown = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"raw_markdown")), typeof(string));
-                        }
-                        else
-                        {
-                            row.RawMarkdown = null;
-                        }
+                        row.RawMarkdown = fieldNames.Contains("raw_markdown") && !reader.IsDBNull(reader.GetOrdinal(@"raw_markdown"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"raw_markdown")), typeof(string))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -8474,51 +6932,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -8571,16 +7009,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter AsOfUtcParameter = cmd.CreateParameter();
                 AsOfUtcParameter.ParameterName = "AsOfUtc";
@@ -8596,7 +7027,7 @@ public partial class KBContext : DbContext
                     AsOfUtcParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AsOfUtcParameter);
+                _ = cmd.Parameters.Add(AsOfUtcParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -8618,50 +7049,25 @@ public partial class KBContext : DbContext
                             row.SourceSnapshotId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_snapshot_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("source_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_path")))
-                        {
-                            row.SourcePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourcePath = null;
-                        }
+                        row.SourcePath = fieldNames.Contains("source_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("title") && !reader.IsDBNull(reader.GetOrdinal(@"title")))
-                        {
-                            row.Title = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"title")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Title = null;
-                        }
+                        row.Title = fieldNames.Contains("title") && !reader.IsDBNull(reader.GetOrdinal(@"title"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"title")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language")))
-                        {
-                            row.Language = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Language = null;
-                        }
+                        row.Language = fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("url") && !reader.IsDBNull(reader.GetOrdinal(@"url")))
-                        {
-                            row.Url = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"url")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Url = null;
-                        }
+                        row.Url = fieldNames.Contains("url") && !reader.IsDBNull(reader.GetOrdinal(@"url"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"url")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("raw_markdown") && !reader.IsDBNull(reader.GetOrdinal(@"raw_markdown")))
-                        {
-                            row.RawMarkdown = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"raw_markdown")), typeof(string));
-                        }
-                        else
-                        {
-                            row.RawMarkdown = null;
-                        }
+                        row.RawMarkdown = fieldNames.Contains("raw_markdown") && !reader.IsDBNull(reader.GetOrdinal(@"raw_markdown"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"raw_markdown")), typeof(string))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -8678,51 +7084,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -8775,16 +7161,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter AsOfUtcParameter = cmd.CreateParameter();
                 AsOfUtcParameter.ParameterName = "AsOfUtc";
@@ -8800,7 +7179,7 @@ public partial class KBContext : DbContext
                     AsOfUtcParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AsOfUtcParameter);
+                _ = cmd.Parameters.Add(AsOfUtcParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -8812,14 +7191,9 @@ public partial class KBContext : DbContext
                             row.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("api_type_id") && !reader.IsDBNull(reader.GetOrdinal(@"api_type_id")))
-                        {
-                            row.ApiTypeId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_type_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.ApiTypeId = null;
-                        }
+                        row.ApiTypeId = fieldNames.Contains("api_type_id") && !reader.IsDBNull(reader.GetOrdinal(@"api_type_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_type_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("semantic_uid") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid")))
                         {
@@ -8831,41 +7205,21 @@ public partial class KBContext : DbContext
                             row.TruthRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"truth_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language")))
-                        {
-                            row.Language = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Language = null;
-                        }
+                        row.Language = fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("description") && !reader.IsDBNull(reader.GetOrdinal(@"description")))
-                        {
-                            row.Description = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"description")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Description = null;
-                        }
+                        row.Description = fieldNames.Contains("description") && !reader.IsDBNull(reader.GetOrdinal(@"description"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"description")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("tags") && !reader.IsDBNull(reader.GetOrdinal(@"tags")))
-                        {
-                            row.Tags = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"tags")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Tags = null;
-                        }
+                        row.Tags = fieldNames.Contains("tags") && !reader.IsDBNull(reader.GetOrdinal(@"tags"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"tags")), typeof(string))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -8882,51 +7236,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -8979,16 +7313,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter AsOfUtcParameter = cmd.CreateParameter();
                 AsOfUtcParameter.ParameterName = "AsOfUtc";
@@ -9004,7 +7331,7 @@ public partial class KBContext : DbContext
                     AsOfUtcParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AsOfUtcParameter);
+                _ = cmd.Parameters.Add(AsOfUtcParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -9016,14 +7343,9 @@ public partial class KBContext : DbContext
                             row.Id = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("api_type_id") && !reader.IsDBNull(reader.GetOrdinal(@"api_type_id")))
-                        {
-                            row.ApiTypeId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_type_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.ApiTypeId = null;
-                        }
+                        row.ApiTypeId = fieldNames.Contains("api_type_id") && !reader.IsDBNull(reader.GetOrdinal(@"api_type_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_type_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("semantic_uid") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid")))
                         {
@@ -9035,41 +7357,21 @@ public partial class KBContext : DbContext
                             row.TruthRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"truth_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language")))
-                        {
-                            row.Language = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Language = null;
-                        }
+                        row.Language = fieldNames.Contains("language") && !reader.IsDBNull(reader.GetOrdinal(@"language"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"language")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("description") && !reader.IsDBNull(reader.GetOrdinal(@"description")))
-                        {
-                            row.Description = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"description")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Description = null;
-                        }
+                        row.Description = fieldNames.Contains("description") && !reader.IsDBNull(reader.GetOrdinal(@"description"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"description")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("tags") && !reader.IsDBNull(reader.GetOrdinal(@"tags")))
-                        {
-                            row.Tags = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"tags")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Tags = null;
-                        }
+                        row.Tags = fieldNames.Contains("tags") && !reader.IsDBNull(reader.GetOrdinal(@"tags"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"tags")), typeof(string))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -9086,51 +7388,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -9183,16 +7465,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter AsOfUtcParameter = cmd.CreateParameter();
                 AsOfUtcParameter.ParameterName = "AsOfUtc";
@@ -9208,7 +7483,7 @@ public partial class KBContext : DbContext
                     AsOfUtcParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AsOfUtcParameter);
+                _ = cmd.Parameters.Add(AsOfUtcParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -9230,230 +7505,105 @@ public partial class KBContext : DbContext
                             row.ApiFeatureId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_feature_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind")))
-                        {
-                            row.Kind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Kind = null;
-                        }
+                        row.Kind = fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("method_kind") && !reader.IsDBNull(reader.GetOrdinal(@"method_kind")))
-                        {
-                            row.MethodKind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"method_kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.MethodKind = null;
-                        }
+                        row.MethodKind = fieldNames.Contains("method_kind") && !reader.IsDBNull(reader.GetOrdinal(@"method_kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"method_kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility")))
-                        {
-                            row.Accessibility = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Accessibility = null;
-                        }
+                        row.Accessibility = fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static")))
-                        {
-                            row.IsStatic = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsStatic = null;
-                        }
+                        row.IsStatic = fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_extension_method") && !reader.IsDBNull(reader.GetOrdinal(@"is_extension_method")))
-                        {
-                            row.IsExtensionMethod = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_extension_method")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsExtensionMethod = null;
-                        }
+                        row.IsExtensionMethod = fieldNames.Contains("is_extension_method") && !reader.IsDBNull(reader.GetOrdinal(@"is_extension_method"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_extension_method")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_async") && !reader.IsDBNull(reader.GetOrdinal(@"is_async")))
-                        {
-                            row.IsAsync = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_async")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAsync = null;
-                        }
+                        row.IsAsync = fieldNames.Contains("is_async") && !reader.IsDBNull(reader.GetOrdinal(@"is_async"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_async")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_virtual") && !reader.IsDBNull(reader.GetOrdinal(@"is_virtual")))
-                        {
-                            row.IsVirtual = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_virtual")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsVirtual = null;
-                        }
+                        row.IsVirtual = fieldNames.Contains("is_virtual") && !reader.IsDBNull(reader.GetOrdinal(@"is_virtual"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_virtual")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_override") && !reader.IsDBNull(reader.GetOrdinal(@"is_override")))
-                        {
-                            row.IsOverride = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_override")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsOverride = null;
-                        }
+                        row.IsOverride = fieldNames.Contains("is_override") && !reader.IsDBNull(reader.GetOrdinal(@"is_override"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_override")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract")))
-                        {
-                            row.IsAbstract = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAbstract = null;
-                        }
+                        row.IsAbstract = fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed")))
-                        {
-                            row.IsSealed = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsSealed = null;
-                        }
+                        row.IsSealed = fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_readonly") && !reader.IsDBNull(reader.GetOrdinal(@"is_readonly")))
-                        {
-                            row.IsReadonly = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_readonly")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsReadonly = null;
-                        }
+                        row.IsReadonly = fieldNames.Contains("is_readonly") && !reader.IsDBNull(reader.GetOrdinal(@"is_readonly"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_readonly")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_const") && !reader.IsDBNull(reader.GetOrdinal(@"is_const")))
-                        {
-                            row.IsConst = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_const")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsConst = null;
-                        }
+                        row.IsConst = fieldNames.Contains("is_const") && !reader.IsDBNull(reader.GetOrdinal(@"is_const"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_const")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_unsafe") && !reader.IsDBNull(reader.GetOrdinal(@"is_unsafe")))
-                        {
-                            row.IsUnsafe = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_unsafe")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsUnsafe = null;
-                        }
+                        row.IsUnsafe = fieldNames.Contains("is_unsafe") && !reader.IsDBNull(reader.GetOrdinal(@"is_unsafe"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_unsafe")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("return_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"return_type_uid")))
-                        {
-                            row.ReturnTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ReturnTypeUid = null;
-                        }
+                        row.ReturnTypeUid = fieldNames.Contains("return_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"return_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("return_nullable") && !reader.IsDBNull(reader.GetOrdinal(@"return_nullable")))
-                        {
-                            row.ReturnNullable = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_nullable")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ReturnNullable = null;
-                        }
+                        row.ReturnNullable = fieldNames.Contains("return_nullable") && !reader.IsDBNull(reader.GetOrdinal(@"return_nullable"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_nullable")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters")))
-                        {
-                            row.GenericParameters = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericParameters = null;
-                        }
+                        row.GenericParameters = fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints")))
-                        {
-                            row.GenericConstraints = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericConstraints = null;
-                        }
+                        row.GenericConstraints = fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary")))
-                        {
-                            row.Summary = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Summary = null;
-                        }
+                        row.Summary = fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks")))
-                        {
-                            row.Remarks = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Remarks = null;
-                        }
+                        row.Remarks = fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes")))
-                        {
-                            row.Attributes = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Attributes = null;
-                        }
+                        row.Attributes = fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path")))
-                        {
-                            row.SourceFilePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourceFilePath = null;
-                        }
+                        row.SourceFilePath = fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line")))
-                        {
-                            row.SourceStartLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceStartLine = null;
-                        }
+                        row.SourceStartLine = fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line")))
-                        {
-                            row.SourceEndLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceEndLine = null;
-                        }
+                        row.SourceEndLine = fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("member_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"member_uid_hash")))
-                        {
-                            row.MemberUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"member_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.MemberUidHash = null;
-                        }
+                        row.MemberUidHash = fieldNames.Contains("member_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"member_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"member_uid_hash")), typeof(byte[]))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -9465,60 +7615,35 @@ public partial class KBContext : DbContext
                             row.CreatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"created_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("updated_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"updated_ingestion_run_id")))
-                        {
-                            row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.UpdatedIngestionRunId = null;
-                        }
+                        row.UpdatedIngestionRunId = fieldNames.Contains("updated_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"updated_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid))
+                            : null;
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -9571,16 +7696,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter AsOfUtcParameter = cmd.CreateParameter();
                 AsOfUtcParameter.ParameterName = "AsOfUtc";
@@ -9596,7 +7714,7 @@ public partial class KBContext : DbContext
                     AsOfUtcParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AsOfUtcParameter);
+                _ = cmd.Parameters.Add(AsOfUtcParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -9618,230 +7736,105 @@ public partial class KBContext : DbContext
                             row.ApiFeatureId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"api_feature_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind")))
-                        {
-                            row.Kind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Kind = null;
-                        }
+                        row.Kind = fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("method_kind") && !reader.IsDBNull(reader.GetOrdinal(@"method_kind")))
-                        {
-                            row.MethodKind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"method_kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.MethodKind = null;
-                        }
+                        row.MethodKind = fieldNames.Contains("method_kind") && !reader.IsDBNull(reader.GetOrdinal(@"method_kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"method_kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility")))
-                        {
-                            row.Accessibility = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Accessibility = null;
-                        }
+                        row.Accessibility = fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static")))
-                        {
-                            row.IsStatic = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsStatic = null;
-                        }
+                        row.IsStatic = fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_extension_method") && !reader.IsDBNull(reader.GetOrdinal(@"is_extension_method")))
-                        {
-                            row.IsExtensionMethod = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_extension_method")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsExtensionMethod = null;
-                        }
+                        row.IsExtensionMethod = fieldNames.Contains("is_extension_method") && !reader.IsDBNull(reader.GetOrdinal(@"is_extension_method"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_extension_method")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_async") && !reader.IsDBNull(reader.GetOrdinal(@"is_async")))
-                        {
-                            row.IsAsync = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_async")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAsync = null;
-                        }
+                        row.IsAsync = fieldNames.Contains("is_async") && !reader.IsDBNull(reader.GetOrdinal(@"is_async"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_async")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_virtual") && !reader.IsDBNull(reader.GetOrdinal(@"is_virtual")))
-                        {
-                            row.IsVirtual = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_virtual")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsVirtual = null;
-                        }
+                        row.IsVirtual = fieldNames.Contains("is_virtual") && !reader.IsDBNull(reader.GetOrdinal(@"is_virtual"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_virtual")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_override") && !reader.IsDBNull(reader.GetOrdinal(@"is_override")))
-                        {
-                            row.IsOverride = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_override")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsOverride = null;
-                        }
+                        row.IsOverride = fieldNames.Contains("is_override") && !reader.IsDBNull(reader.GetOrdinal(@"is_override"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_override")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract")))
-                        {
-                            row.IsAbstract = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAbstract = null;
-                        }
+                        row.IsAbstract = fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed")))
-                        {
-                            row.IsSealed = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsSealed = null;
-                        }
+                        row.IsSealed = fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_readonly") && !reader.IsDBNull(reader.GetOrdinal(@"is_readonly")))
-                        {
-                            row.IsReadonly = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_readonly")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsReadonly = null;
-                        }
+                        row.IsReadonly = fieldNames.Contains("is_readonly") && !reader.IsDBNull(reader.GetOrdinal(@"is_readonly"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_readonly")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_const") && !reader.IsDBNull(reader.GetOrdinal(@"is_const")))
-                        {
-                            row.IsConst = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_const")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsConst = null;
-                        }
+                        row.IsConst = fieldNames.Contains("is_const") && !reader.IsDBNull(reader.GetOrdinal(@"is_const"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_const")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_unsafe") && !reader.IsDBNull(reader.GetOrdinal(@"is_unsafe")))
-                        {
-                            row.IsUnsafe = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_unsafe")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsUnsafe = null;
-                        }
+                        row.IsUnsafe = fieldNames.Contains("is_unsafe") && !reader.IsDBNull(reader.GetOrdinal(@"is_unsafe"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_unsafe")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("return_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"return_type_uid")))
-                        {
-                            row.ReturnTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ReturnTypeUid = null;
-                        }
+                        row.ReturnTypeUid = fieldNames.Contains("return_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"return_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("return_nullable") && !reader.IsDBNull(reader.GetOrdinal(@"return_nullable")))
-                        {
-                            row.ReturnNullable = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_nullable")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ReturnNullable = null;
-                        }
+                        row.ReturnNullable = fieldNames.Contains("return_nullable") && !reader.IsDBNull(reader.GetOrdinal(@"return_nullable"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"return_nullable")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters")))
-                        {
-                            row.GenericParameters = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericParameters = null;
-                        }
+                        row.GenericParameters = fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints")))
-                        {
-                            row.GenericConstraints = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericConstraints = null;
-                        }
+                        row.GenericConstraints = fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary")))
-                        {
-                            row.Summary = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Summary = null;
-                        }
+                        row.Summary = fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks")))
-                        {
-                            row.Remarks = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Remarks = null;
-                        }
+                        row.Remarks = fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes")))
-                        {
-                            row.Attributes = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Attributes = null;
-                        }
+                        row.Attributes = fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path")))
-                        {
-                            row.SourceFilePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourceFilePath = null;
-                        }
+                        row.SourceFilePath = fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line")))
-                        {
-                            row.SourceStartLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceStartLine = null;
-                        }
+                        row.SourceStartLine = fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line")))
-                        {
-                            row.SourceEndLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceEndLine = null;
-                        }
+                        row.SourceEndLine = fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("member_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"member_uid_hash")))
-                        {
-                            row.MemberUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"member_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.MemberUidHash = null;
-                        }
+                        row.MemberUidHash = fieldNames.Contains("member_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"member_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"member_uid_hash")), typeof(byte[]))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -9853,60 +7846,35 @@ public partial class KBContext : DbContext
                             row.CreatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"created_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("updated_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"updated_ingestion_run_id")))
-                        {
-                            row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.UpdatedIngestionRunId = null;
-                        }
+                        row.UpdatedIngestionRunId = fieldNames.Contains("updated_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"updated_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid))
+                            : null;
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -9959,16 +7927,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter AsOfUtcParameter = cmd.CreateParameter();
                 AsOfUtcParameter.ParameterName = "AsOfUtc";
@@ -9984,7 +7945,7 @@ public partial class KBContext : DbContext
                     AsOfUtcParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AsOfUtcParameter);
+                _ = cmd.Parameters.Add(AsOfUtcParameter);
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -10006,194 +7967,89 @@ public partial class KBContext : DbContext
                             row.SourceSnapshotId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_snapshot_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("namespace_path") && !reader.IsDBNull(reader.GetOrdinal(@"namespace_path")))
-                        {
-                            row.NamespacePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"namespace_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.NamespacePath = null;
-                        }
+                        row.NamespacePath = fieldNames.Contains("namespace_path") && !reader.IsDBNull(reader.GetOrdinal(@"namespace_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"namespace_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind")))
-                        {
-                            row.Kind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Kind = null;
-                        }
+                        row.Kind = fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility")))
-                        {
-                            row.Accessibility = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Accessibility = null;
-                        }
+                        row.Accessibility = fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static")))
-                        {
-                            row.IsStatic = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsStatic = null;
-                        }
+                        row.IsStatic = fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_generic") && !reader.IsDBNull(reader.GetOrdinal(@"is_generic")))
-                        {
-                            row.IsGeneric = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_generic")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsGeneric = null;
-                        }
+                        row.IsGeneric = fieldNames.Contains("is_generic") && !reader.IsDBNull(reader.GetOrdinal(@"is_generic"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_generic")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract")))
-                        {
-                            row.IsAbstract = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAbstract = null;
-                        }
+                        row.IsAbstract = fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed")))
-                        {
-                            row.IsSealed = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsSealed = null;
-                        }
+                        row.IsSealed = fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_record") && !reader.IsDBNull(reader.GetOrdinal(@"is_record")))
-                        {
-                            row.IsRecord = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_record")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsRecord = null;
-                        }
+                        row.IsRecord = fieldNames.Contains("is_record") && !reader.IsDBNull(reader.GetOrdinal(@"is_record"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_record")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_ref_like") && !reader.IsDBNull(reader.GetOrdinal(@"is_ref_like")))
-                        {
-                            row.IsRefLike = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_ref_like")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsRefLike = null;
-                        }
+                        row.IsRefLike = fieldNames.Contains("is_ref_like") && !reader.IsDBNull(reader.GetOrdinal(@"is_ref_like"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_ref_like")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("base_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"base_type_uid")))
-                        {
-                            row.BaseTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"base_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.BaseTypeUid = null;
-                        }
+                        row.BaseTypeUid = fieldNames.Contains("base_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"base_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"base_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("interfaces") && !reader.IsDBNull(reader.GetOrdinal(@"interfaces")))
-                        {
-                            row.Interfaces = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"interfaces")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Interfaces = null;
-                        }
+                        row.Interfaces = fieldNames.Contains("interfaces") && !reader.IsDBNull(reader.GetOrdinal(@"interfaces"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"interfaces")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("containing_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"containing_type_uid")))
-                        {
-                            row.ContainingTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"containing_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ContainingTypeUid = null;
-                        }
+                        row.ContainingTypeUid = fieldNames.Contains("containing_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"containing_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"containing_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters")))
-                        {
-                            row.GenericParameters = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericParameters = null;
-                        }
+                        row.GenericParameters = fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints")))
-                        {
-                            row.GenericConstraints = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericConstraints = null;
-                        }
+                        row.GenericConstraints = fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary")))
-                        {
-                            row.Summary = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Summary = null;
-                        }
+                        row.Summary = fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks")))
-                        {
-                            row.Remarks = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Remarks = null;
-                        }
+                        row.Remarks = fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes")))
-                        {
-                            row.Attributes = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Attributes = null;
-                        }
+                        row.Attributes = fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path")))
-                        {
-                            row.SourceFilePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourceFilePath = null;
-                        }
+                        row.SourceFilePath = fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line")))
-                        {
-                            row.SourceStartLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceStartLine = null;
-                        }
+                        row.SourceStartLine = fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line")))
-                        {
-                            row.SourceEndLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceEndLine = null;
-                        }
+                        row.SourceEndLine = fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -10210,51 +8066,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -10307,16 +8143,9 @@ public partial class KBContext : DbContext
                 SemanticUidParameter.Direction = ParameterDirection.Input;
                 SemanticUidParameter.DbType = DbType.String;
                 SemanticUidParameter.Size = 1000;
-                if (SemanticUid != null)
-                {
-                    SemanticUidParameter.Value = SemanticUid;
-                }
-                else
-                {
-                    SemanticUidParameter.Value = DBNull.Value;
-                }
+                SemanticUidParameter.Value = SemanticUid != null ? SemanticUid : DBNull.Value;
 
-                cmd.Parameters.Add(SemanticUidParameter);
+                _ = cmd.Parameters.Add(SemanticUidParameter);
 
                 DbParameter AsOfUtcParameter = cmd.CreateParameter();
                 AsOfUtcParameter.ParameterName = "AsOfUtc";
@@ -10332,7 +8161,7 @@ public partial class KBContext : DbContext
                     AsOfUtcParameter.Value = DBNull.Value;
                 }
 
-                cmd.Parameters.Add(AsOfUtcParameter);
+                _ = cmd.Parameters.Add(AsOfUtcParameter);
                 using (IDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     var fieldNames = Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetName(i)).ToArray();
@@ -10354,194 +8183,89 @@ public partial class KBContext : DbContext
                             row.SourceSnapshotId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_snapshot_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name")))
-                        {
-                            row.Name = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Name = null;
-                        }
+                        row.Name = fieldNames.Contains("name") && !reader.IsDBNull(reader.GetOrdinal(@"name"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"name")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("namespace_path") && !reader.IsDBNull(reader.GetOrdinal(@"namespace_path")))
-                        {
-                            row.NamespacePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"namespace_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.NamespacePath = null;
-                        }
+                        row.NamespacePath = fieldNames.Contains("namespace_path") && !reader.IsDBNull(reader.GetOrdinal(@"namespace_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"namespace_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind")))
-                        {
-                            row.Kind = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Kind = null;
-                        }
+                        row.Kind = fieldNames.Contains("kind") && !reader.IsDBNull(reader.GetOrdinal(@"kind"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"kind")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility")))
-                        {
-                            row.Accessibility = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Accessibility = null;
-                        }
+                        row.Accessibility = fieldNames.Contains("accessibility") && !reader.IsDBNull(reader.GetOrdinal(@"accessibility"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"accessibility")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static")))
-                        {
-                            row.IsStatic = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsStatic = null;
-                        }
+                        row.IsStatic = fieldNames.Contains("is_static") && !reader.IsDBNull(reader.GetOrdinal(@"is_static"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_static")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_generic") && !reader.IsDBNull(reader.GetOrdinal(@"is_generic")))
-                        {
-                            row.IsGeneric = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_generic")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsGeneric = null;
-                        }
+                        row.IsGeneric = fieldNames.Contains("is_generic") && !reader.IsDBNull(reader.GetOrdinal(@"is_generic"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_generic")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract")))
-                        {
-                            row.IsAbstract = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsAbstract = null;
-                        }
+                        row.IsAbstract = fieldNames.Contains("is_abstract") && !reader.IsDBNull(reader.GetOrdinal(@"is_abstract"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_abstract")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed")))
-                        {
-                            row.IsSealed = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsSealed = null;
-                        }
+                        row.IsSealed = fieldNames.Contains("is_sealed") && !reader.IsDBNull(reader.GetOrdinal(@"is_sealed"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_sealed")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_record") && !reader.IsDBNull(reader.GetOrdinal(@"is_record")))
-                        {
-                            row.IsRecord = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_record")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsRecord = null;
-                        }
+                        row.IsRecord = fieldNames.Contains("is_record") && !reader.IsDBNull(reader.GetOrdinal(@"is_record"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_record")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("is_ref_like") && !reader.IsDBNull(reader.GetOrdinal(@"is_ref_like")))
-                        {
-                            row.IsRefLike = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_ref_like")), typeof(bool));
-                        }
-                        else
-                        {
-                            row.IsRefLike = null;
-                        }
+                        row.IsRefLike = fieldNames.Contains("is_ref_like") && !reader.IsDBNull(reader.GetOrdinal(@"is_ref_like"))
+                            ? (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_ref_like")), typeof(bool))
+                            : null;
 
-                        if (fieldNames.Contains("base_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"base_type_uid")))
-                        {
-                            row.BaseTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"base_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.BaseTypeUid = null;
-                        }
+                        row.BaseTypeUid = fieldNames.Contains("base_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"base_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"base_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("interfaces") && !reader.IsDBNull(reader.GetOrdinal(@"interfaces")))
-                        {
-                            row.Interfaces = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"interfaces")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Interfaces = null;
-                        }
+                        row.Interfaces = fieldNames.Contains("interfaces") && !reader.IsDBNull(reader.GetOrdinal(@"interfaces"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"interfaces")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("containing_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"containing_type_uid")))
-                        {
-                            row.ContainingTypeUid = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"containing_type_uid")), typeof(string));
-                        }
-                        else
-                        {
-                            row.ContainingTypeUid = null;
-                        }
+                        row.ContainingTypeUid = fieldNames.Contains("containing_type_uid") && !reader.IsDBNull(reader.GetOrdinal(@"containing_type_uid"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"containing_type_uid")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters")))
-                        {
-                            row.GenericParameters = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericParameters = null;
-                        }
+                        row.GenericParameters = fieldNames.Contains("generic_parameters") && !reader.IsDBNull(reader.GetOrdinal(@"generic_parameters"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_parameters")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints")))
-                        {
-                            row.GenericConstraints = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string));
-                        }
-                        else
-                        {
-                            row.GenericConstraints = null;
-                        }
+                        row.GenericConstraints = fieldNames.Contains("generic_constraints") && !reader.IsDBNull(reader.GetOrdinal(@"generic_constraints"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"generic_constraints")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary")))
-                        {
-                            row.Summary = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Summary = null;
-                        }
+                        row.Summary = fieldNames.Contains("summary") && !reader.IsDBNull(reader.GetOrdinal(@"summary"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"summary")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks")))
-                        {
-                            row.Remarks = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Remarks = null;
-                        }
+                        row.Remarks = fieldNames.Contains("remarks") && !reader.IsDBNull(reader.GetOrdinal(@"remarks"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"remarks")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes")))
-                        {
-                            row.Attributes = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string));
-                        }
-                        else
-                        {
-                            row.Attributes = null;
-                        }
+                        row.Attributes = fieldNames.Contains("attributes") && !reader.IsDBNull(reader.GetOrdinal(@"attributes"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"attributes")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path")))
-                        {
-                            row.SourceFilePath = (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string));
-                        }
-                        else
-                        {
-                            row.SourceFilePath = null;
-                        }
+                        row.SourceFilePath = fieldNames.Contains("source_file_path") && !reader.IsDBNull(reader.GetOrdinal(@"source_file_path"))
+                            ? (string)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_file_path")), typeof(string))
+                            : null;
 
-                        if (fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line")))
-                        {
-                            row.SourceStartLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceStartLine = null;
-                        }
+                        row.SourceStartLine = fieldNames.Contains("source_start_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_start_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_start_line")), typeof(int))
+                            : null;
 
-                        if (fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line")))
-                        {
-                            row.SourceEndLine = (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int));
-                        }
-                        else
-                        {
-                            row.SourceEndLine = null;
-                        }
+                        row.SourceEndLine = fieldNames.Contains("source_end_line") && !reader.IsDBNull(reader.GetOrdinal(@"source_end_line"))
+                            ? (int)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"source_end_line")), typeof(int))
+                            : null;
 
                         if (fieldNames.Contains("version_number") && !reader.IsDBNull(reader.GetOrdinal(@"version_number")))
                         {
@@ -10558,51 +8282,31 @@ public partial class KBContext : DbContext
                             row.UpdatedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"updated_ingestion_run_id")), typeof(Guid));
                         }
 
-                        if (fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id")))
-                        {
-                            row.RemovedIngestionRunId = (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid));
-                        }
-                        else
-                        {
-                            row.RemovedIngestionRunId = null;
-                        }
+                        row.RemovedIngestionRunId = fieldNames.Contains("removed_ingestion_run_id") && !reader.IsDBNull(reader.GetOrdinal(@"removed_ingestion_run_id"))
+                            ? (Guid)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"removed_ingestion_run_id")), typeof(Guid))
+                            : null;
 
                         if (fieldNames.Contains("valid_from_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_from_utc")))
                         {
                             row.ValidFromUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_from_utc")), typeof(DateTime));
                         }
 
-                        if (fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc")))
-                        {
-                            row.ValidToUtc = (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime));
-                        }
-                        else
-                        {
-                            row.ValidToUtc = null;
-                        }
+                        row.ValidToUtc = fieldNames.Contains("valid_to_utc") && !reader.IsDBNull(reader.GetOrdinal(@"valid_to_utc"))
+                            ? (DateTime)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"valid_to_utc")), typeof(DateTime))
+                            : null;
 
                         if (fieldNames.Contains("is_active") && !reader.IsDBNull(reader.GetOrdinal(@"is_active")))
                         {
                             row.IsActive = (bool)Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"is_active")), typeof(bool));
                         }
 
-                        if (fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash")))
-                        {
-                            row.ContentHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.ContentHash = null;
-                        }
+                        row.ContentHash = fieldNames.Contains("content_hash") && !reader.IsDBNull(reader.GetOrdinal(@"content_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"content_hash")), typeof(byte[]))
+                            : null;
 
-                        if (fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash")))
-                        {
-                            row.SemanticUidHash = (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]));
-                        }
-                        else
-                        {
-                            row.SemanticUidHash = null;
-                        }
+                        row.SemanticUidHash = fieldNames.Contains("semantic_uid_hash") && !reader.IsDBNull(reader.GetOrdinal(@"semantic_uid_hash"))
+                            ? (byte[])Convert.ChangeType(reader.GetValue(reader.GetOrdinal(@"semantic_uid_hash")), typeof(byte[]))
+                            : null;
 
                         result.Add(row);
                     }
@@ -10628,26 +8332,26 @@ public partial class KBContext : DbContext
 
     private void ApiFeatureMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ApiFeature>().ToTable(@"api_feature", @"dbo");
-        modelBuilder.Entity<ApiFeature>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ApiFeature>().Property(x => x.ApiTypeId).HasColumnName(@"api_type_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiFeature>().Property(x => x.TruthRunId).HasColumnName(@"truth_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<ApiFeature>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiFeature>().Property(x => x.Description).HasColumnName(@"description").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.Tags).HasColumnName(@"tags").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiFeature>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<ApiFeature>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
-        modelBuilder.Entity<ApiFeature>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<ApiFeature>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
-        modelBuilder.Entity<ApiFeature>().HasKey(@"Id");
-        modelBuilder.Entity<ApiFeature>().HasIndex(@"SemanticUid", @"VersionNumber").IsUnique().HasDatabaseName(@"uq_api_feature_semantic_version");
+        _ = modelBuilder.Entity<ApiFeature>().ToTable(@"api_feature", @"dbo");
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.ApiTypeId).HasColumnName(@"api_type_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.TruthRunId).HasColumnName(@"truth_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.Description).HasColumnName(@"description").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.Tags).HasColumnName(@"tags").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiFeature>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiFeature>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ApiFeature>().HasIndex(@"SemanticUid", @"VersionNumber").IsUnique().HasDatabaseName(@"uq_api_feature_semantic_version");
     }
 
 
@@ -10667,47 +8371,47 @@ public partial class KBContext : DbContext
 
     private void ApiMemberMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ApiMember>().ToTable(@"api_member", @"dbo");
-        modelBuilder.Entity<ApiMember>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ApiMember>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiMember>().Property(x => x.ApiFeatureId).HasColumnName(@"api_feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<ApiMember>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiMember>().Property(x => x.MethodKind).HasColumnName(@"method_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiMember>().Property(x => x.Accessibility).HasColumnName(@"accessibility").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsStatic).HasColumnName(@"is_static").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsExtensionMethod).HasColumnName(@"is_extension_method").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsAsync).HasColumnName(@"is_async").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsVirtual).HasColumnName(@"is_virtual").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsOverride).HasColumnName(@"is_override").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsAbstract).HasColumnName(@"is_abstract").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsSealed).HasColumnName(@"is_sealed").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsReadonly).HasColumnName(@"is_readonly").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsConst).HasColumnName(@"is_const").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsUnsafe).HasColumnName(@"is_unsafe").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.ReturnTypeUid).HasColumnName(@"return_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiMember>().Property(x => x.ReturnNullable).HasColumnName(@"return_nullable").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<ApiMember>().Property(x => x.GenericParameters).HasColumnName(@"generic_parameters").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.GenericConstraints).HasColumnName(@"generic_constraints").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.Remarks).HasColumnName(@"remarks").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.Attributes).HasColumnName(@"attributes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.SourceFilePath).HasColumnName(@"source_file_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.SourceStartLine).HasColumnName(@"source_start_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiMember>().Property(x => x.SourceEndLine).HasColumnName(@"source_end_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiMember>().Property(x => x.MemberUidHash).HasColumnName(@"member_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<ApiMember>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiMember>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMember>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
-        modelBuilder.Entity<ApiMember>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<ApiMember>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
-        modelBuilder.Entity<ApiMember>().HasKey(@"Id");
-        modelBuilder.Entity<ApiMember>().HasIndex(@"ApiFeatureId", @"MemberUidHash").IsUnique().HasDatabaseName(@"ix_api_member_type_hash");
-        modelBuilder.Entity<ApiMember>().HasIndex(@"VersionNumber", @"SemanticUidHash").IsUnique().HasDatabaseName(@"uq_api_member_semantic_version");
+        _ = modelBuilder.Entity<ApiMember>().ToTable(@"api_member", @"dbo");
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.ApiFeatureId).HasColumnName(@"api_feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.MethodKind).HasColumnName(@"method_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.Accessibility).HasColumnName(@"accessibility").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsStatic).HasColumnName(@"is_static").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsExtensionMethod).HasColumnName(@"is_extension_method").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsAsync).HasColumnName(@"is_async").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsVirtual).HasColumnName(@"is_virtual").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsOverride).HasColumnName(@"is_override").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsAbstract).HasColumnName(@"is_abstract").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsSealed).HasColumnName(@"is_sealed").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsReadonly).HasColumnName(@"is_readonly").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsConst).HasColumnName(@"is_const").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsUnsafe).HasColumnName(@"is_unsafe").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.ReturnTypeUid).HasColumnName(@"return_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.ReturnNullable).HasColumnName(@"return_nullable").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.GenericParameters).HasColumnName(@"generic_parameters").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.GenericConstraints).HasColumnName(@"generic_constraints").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.Remarks).HasColumnName(@"remarks").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.Attributes).HasColumnName(@"attributes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.SourceFilePath).HasColumnName(@"source_file_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.SourceStartLine).HasColumnName(@"source_start_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.SourceEndLine).HasColumnName(@"source_end_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.MemberUidHash).HasColumnName(@"member_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiMember>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiMember>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ApiMember>().HasIndex(@"ApiFeatureId", @"MemberUidHash").IsUnique().HasDatabaseName(@"ix_api_member_type_hash");
+        _ = modelBuilder.Entity<ApiMember>().HasIndex(@"VersionNumber", @"SemanticUidHash").IsUnique().HasDatabaseName(@"uq_api_member_semantic_version");
     }
 
 
@@ -10727,16 +8431,16 @@ public partial class KBContext : DbContext
 
     private void ApiMemberDiffMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ApiMemberDiff>().ToTable(@"api_member_diff", @"dbo");
-        modelBuilder.Entity<ApiMemberDiff>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ApiMemberDiff>().Property(x => x.SnapshotDiffId).HasColumnName(@"snapshot_diff_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiMemberDiff>().Property(x => x.MemberUid).HasColumnName(@"member_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiMemberDiff>().Property(x => x.ChangeKind).HasColumnName(@"change_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiMemberDiff>().Property(x => x.OldSignature).HasColumnName(@"old_signature").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMemberDiff>().Property(x => x.NewSignature).HasColumnName(@"new_signature").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMemberDiff>().Property(x => x.Breaking).HasColumnName(@"breaking").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMemberDiff>().Property(x => x.DetailJson).HasColumnName(@"detail_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiMemberDiff>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ApiMemberDiff>().ToTable(@"api_member_diff", @"dbo");
+        _ = modelBuilder.Entity<ApiMemberDiff>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ApiMemberDiff>().Property(x => x.SnapshotDiffId).HasColumnName(@"snapshot_diff_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMemberDiff>().Property(x => x.MemberUid).HasColumnName(@"member_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiMemberDiff>().Property(x => x.ChangeKind).HasColumnName(@"change_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiMemberDiff>().Property(x => x.OldSignature).HasColumnName(@"old_signature").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMemberDiff>().Property(x => x.NewSignature).HasColumnName(@"new_signature").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMemberDiff>().Property(x => x.Breaking).HasColumnName(@"breaking").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMemberDiff>().Property(x => x.DetailJson).HasColumnName(@"detail_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiMemberDiff>().HasKey(@"Id");
     }
 
 
@@ -10756,27 +8460,27 @@ public partial class KBContext : DbContext
 
     private void ApiParameterMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ApiParameter>().ToTable(@"api_parameter", @"dbo");
-        modelBuilder.Entity<ApiParameter>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ApiParameter>().Property(x => x.ApiMemberId).HasColumnName(@"api_member_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiParameter>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiParameter>().Property(x => x.TypeUid).HasColumnName(@"type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiParameter>().Property(x => x.NullableAnnotation).HasColumnName(@"nullable_annotation").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<ApiParameter>().Property(x => x.Position).HasColumnName(@"position").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiParameter>().Property(x => x.Modifier).HasColumnName(@"modifier").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<ApiParameter>().Property(x => x.HasDefaultValue).HasColumnName(@"has_default_value").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiParameter>().Property(x => x.DefaultValueLiteral).HasColumnName(@"default_value_literal").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiParameter>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiParameter>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiParameter>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiParameter>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<ApiParameter>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiParameter>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<ApiParameter>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
-        modelBuilder.Entity<ApiParameter>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<ApiParameter>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<ApiParameter>().HasKey(@"Id");
-        modelBuilder.Entity<ApiParameter>().HasIndex(@"ApiMemberId", @"Position", @"VersionNumber").IsUnique().HasDatabaseName(@"uq_api_parameter_member_position_version");
+        _ = modelBuilder.Entity<ApiParameter>().ToTable(@"api_parameter", @"dbo");
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.ApiMemberId).HasColumnName(@"api_member_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.TypeUid).HasColumnName(@"type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.NullableAnnotation).HasColumnName(@"nullable_annotation").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.Position).HasColumnName(@"position").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.Modifier).HasColumnName(@"modifier").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.HasDefaultValue).HasColumnName(@"has_default_value").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.DefaultValueLiteral).HasColumnName(@"default_value_literal").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiParameter>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiParameter>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ApiParameter>().HasIndex(@"ApiMemberId", @"Position", @"VersionNumber").IsUnique().HasDatabaseName(@"uq_api_parameter_member_position_version");
     }
 
 
@@ -10796,42 +8500,42 @@ public partial class KBContext : DbContext
 
     private void ApiTypeMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ApiType>().ToTable(@"api_type", @"dbo");
-        modelBuilder.Entity<ApiType>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ApiType>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiType>().Property(x => x.SourceSnapshotId).HasColumnName(@"source_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<ApiType>().Property(x => x.NamespacePath).HasColumnName(@"namespace_path").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiType>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiType>().Property(x => x.Accessibility).HasColumnName(@"accessibility").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiType>().Property(x => x.IsStatic).HasColumnName(@"is_static").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.IsGeneric).HasColumnName(@"is_generic").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.IsAbstract).HasColumnName(@"is_abstract").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.IsSealed).HasColumnName(@"is_sealed").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.IsRecord).HasColumnName(@"is_record").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.IsRefLike).HasColumnName(@"is_ref_like").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.BaseTypeUid).HasColumnName(@"base_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiType>().Property(x => x.Interfaces).HasColumnName(@"interfaces").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.ContainingTypeUid).HasColumnName(@"containing_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiType>().Property(x => x.GenericParameters).HasColumnName(@"generic_parameters").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.GenericConstraints).HasColumnName(@"generic_constraints").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.Remarks).HasColumnName(@"remarks").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.Attributes).HasColumnName(@"attributes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.SourceFilePath).HasColumnName(@"source_file_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.SourceStartLine).HasColumnName(@"source_start_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiType>().Property(x => x.SourceEndLine).HasColumnName(@"source_end_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiType>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ApiType>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<ApiType>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
-        modelBuilder.Entity<ApiType>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<ApiType>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
-        modelBuilder.Entity<ApiType>().HasKey(@"Id");
-        modelBuilder.Entity<ApiType>().HasIndex(@"VersionNumber", @"SemanticUidHash").IsUnique().HasDatabaseName(@"uq_api_type_semantic_version");
+        _ = modelBuilder.Entity<ApiType>().ToTable(@"api_type", @"dbo");
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.SourceSnapshotId).HasColumnName(@"source_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.NamespacePath).HasColumnName(@"namespace_path").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.Accessibility).HasColumnName(@"accessibility").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.IsStatic).HasColumnName(@"is_static").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.IsGeneric).HasColumnName(@"is_generic").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.IsAbstract).HasColumnName(@"is_abstract").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.IsSealed).HasColumnName(@"is_sealed").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.IsRecord).HasColumnName(@"is_record").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.IsRefLike).HasColumnName(@"is_ref_like").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.BaseTypeUid).HasColumnName(@"base_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.Interfaces).HasColumnName(@"interfaces").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.ContainingTypeUid).HasColumnName(@"containing_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.GenericParameters).HasColumnName(@"generic_parameters").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.GenericConstraints).HasColumnName(@"generic_constraints").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.Remarks).HasColumnName(@"remarks").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.Attributes).HasColumnName(@"attributes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.SourceFilePath).HasColumnName(@"source_file_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.SourceStartLine).HasColumnName(@"source_start_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.SourceEndLine).HasColumnName(@"source_end_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiType>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
+        _ = modelBuilder.Entity<ApiType>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ApiType>().HasIndex(@"VersionNumber", @"SemanticUidHash").IsUnique().HasDatabaseName(@"uq_api_type_semantic_version");
     }
 
 
@@ -10851,13 +8555,13 @@ public partial class KBContext : DbContext
 
     private void ApiTypeDiffMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ApiTypeDiff>().ToTable(@"api_type_diff", @"dbo");
-        modelBuilder.Entity<ApiTypeDiff>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ApiTypeDiff>().Property(x => x.SnapshotDiffId).HasColumnName(@"snapshot_diff_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ApiTypeDiff>().Property(x => x.TypeUid).HasColumnName(@"type_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ApiTypeDiff>().Property(x => x.ChangeKind).HasColumnName(@"change_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ApiTypeDiff>().Property(x => x.DetailJson).HasColumnName(@"detail_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ApiTypeDiff>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ApiTypeDiff>().ToTable(@"api_type_diff", @"dbo");
+        _ = modelBuilder.Entity<ApiTypeDiff>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ApiTypeDiff>().Property(x => x.SnapshotDiffId).HasColumnName(@"snapshot_diff_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiTypeDiff>().Property(x => x.TypeUid).HasColumnName(@"type_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ApiTypeDiff>().Property(x => x.ChangeKind).HasColumnName(@"change_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ApiTypeDiff>().Property(x => x.DetailJson).HasColumnName(@"detail_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ApiTypeDiff>().HasKey(@"Id");
     }
 
 
@@ -10877,25 +8581,25 @@ public partial class KBContext : DbContext
 
     private void CodeBlockMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<CodeBlock>().ToTable(@"code_block", @"dbo");
-        modelBuilder.Entity<CodeBlock>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<CodeBlock>().Property(x => x.DocSectionId).HasColumnName(@"doc_section_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<CodeBlock>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<CodeBlock>().Property(x => x.Content).HasColumnName(@"content").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.DeclaredPackages).HasColumnName(@"declared_packages").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.Tags).HasColumnName(@"tags").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.InlineComments).HasColumnName(@"inline_comments").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<CodeBlock>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<CodeBlock>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
-        modelBuilder.Entity<CodeBlock>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<CodeBlock>().HasKey(@"Id");
-        modelBuilder.Entity<CodeBlock>().HasIndex(@"SemanticUid", @"VersionNumber").IsUnique().HasDatabaseName(@"ix_code_block_semantic_version");
+        _ = modelBuilder.Entity<CodeBlock>().ToTable(@"code_block", @"dbo");
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.DocSectionId).HasColumnName(@"doc_section_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.Content).HasColumnName(@"content").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.DeclaredPackages).HasColumnName(@"declared_packages").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.Tags).HasColumnName(@"tags").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.InlineComments).HasColumnName(@"inline_comments").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
+        _ = modelBuilder.Entity<CodeBlock>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<CodeBlock>().HasKey(@"Id");
+        _ = modelBuilder.Entity<CodeBlock>().HasIndex(@"SemanticUid", @"VersionNumber").IsUnique().HasDatabaseName(@"ix_code_block_semantic_version");
     }
 
 
@@ -10915,26 +8619,26 @@ public partial class KBContext : DbContext
 
     private void DocPageMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<DocPage>().ToTable(@"doc_page", @"dbo");
-        modelBuilder.Entity<DocPage>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<DocPage>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<DocPage>().Property(x => x.SourceSnapshotId).HasColumnName(@"source_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.SourcePath).HasColumnName(@"source_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.Title).HasColumnName(@"title").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<DocPage>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<DocPage>().Property(x => x.Url).HasColumnName(@"url").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.RawMarkdown).HasColumnName(@"raw_markdown").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<DocPage>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<DocPage>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
-        modelBuilder.Entity<DocPage>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<DocPage>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
-        modelBuilder.Entity<DocPage>().HasKey(@"Id");
-        modelBuilder.Entity<DocPage>().HasIndex(@"SemanticUid", @"VersionNumber").IsUnique().HasDatabaseName(@"uq_doc_page_semantic_version");
+        _ = modelBuilder.Entity<DocPage>().ToTable(@"doc_page", @"dbo");
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.SourceSnapshotId).HasColumnName(@"source_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.SourcePath).HasColumnName(@"source_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.Title).HasColumnName(@"title").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.Url).HasColumnName(@"url").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.RawMarkdown).HasColumnName(@"raw_markdown").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<DocPage>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
+        _ = modelBuilder.Entity<DocPage>().HasKey(@"Id");
+        _ = modelBuilder.Entity<DocPage>().HasIndex(@"SemanticUid", @"VersionNumber").IsUnique().HasDatabaseName(@"uq_doc_page_semantic_version");
     }
 
 
@@ -10954,13 +8658,13 @@ public partial class KBContext : DbContext
 
     private void DocPageDiffMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<DocPageDiff>().ToTable(@"doc_page_diff", @"dbo");
-        modelBuilder.Entity<DocPageDiff>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<DocPageDiff>().Property(x => x.SnapshotDiffId).HasColumnName(@"snapshot_diff_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocPageDiff>().Property(x => x.DocUid).HasColumnName(@"doc_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<DocPageDiff>().Property(x => x.ChangeKind).HasColumnName(@"change_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<DocPageDiff>().Property(x => x.DetailJson).HasColumnName(@"detail_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<DocPageDiff>().HasKey(@"Id");
+        _ = modelBuilder.Entity<DocPageDiff>().ToTable(@"doc_page_diff", @"dbo");
+        _ = modelBuilder.Entity<DocPageDiff>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<DocPageDiff>().Property(x => x.SnapshotDiffId).HasColumnName(@"snapshot_diff_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPageDiff>().Property(x => x.DocUid).HasColumnName(@"doc_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<DocPageDiff>().Property(x => x.ChangeKind).HasColumnName(@"change_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<DocPageDiff>().Property(x => x.DetailJson).HasColumnName(@"detail_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocPageDiff>().HasKey(@"Id");
     }
 
 
@@ -10980,25 +8684,25 @@ public partial class KBContext : DbContext
 
     private void DocSectionMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<DocSection>().ToTable(@"doc_section", @"dbo");
-        modelBuilder.Entity<DocSection>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<DocSection>().Property(x => x.DocPageId).HasColumnName(@"doc_page_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocSection>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<DocSection>().Property(x => x.Heading).HasColumnName(@"heading").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<DocSection>().Property(x => x.Level).HasColumnName(@"level").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<DocSection>().Property(x => x.ContentMarkdown).HasColumnName(@"content_markdown").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<DocSection>().Property(x => x.OrderIndex).HasColumnName(@"order_index").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<DocSection>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<DocSection>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocSection>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocSection>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<DocSection>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<DocSection>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<DocSection>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
-        modelBuilder.Entity<DocSection>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<DocSection>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
-        modelBuilder.Entity<DocSection>().HasKey(@"Id");
-        modelBuilder.Entity<DocSection>().HasIndex(@"SemanticUid", @"VersionNumber").IsUnique().HasDatabaseName(@"uq_doc_section_semantic_version");
+        _ = modelBuilder.Entity<DocSection>().ToTable(@"doc_section", @"dbo");
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.DocPageId).HasColumnName(@"doc_page_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.Heading).HasColumnName(@"heading").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.Level).HasColumnName(@"level").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.ContentMarkdown).HasColumnName(@"content_markdown").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.OrderIndex).HasColumnName(@"order_index").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever().HasDefaultValueSql(@"1");
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<DocSection>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
+        _ = modelBuilder.Entity<DocSection>().HasKey(@"Id");
+        _ = modelBuilder.Entity<DocSection>().HasIndex(@"SemanticUid", @"VersionNumber").IsUnique().HasDatabaseName(@"uq_doc_section_semantic_version");
     }
 
 
@@ -11018,16 +8722,16 @@ public partial class KBContext : DbContext
 
     private void ExecutionResultMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ExecutionResult>().ToTable(@"execution_result", @"dbo");
-        modelBuilder.Entity<ExecutionResult>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ExecutionResult>().Property(x => x.ExecutionRunId).HasColumnName(@"execution_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ExecutionResult>().Property(x => x.SampleUid).HasColumnName(@"sample_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ExecutionResult>().Property(x => x.Status).HasColumnName(@"status").HasColumnType(@"nvarchar(100)").ValueGeneratedNever().HasMaxLength(100);
-        modelBuilder.Entity<ExecutionResult>().Property(x => x.BuildLog).HasColumnName(@"build_log").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ExecutionResult>().Property(x => x.RunLog).HasColumnName(@"run_log").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ExecutionResult>().Property(x => x.ExceptionJson).HasColumnName(@"exception_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ExecutionResult>().Property(x => x.DurationMs).HasColumnName(@"duration_ms").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<ExecutionResult>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ExecutionResult>().ToTable(@"execution_result", @"dbo");
+        _ = modelBuilder.Entity<ExecutionResult>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ExecutionResult>().Property(x => x.ExecutionRunId).HasColumnName(@"execution_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ExecutionResult>().Property(x => x.SampleUid).HasColumnName(@"sample_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ExecutionResult>().Property(x => x.Status).HasColumnName(@"status").HasColumnType(@"nvarchar(100)").ValueGeneratedNever().HasMaxLength(100);
+        _ = modelBuilder.Entity<ExecutionResult>().Property(x => x.BuildLog).HasColumnName(@"build_log").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ExecutionResult>().Property(x => x.RunLog).HasColumnName(@"run_log").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ExecutionResult>().Property(x => x.ExceptionJson).HasColumnName(@"exception_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ExecutionResult>().Property(x => x.DurationMs).HasColumnName(@"duration_ms").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<ExecutionResult>().HasKey(@"Id");
     }
 
 
@@ -11047,14 +8751,14 @@ public partial class KBContext : DbContext
 
     private void ExecutionRunMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ExecutionRun>().ToTable(@"execution_run", @"dbo");
-        modelBuilder.Entity<ExecutionRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ExecutionRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ExecutionRun>().Property(x => x.SampleRunId).HasColumnName(@"sample_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ExecutionRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ExecutionRun>().Property(x => x.EnvironmentJson).HasColumnName(@"environment_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ExecutionRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ExecutionRun>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ExecutionRun>().ToTable(@"execution_run", @"dbo");
+        _ = modelBuilder.Entity<ExecutionRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ExecutionRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ExecutionRun>().Property(x => x.SampleRunId).HasColumnName(@"sample_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ExecutionRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ExecutionRun>().Property(x => x.EnvironmentJson).HasColumnName(@"environment_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ExecutionRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ExecutionRun>().HasKey(@"Id");
     }
 
 
@@ -11074,12 +8778,12 @@ public partial class KBContext : DbContext
 
     private void FeatureDocLinkMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<FeatureDocLink>().ToTable(@"feature_doc_link", @"dbo");
-        modelBuilder.Entity<FeatureDocLink>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<FeatureDocLink>().Property(x => x.FeatureId).HasColumnName(@"feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<FeatureDocLink>().Property(x => x.DocUid).HasColumnName(@"doc_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<FeatureDocLink>().Property(x => x.SectionUid).HasColumnName(@"section_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<FeatureDocLink>().HasKey(@"Id");
+        _ = modelBuilder.Entity<FeatureDocLink>().ToTable(@"feature_doc_link", @"dbo");
+        _ = modelBuilder.Entity<FeatureDocLink>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<FeatureDocLink>().Property(x => x.FeatureId).HasColumnName(@"feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<FeatureDocLink>().Property(x => x.DocUid).HasColumnName(@"doc_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<FeatureDocLink>().Property(x => x.SectionUid).HasColumnName(@"section_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<FeatureDocLink>().HasKey(@"Id");
     }
 
 
@@ -11099,12 +8803,12 @@ public partial class KBContext : DbContext
 
     private void FeatureMemberLinkMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<FeatureMemberLink>().ToTable(@"feature_member_link", @"dbo");
-        modelBuilder.Entity<FeatureMemberLink>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<FeatureMemberLink>().Property(x => x.FeatureId).HasColumnName(@"feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<FeatureMemberLink>().Property(x => x.MemberUid).HasColumnName(@"member_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<FeatureMemberLink>().Property(x => x.Role).HasColumnName(@"role").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<FeatureMemberLink>().HasKey(@"Id");
+        _ = modelBuilder.Entity<FeatureMemberLink>().ToTable(@"feature_member_link", @"dbo");
+        _ = modelBuilder.Entity<FeatureMemberLink>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<FeatureMemberLink>().Property(x => x.FeatureId).HasColumnName(@"feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<FeatureMemberLink>().Property(x => x.MemberUid).HasColumnName(@"member_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<FeatureMemberLink>().Property(x => x.Role).HasColumnName(@"role").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<FeatureMemberLink>().HasKey(@"Id");
     }
 
 
@@ -11124,12 +8828,12 @@ public partial class KBContext : DbContext
 
     private void FeatureTypeLinkMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<FeatureTypeLink>().ToTable(@"feature_type_link", @"dbo");
-        modelBuilder.Entity<FeatureTypeLink>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<FeatureTypeLink>().Property(x => x.FeatureId).HasColumnName(@"feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<FeatureTypeLink>().Property(x => x.TypeUid).HasColumnName(@"type_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<FeatureTypeLink>().Property(x => x.Role).HasColumnName(@"role").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<FeatureTypeLink>().HasKey(@"Id");
+        _ = modelBuilder.Entity<FeatureTypeLink>().ToTable(@"feature_type_link", @"dbo");
+        _ = modelBuilder.Entity<FeatureTypeLink>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<FeatureTypeLink>().Property(x => x.FeatureId).HasColumnName(@"feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<FeatureTypeLink>().Property(x => x.TypeUid).HasColumnName(@"type_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<FeatureTypeLink>().Property(x => x.Role).HasColumnName(@"role").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<FeatureTypeLink>().HasKey(@"Id");
     }
 
 
@@ -11149,12 +8853,12 @@ public partial class KBContext : DbContext
 
     private void IngestionRunMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<IngestionRun>().ToTable(@"ingestion_run", @"dbo");
-        modelBuilder.Entity<IngestionRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<IngestionRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<IngestionRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<IngestionRun>().Property(x => x.Notes).HasColumnName(@"notes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<IngestionRun>().HasKey(@"Id");
+        _ = modelBuilder.Entity<IngestionRun>().ToTable(@"ingestion_run", @"dbo");
+        _ = modelBuilder.Entity<IngestionRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<IngestionRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<IngestionRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<IngestionRun>().Property(x => x.Notes).HasColumnName(@"notes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<IngestionRun>().HasKey(@"Id");
     }
 
 
@@ -11174,16 +8878,16 @@ public partial class KBContext : DbContext
 
     private void RagChunkMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<RagChunk>().ToTable(@"rag_chunk", @"dbo");
-        modelBuilder.Entity<RagChunk>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<RagChunk>().Property(x => x.RagRunId).HasColumnName(@"rag_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<RagChunk>().Property(x => x.ChunkUid).HasColumnName(@"chunk_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<RagChunk>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(100)").ValueGeneratedNever().HasMaxLength(100);
-        modelBuilder.Entity<RagChunk>().Property(x => x.Text).HasColumnName(@"text").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<RagChunk>().Property(x => x.MetadataJson).HasColumnName(@"metadata_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<RagChunk>().Property(x => x.EmbeddingVector).HasColumnName(@"embedding_vector").HasColumnType(@"varchar(1536)").ValueGeneratedNever().HasMaxLength(1536);
-        modelBuilder.Entity<RagChunk>().HasKey(@"Id");
-        modelBuilder.Entity<RagChunk>().HasIndex(@"ChunkUid").IsUnique();
+        _ = modelBuilder.Entity<RagChunk>().ToTable(@"rag_chunk", @"dbo");
+        _ = modelBuilder.Entity<RagChunk>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<RagChunk>().Property(x => x.RagRunId).HasColumnName(@"rag_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<RagChunk>().Property(x => x.ChunkUid).HasColumnName(@"chunk_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<RagChunk>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(100)").ValueGeneratedNever().HasMaxLength(100);
+        _ = modelBuilder.Entity<RagChunk>().Property(x => x.Text).HasColumnName(@"text").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<RagChunk>().Property(x => x.MetadataJson).HasColumnName(@"metadata_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<RagChunk>().Property(x => x.EmbeddingVector).HasColumnName(@"embedding_vector").HasColumnType(@"varchar(1536)").ValueGeneratedNever().HasMaxLength(1536);
+        _ = modelBuilder.Entity<RagChunk>().HasKey(@"Id");
+        _ = modelBuilder.Entity<RagChunk>().HasIndex(@"ChunkUid").IsUnique();
     }
 
 
@@ -11203,12 +8907,12 @@ public partial class KBContext : DbContext
 
     private void RagRunMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<RagRun>().ToTable(@"rag_run", @"dbo");
-        modelBuilder.Entity<RagRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<RagRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<RagRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<RagRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<RagRun>().HasKey(@"Id");
+        _ = modelBuilder.Entity<RagRun>().ToTable(@"rag_run", @"dbo");
+        _ = modelBuilder.Entity<RagRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<RagRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<RagRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<RagRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<RagRun>().HasKey(@"Id");
     }
 
 
@@ -11228,14 +8932,14 @@ public partial class KBContext : DbContext
 
     private void ReviewIssueMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ReviewIssue>().ToTable(@"review_issue", @"dbo");
-        modelBuilder.Entity<ReviewIssue>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ReviewIssue>().Property(x => x.ReviewItemId).HasColumnName(@"review_item_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ReviewIssue>().Property(x => x.Code).HasColumnName(@"code").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ReviewIssue>().Property(x => x.Severity).HasColumnName(@"severity").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<ReviewIssue>().Property(x => x.RelatedMemberUid).HasColumnName(@"related_member_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ReviewIssue>().Property(x => x.Details).HasColumnName(@"details").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ReviewIssue>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ReviewIssue>().ToTable(@"review_issue", @"dbo");
+        _ = modelBuilder.Entity<ReviewIssue>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ReviewIssue>().Property(x => x.ReviewItemId).HasColumnName(@"review_item_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ReviewIssue>().Property(x => x.Code).HasColumnName(@"code").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ReviewIssue>().Property(x => x.Severity).HasColumnName(@"severity").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<ReviewIssue>().Property(x => x.RelatedMemberUid).HasColumnName(@"related_member_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ReviewIssue>().Property(x => x.Details).HasColumnName(@"details").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ReviewIssue>().HasKey(@"Id");
     }
 
 
@@ -11255,14 +8959,14 @@ public partial class KBContext : DbContext
 
     private void ReviewItemMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ReviewItem>().ToTable(@"review_item", @"dbo");
-        modelBuilder.Entity<ReviewItem>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ReviewItem>().Property(x => x.ReviewRunId).HasColumnName(@"review_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ReviewItem>().Property(x => x.TargetKind).HasColumnName(@"target_kind").HasColumnType(@"nvarchar(50)").IsRequired().ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<ReviewItem>().Property(x => x.TargetUid).HasColumnName(@"target_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<ReviewItem>().Property(x => x.Status).HasColumnName(@"status").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<ReviewItem>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<ReviewItem>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ReviewItem>().ToTable(@"review_item", @"dbo");
+        _ = modelBuilder.Entity<ReviewItem>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ReviewItem>().Property(x => x.ReviewRunId).HasColumnName(@"review_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ReviewItem>().Property(x => x.TargetKind).HasColumnName(@"target_kind").HasColumnType(@"nvarchar(50)").IsRequired().ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<ReviewItem>().Property(x => x.TargetUid).HasColumnName(@"target_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<ReviewItem>().Property(x => x.Status).HasColumnName(@"status").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<ReviewItem>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<ReviewItem>().HasKey(@"Id");
     }
 
 
@@ -11282,12 +8986,12 @@ public partial class KBContext : DbContext
 
     private void ReviewRunMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ReviewRun>().ToTable(@"review_run", @"dbo");
-        modelBuilder.Entity<ReviewRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<ReviewRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ReviewRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<ReviewRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<ReviewRun>().HasKey(@"Id");
+        _ = modelBuilder.Entity<ReviewRun>().ToTable(@"review_run", @"dbo");
+        _ = modelBuilder.Entity<ReviewRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<ReviewRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ReviewRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<ReviewRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<ReviewRun>().HasKey(@"Id");
     }
 
 
@@ -11307,20 +9011,20 @@ public partial class KBContext : DbContext
 
     private void SampleMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Sample>().ToTable(@"sample", @"dbo");
-        modelBuilder.Entity<Sample>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<Sample>().Property(x => x.SampleRunId).HasColumnName(@"sample_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<Sample>().Property(x => x.SampleUid).HasColumnName(@"sample_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<Sample>().Property(x => x.FeatureUid).HasColumnName(@"feature_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<Sample>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<Sample>().Property(x => x.Code).HasColumnName(@"code").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<Sample>().Property(x => x.EntryPoint).HasColumnName(@"entry_point").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<Sample>().Property(x => x.TargetFramework).HasColumnName(@"target_framework").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<Sample>().Property(x => x.PackageReferences).HasColumnName(@"package_references").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<Sample>().Property(x => x.DerivedFromCodeUid).HasColumnName(@"derived_from_code_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<Sample>().Property(x => x.Tags).HasColumnName(@"tags").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<Sample>().HasKey(@"Id");
-        modelBuilder.Entity<Sample>().HasIndex(@"SampleUid").IsUnique();
+        _ = modelBuilder.Entity<Sample>().ToTable(@"sample", @"dbo");
+        _ = modelBuilder.Entity<Sample>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<Sample>().Property(x => x.SampleRunId).HasColumnName(@"sample_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<Sample>().Property(x => x.SampleUid).HasColumnName(@"sample_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<Sample>().Property(x => x.FeatureUid).HasColumnName(@"feature_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<Sample>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<Sample>().Property(x => x.Code).HasColumnName(@"code").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<Sample>().Property(x => x.EntryPoint).HasColumnName(@"entry_point").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<Sample>().Property(x => x.TargetFramework).HasColumnName(@"target_framework").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<Sample>().Property(x => x.PackageReferences).HasColumnName(@"package_references").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<Sample>().Property(x => x.DerivedFromCodeUid).HasColumnName(@"derived_from_code_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<Sample>().Property(x => x.Tags).HasColumnName(@"tags").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<Sample>().HasKey(@"Id");
+        _ = modelBuilder.Entity<Sample>().HasIndex(@"SampleUid").IsUnique();
     }
 
 
@@ -11340,11 +9044,11 @@ public partial class KBContext : DbContext
 
     private void SampleApiMemberLinkMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SampleApiMemberLink>().ToTable(@"sample_api_member_link", @"dbo");
-        modelBuilder.Entity<SampleApiMemberLink>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<SampleApiMemberLink>().Property(x => x.SampleId).HasColumnName(@"sample_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<SampleApiMemberLink>().Property(x => x.MemberUid).HasColumnName(@"member_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<SampleApiMemberLink>().HasKey(@"Id");
+        _ = modelBuilder.Entity<SampleApiMemberLink>().ToTable(@"sample_api_member_link", @"dbo");
+        _ = modelBuilder.Entity<SampleApiMemberLink>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<SampleApiMemberLink>().Property(x => x.SampleId).HasColumnName(@"sample_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<SampleApiMemberLink>().Property(x => x.MemberUid).HasColumnName(@"member_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<SampleApiMemberLink>().HasKey(@"Id");
     }
 
 
@@ -11364,12 +9068,12 @@ public partial class KBContext : DbContext
 
     private void SampleRunMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SampleRun>().ToTable(@"sample_run", @"dbo");
-        modelBuilder.Entity<SampleRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<SampleRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<SampleRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<SampleRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<SampleRun>().HasKey(@"Id");
+        _ = modelBuilder.Entity<SampleRun>().ToTable(@"sample_run", @"dbo");
+        _ = modelBuilder.Entity<SampleRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<SampleRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<SampleRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<SampleRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<SampleRun>().HasKey(@"Id");
     }
 
 
@@ -11389,13 +9093,13 @@ public partial class KBContext : DbContext
 
     private void SemanticIdentityMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SemanticIdentity>().ToTable(@"semantic_identity", @"dbo");
-        modelBuilder.Entity<SemanticIdentity>().Property(x => x.UidHash).HasColumnName(@"uid_hash").HasColumnType(@"binary(32)").IsRequired().ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<SemanticIdentity>().Property(x => x.Uid).HasColumnName(@"uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<SemanticIdentity>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(50)").IsRequired().ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<SemanticIdentity>().Property(x => x.CreatedUtc).HasColumnName(@"created_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<SemanticIdentity>().Property(x => x.Notes).HasColumnName(@"notes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<SemanticIdentity>().HasKey(@"UidHash");
+        _ = modelBuilder.Entity<SemanticIdentity>().ToTable(@"semantic_identity", @"dbo");
+        _ = modelBuilder.Entity<SemanticIdentity>().Property(x => x.UidHash).HasColumnName(@"uid_hash").HasColumnType(@"binary(32)").IsRequired().ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<SemanticIdentity>().Property(x => x.Uid).HasColumnName(@"uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<SemanticIdentity>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(50)").IsRequired().ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<SemanticIdentity>().Property(x => x.CreatedUtc).HasColumnName(@"created_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<SemanticIdentity>().Property(x => x.Notes).HasColumnName(@"notes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<SemanticIdentity>().HasKey(@"UidHash");
     }
 
 
@@ -11415,13 +9119,13 @@ public partial class KBContext : DbContext
 
     private void SnapshotDiffMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SnapshotDiff>().ToTable(@"snapshot_diff", @"dbo");
-        modelBuilder.Entity<SnapshotDiff>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<SnapshotDiff>().Property(x => x.OldSnapshotId).HasColumnName(@"old_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<SnapshotDiff>().Property(x => x.NewSnapshotId).HasColumnName(@"new_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<SnapshotDiff>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<SnapshotDiff>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<SnapshotDiff>().HasKey(@"Id");
+        _ = modelBuilder.Entity<SnapshotDiff>().ToTable(@"snapshot_diff", @"dbo");
+        _ = modelBuilder.Entity<SnapshotDiff>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<SnapshotDiff>().Property(x => x.OldSnapshotId).HasColumnName(@"old_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<SnapshotDiff>().Property(x => x.NewSnapshotId).HasColumnName(@"new_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<SnapshotDiff>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<SnapshotDiff>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<SnapshotDiff>().HasKey(@"Id");
     }
 
 
@@ -11441,20 +9145,20 @@ public partial class KBContext : DbContext
 
     private void SourceSnapshotMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SourceSnapshot>().ToTable(@"source_snapshot", @"dbo");
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.IngestionRunId).HasColumnName(@"ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.SnapshotUid).HasColumnName(@"snapshot_uid").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.RepoUrl).HasColumnName(@"repo_url").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.Branch).HasColumnName(@"branch").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.RepoCommit).HasColumnName(@"repo_commit").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.PackageName).HasColumnName(@"package_name").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.PackageVersion).HasColumnName(@"package_version").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.ConfigJson).HasColumnName(@"config_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<SourceSnapshot>().Property(x => x.SnapshotUidHash).HasColumnName(@"snapshot_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
-        modelBuilder.Entity<SourceSnapshot>().HasKey(@"Id");
-        modelBuilder.Entity<SourceSnapshot>().HasIndex(@"SnapshotUidHash").IsUnique();
+        _ = modelBuilder.Entity<SourceSnapshot>().ToTable(@"source_snapshot", @"dbo");
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.IngestionRunId).HasColumnName(@"ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.SnapshotUid).HasColumnName(@"snapshot_uid").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.RepoUrl).HasColumnName(@"repo_url").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.Branch).HasColumnName(@"branch").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.RepoCommit).HasColumnName(@"repo_commit").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.PackageName).HasColumnName(@"package_name").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.PackageVersion).HasColumnName(@"package_version").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.ConfigJson).HasColumnName(@"config_json").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<SourceSnapshot>().Property(x => x.SnapshotUidHash).HasColumnName(@"snapshot_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedOnAddOrUpdate().HasMaxLength(32);
+        _ = modelBuilder.Entity<SourceSnapshot>().HasKey(@"Id");
+        _ = modelBuilder.Entity<SourceSnapshot>().HasIndex(@"SnapshotUidHash").IsUnique();
     }
 
 
@@ -11474,12 +9178,12 @@ public partial class KBContext : DbContext
 
     private void TruthRunMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<TruthRun>().ToTable(@"truth_run", @"dbo");
-        modelBuilder.Entity<TruthRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
-        modelBuilder.Entity<TruthRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<TruthRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<TruthRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<TruthRun>().HasKey(@"Id");
+        _ = modelBuilder.Entity<TruthRun>().ToTable(@"truth_run", @"dbo");
+        _ = modelBuilder.Entity<TruthRun>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql(@"newid()");
+        _ = modelBuilder.Entity<TruthRun>().Property(x => x.SnapshotId).HasColumnName(@"snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<TruthRun>().Property(x => x.TimestampUtc).HasColumnName(@"timestamp_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<TruthRun>().Property(x => x.SchemaVersion).HasColumnName(@"schema_version").HasColumnType(@"nvarchar(200)").IsRequired().ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<TruthRun>().HasKey(@"Id");
     }
 
 
@@ -11499,25 +9203,25 @@ public partial class KBContext : DbContext
 
     private void VApiFeatureCurrentMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<VApiFeatureCurrent>().HasNoKey();
-        modelBuilder.Entity<VApiFeatureCurrent>().ToView(@"v_api_feature_current", @"dbo");
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.ApiTypeId).HasColumnName(@"api_type_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.TruthRunId).HasColumnName(@"truth_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Description).HasColumnName(@"description").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Tags).HasColumnName(@"tags").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().HasNoKey();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().ToView(@"v_api_feature_current", @"dbo");
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.ApiTypeId).HasColumnName(@"api_type_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.TruthRunId).HasColumnName(@"truth_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Description).HasColumnName(@"description").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.Tags).HasColumnName(@"tags").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VApiFeatureCurrent>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
     }
 
 
@@ -11537,45 +9241,45 @@ public partial class KBContext : DbContext
 
     private void VApiMemberCurrentMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<VApiMemberCurrent>().HasNoKey();
-        modelBuilder.Entity<VApiMemberCurrent>().ToView(@"v_api_member_current", @"dbo");
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ApiFeatureId).HasColumnName(@"api_feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.MethodKind).HasColumnName(@"method_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Accessibility).HasColumnName(@"accessibility").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsStatic).HasColumnName(@"is_static").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsExtensionMethod).HasColumnName(@"is_extension_method").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsAsync).HasColumnName(@"is_async").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsVirtual).HasColumnName(@"is_virtual").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsOverride).HasColumnName(@"is_override").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsAbstract).HasColumnName(@"is_abstract").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsSealed).HasColumnName(@"is_sealed").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsReadonly).HasColumnName(@"is_readonly").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsConst).HasColumnName(@"is_const").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsUnsafe).HasColumnName(@"is_unsafe").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ReturnTypeUid).HasColumnName(@"return_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ReturnNullable).HasColumnName(@"return_nullable").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.GenericParameters).HasColumnName(@"generic_parameters").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.GenericConstraints).HasColumnName(@"generic_constraints").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Remarks).HasColumnName(@"remarks").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Attributes).HasColumnName(@"attributes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SourceFilePath).HasColumnName(@"source_file_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SourceStartLine).HasColumnName(@"source_start_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SourceEndLine).HasColumnName(@"source_end_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.MemberUidHash).HasColumnName(@"member_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().HasNoKey();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().ToView(@"v_api_member_current", @"dbo");
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ApiFeatureId).HasColumnName(@"api_feature_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.MethodKind).HasColumnName(@"method_kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Accessibility).HasColumnName(@"accessibility").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsStatic).HasColumnName(@"is_static").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsExtensionMethod).HasColumnName(@"is_extension_method").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsAsync).HasColumnName(@"is_async").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsVirtual).HasColumnName(@"is_virtual").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsOverride).HasColumnName(@"is_override").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsAbstract).HasColumnName(@"is_abstract").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsSealed).HasColumnName(@"is_sealed").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsReadonly).HasColumnName(@"is_readonly").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsConst).HasColumnName(@"is_const").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsUnsafe).HasColumnName(@"is_unsafe").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ReturnTypeUid).HasColumnName(@"return_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ReturnNullable).HasColumnName(@"return_nullable").HasColumnType(@"nvarchar(50)").ValueGeneratedNever().HasMaxLength(50);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.GenericParameters).HasColumnName(@"generic_parameters").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.GenericConstraints).HasColumnName(@"generic_constraints").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Remarks).HasColumnName(@"remarks").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.Attributes).HasColumnName(@"attributes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SourceFilePath).HasColumnName(@"source_file_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SourceStartLine).HasColumnName(@"source_start_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SourceEndLine).HasColumnName(@"source_end_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.MemberUidHash).HasColumnName(@"member_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VApiMemberCurrent>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
     }
 
 
@@ -11595,41 +9299,41 @@ public partial class KBContext : DbContext
 
     private void VApiTypeCurrentMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<VApiTypeCurrent>().HasNoKey();
-        modelBuilder.Entity<VApiTypeCurrent>().ToView(@"v_api_type_current", @"dbo");
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SourceSnapshotId).HasColumnName(@"source_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.NamespacePath).HasColumnName(@"namespace_path").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Accessibility).HasColumnName(@"accessibility").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsStatic).HasColumnName(@"is_static").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsGeneric).HasColumnName(@"is_generic").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsAbstract).HasColumnName(@"is_abstract").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsSealed).HasColumnName(@"is_sealed").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsRecord).HasColumnName(@"is_record").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsRefLike).HasColumnName(@"is_ref_like").HasColumnType(@"bit").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.BaseTypeUid).HasColumnName(@"base_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Interfaces).HasColumnName(@"interfaces").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.ContainingTypeUid).HasColumnName(@"containing_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.GenericParameters).HasColumnName(@"generic_parameters").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.GenericConstraints).HasColumnName(@"generic_constraints").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Remarks).HasColumnName(@"remarks").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Attributes).HasColumnName(@"attributes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SourceFilePath).HasColumnName(@"source_file_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SourceStartLine).HasColumnName(@"source_start_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SourceEndLine).HasColumnName(@"source_end_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().HasNoKey();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().ToView(@"v_api_type_current", @"dbo");
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SourceSnapshotId).HasColumnName(@"source_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Name).HasColumnName(@"name").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.NamespacePath).HasColumnName(@"namespace_path").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Kind).HasColumnName(@"kind").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Accessibility).HasColumnName(@"accessibility").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsStatic).HasColumnName(@"is_static").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsGeneric).HasColumnName(@"is_generic").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsAbstract).HasColumnName(@"is_abstract").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsSealed).HasColumnName(@"is_sealed").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsRecord).HasColumnName(@"is_record").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsRefLike).HasColumnName(@"is_ref_like").HasColumnType(@"bit").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.BaseTypeUid).HasColumnName(@"base_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Interfaces).HasColumnName(@"interfaces").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.ContainingTypeUid).HasColumnName(@"containing_type_uid").HasColumnType(@"nvarchar(1000)").ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.GenericParameters).HasColumnName(@"generic_parameters").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.GenericConstraints).HasColumnName(@"generic_constraints").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Summary).HasColumnName(@"summary").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Remarks).HasColumnName(@"remarks").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.Attributes).HasColumnName(@"attributes").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SourceFilePath).HasColumnName(@"source_file_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SourceStartLine).HasColumnName(@"source_start_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SourceEndLine).HasColumnName(@"source_end_line").HasColumnType(@"int").ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VApiTypeCurrent>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
     }
 
 
@@ -11649,25 +9353,25 @@ public partial class KBContext : DbContext
 
     private void VDocPageCurrentMapping(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<VDocPageCurrent>().HasNoKey();
-        modelBuilder.Entity<VDocPageCurrent>().ToView(@"v_doc_page_current", @"dbo");
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.SourceSnapshotId).HasColumnName(@"source_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.SourcePath).HasColumnName(@"source_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.Title).HasColumnName(@"title").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.Url).HasColumnName(@"url").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.RawMarkdown).HasColumnName(@"raw_markdown").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever();
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
-        modelBuilder.Entity<VDocPageCurrent>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VDocPageCurrent>().HasNoKey();
+        _ = modelBuilder.Entity<VDocPageCurrent>().ToView(@"v_doc_page_current", @"dbo");
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.Id).HasColumnName(@"id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.SemanticUid).HasColumnName(@"semantic_uid").HasColumnType(@"nvarchar(1000)").IsRequired().ValueGeneratedNever().HasMaxLength(1000);
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.SourceSnapshotId).HasColumnName(@"source_snapshot_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.SourcePath).HasColumnName(@"source_path").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.Title).HasColumnName(@"title").HasColumnType(@"nvarchar(400)").ValueGeneratedNever().HasMaxLength(400);
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.Language).HasColumnName(@"language").HasColumnType(@"nvarchar(200)").ValueGeneratedNever().HasMaxLength(200);
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.Url).HasColumnName(@"url").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.RawMarkdown).HasColumnName(@"raw_markdown").HasColumnType(@"nvarchar(max)").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.VersionNumber).HasColumnName(@"version_number").HasColumnType(@"int").IsRequired().ValueGeneratedNever().HasPrecision(10, 0);
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.CreatedIngestionRunId).HasColumnName(@"created_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.UpdatedIngestionRunId).HasColumnName(@"updated_ingestion_run_id").HasColumnType(@"uniqueidentifier").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.RemovedIngestionRunId).HasColumnName(@"removed_ingestion_run_id").HasColumnType(@"uniqueidentifier").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.ValidFromUtc).HasColumnName(@"valid_from_utc").HasColumnType(@"datetime2").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.ValidToUtc).HasColumnName(@"valid_to_utc").HasColumnType(@"datetime2").ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.IsActive).HasColumnName(@"is_active").HasColumnType(@"bit").IsRequired().ValueGeneratedNever();
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.ContentHash).HasColumnName(@"content_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
+        _ = modelBuilder.Entity<VDocPageCurrent>().Property(x => x.SemanticUidHash).HasColumnName(@"semantic_uid_hash").HasColumnType(@"binary(32)").ValueGeneratedNever().HasMaxLength(32);
     }
 
 
@@ -11694,18 +9398,18 @@ public class SpCheckTemporalConsistencyMultipleResult
 
     public SpCheckTemporalConsistencyMultipleResult()
     {
-        SpCheckTemporalConsistencyResults = new List<SpCheckTemporalConsistencyResult>();
-        SpCheckTemporalConsistencyResults1 = new List<SpCheckTemporalConsistencyResult>();
-        SpCheckTemporalConsistencyResults2 = new List<SpCheckTemporalConsistencyResult>();
-        SpCheckTemporalConsistencyResults3 = new List<SpCheckTemporalConsistencyResult>();
-        SpCheckTemporalConsistencyResult1s = new List<SpCheckTemporalConsistencyResult1>();
-        SpCheckTemporalConsistencyResult1s1 = new List<SpCheckTemporalConsistencyResult1>();
-        SpCheckTemporalConsistencyResult1s2 = new List<SpCheckTemporalConsistencyResult1>();
-        SpCheckTemporalConsistencyResult1s3 = new List<SpCheckTemporalConsistencyResult1>();
-        SpCheckTemporalConsistencyResult2s = new List<SpCheckTemporalConsistencyResult2>();
-        SpCheckTemporalConsistencyResult2s1 = new List<SpCheckTemporalConsistencyResult2>();
-        SpCheckTemporalConsistencyResult2s2 = new List<SpCheckTemporalConsistencyResult2>();
-        SpCheckTemporalConsistencyResult2s3 = new List<SpCheckTemporalConsistencyResult2>();
+        SpCheckTemporalConsistencyResults = [];
+        SpCheckTemporalConsistencyResults1 = [];
+        SpCheckTemporalConsistencyResults2 = [];
+        SpCheckTemporalConsistencyResults3 = [];
+        SpCheckTemporalConsistencyResult1s = [];
+        SpCheckTemporalConsistencyResult1s1 = [];
+        SpCheckTemporalConsistencyResult1s2 = [];
+        SpCheckTemporalConsistencyResult1s3 = [];
+        SpCheckTemporalConsistencyResult2s = [];
+        SpCheckTemporalConsistencyResult2s1 = [];
+        SpCheckTemporalConsistencyResult2s2 = [];
+        SpCheckTemporalConsistencyResult2s3 = [];
     }
 
 
@@ -11738,9 +9442,9 @@ public class SpUpsertApiParameterMultipleResult
 
     public SpUpsertApiParameterMultipleResult()
     {
-        SpUpsertApiParameterResults = new List<SpUpsertApiParameterResult>();
-        SpUpsertApiParameterResults1 = new List<SpUpsertApiParameterResult>();
-        SpUpsertApiParameterResults2 = new List<SpUpsertApiParameterResult>();
+        SpUpsertApiParameterResults = [];
+        SpUpsertApiParameterResults1 = [];
+        SpUpsertApiParameterResults2 = [];
     }
 
 
@@ -11764,8 +9468,8 @@ public class SpVerifyIngestionRunMultipleResult
 
     public SpVerifyIngestionRunMultipleResult()
     {
-        SpVerifyIngestionRunResults = new List<SpVerifyIngestionRunResult>();
-        SpVerifyIngestionRunResults1 = new List<SpVerifyIngestionRunResult>();
+        SpVerifyIngestionRunResults = [];
+        SpVerifyIngestionRunResults1 = [];
     }
 
 

@@ -12,7 +12,7 @@ internal class FileHarvestPipeline
         foreach (var file in files)
         {
             var content = await File.ReadAllTextAsync(file);
-            EFModels.DocPage doc = new();
+            _ = new EFModels.DocPage();
             SaveInSqlDatabase(file, content);
         }
 

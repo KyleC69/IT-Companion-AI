@@ -16,6 +16,6 @@ public class BaseViewModel : ObservableObject, INotifyPropertyChanged
     public string Title
     {
         get => _title;
-        set => this.SetProperty(ref _title, value);
+        set => SetProperty(ref _title, value);
     }
 }
