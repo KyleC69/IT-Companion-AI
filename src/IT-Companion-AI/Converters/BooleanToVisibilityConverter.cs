@@ -1,13 +1,6 @@
-// Project Name: SKAgent
-// File Name: BooleanToVisibilityConverter.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+
 
 
 namespace ITCompanionAI.Converters;
@@ -19,6 +12,7 @@ public class BooleanToVisibilityConverter : IValueConverter
     {
         return value is bool boolValue ? boolValue ? Visibility.Visible : Visibility.Collapsed : Visibility.Collapsed;
     }
+
 
 
 

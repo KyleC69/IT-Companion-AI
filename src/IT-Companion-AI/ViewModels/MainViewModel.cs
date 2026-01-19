@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,7 @@ public partial class MainViewModel : BaseViewModel
     private CancellationTokenSource _cts;
 
 
-    [ObservableProperty] private string _ingestTarget;
+    private string _ingestTarget;
 
     private bool _isBusy;
     private string _userInput = string.Empty;
@@ -52,11 +51,14 @@ public partial class MainViewModel : BaseViewModel
         get => _userInput;
         set
         {
-            if (_userInput == value) return;
+            if (_userInput == value)
+            {
+                return;
+            }
 
             _userInput = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(CanSend));
+            this.OnPropertyChanged();
+            this.OnPropertyChanged(nameof(CanSend));
             OnUserInputChanged(value);
         }
     }
@@ -79,9 +81,9 @@ public partial class MainViewModel : BaseViewModel
             if (_isBusy != value)
             {
                 _isBusy = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CanSend));
-                OnPropertyChanged(nameof(CanCancel));
+                this.OnPropertyChanged();
+                this.OnPropertyChanged(nameof(CanSend));
+                this.OnPropertyChanged(nameof(CanCancel));
                 OnIsBusyChanged(value);
             }
         }
@@ -166,8 +168,8 @@ public partial class MainViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
-            OnPropertyChanged(nameof(CanSend));
-            OnPropertyChanged(nameof(CanCancel));
+            this.OnPropertyChanged(nameof(CanSend));
+            this.OnPropertyChanged(nameof(CanCancel));
         }
 
 
@@ -243,7 +245,7 @@ public partial class MainViewModel : BaseViewModel
         if (_cts is { IsCancellationRequested: false })
         {
             _cts.Cancel();
-            OnPropertyChanged(nameof(CanCancel));
+            this.OnPropertyChanged(nameof(CanCancel));
         }
     }
 

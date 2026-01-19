@@ -27,19 +27,29 @@ public sealed record GitHubClientOptions(
         ArgumentNullException.ThrowIfNull(configuration);
 
         var productName = configuration[$"{SectionName}:ProductName"];
-        if (string.IsNullOrWhiteSpace(productName)) productName = "ITCompanionAI";
+        if (string.IsNullOrWhiteSpace(productName))
+        {
+            productName = "ITCompanionAI";
+        }
 
         var apiBase = configuration[$"{SectionName}:ApiBaseAddress"];
-        if (string.IsNullOrWhiteSpace(apiBase)) apiBase = "https://api.github.com/";
+        if (string.IsNullOrWhiteSpace(apiBase))
+        {
+            apiBase = "https://api.github.com/";
+        }
 
         if (!Uri.TryCreate(apiBase, UriKind.Absolute, out Uri apiBaseAddress))
+        {
             throw new InvalidOperationException(
                 $"Invalid GitHub API base address in configuration key '{SectionName}:ApiBaseAddress'.");
+        }
 
         var token = configuration[TokenConfigKey];
         if (string.IsNullOrWhiteSpace(token))
+        {
             throw new InvalidOperationException(
                 $"Missing GitHub token in configuration key '{TokenConfigKey}'. Add it via user-secrets (recommended) or environment variables.");
+        }
 
         return new GitHubClientOptions(productName, apiBaseAddress, token);
     }

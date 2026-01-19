@@ -1,20 +1,18 @@
 ﻿using System.Data;
 using System.Text.Json;
 
-using ITCompanionAI.Ingestion.Docs;
 using ITCompanionAI.Services;
-using ITCompanionAI.Utilities;
 
 using Markdig;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
-using ReverseMarkdown;
+using RMarkdown = ReverseMarkdown;
 
 
 
-namespace ITCompanionAI.Ingestion;
+namespace ITCompanionAI.Ingestion.Docs;
 
 
 public sealed class LearnIngestionPipeline
@@ -23,7 +21,7 @@ public sealed class LearnIngestionPipeline
     private static readonly System.Diagnostics.TraceSource Log = new("DocsIngestion", System.Diagnostics.SourceLevels.All);
     private readonly ContentExtractor _extractor = new();
     private readonly ILogger<LearnIngestionPipeline> _logger = App.GetService<ILogger<LearnIngestionPipeline>>();
-    private readonly Converter _reverseMarkdown;
+    private readonly RMarkdown.Converter _reverseMarkdown;
     private readonly TocFetcher _tocFetcher = new();
 
 
@@ -35,7 +33,7 @@ public sealed class LearnIngestionPipeline
 
     public LearnIngestionPipeline()
     {
-        _reverseMarkdown = new Converter(); // optionally pass Config
+        _reverseMarkdown = new RMarkdown.Converter(); // optionally pass Config
     }
 
 
@@ -87,14 +85,22 @@ public sealed class LearnIngestionPipeline
                 continue;
             }
 
+            //##
+            //############################################
             // 6. Extract main HTML content
-            var mainHtml = _extractor.ExtractMainHtml(html);
+            var mainHtml = _extractor.ExtractContent(html, ExtractionMode.Html, DocumentType.LearnPage);
+
+
             if (string.IsNullOrWhiteSpace(mainHtml))
             {
                 Log.TraceEvent(System.Diagnostics.TraceEventType.Verbose, 0, "Skipping entry with empty <main>. Url={0}", entry.Url);
                 continue;
             }
 
+            //##
+            //##
+            //##
+            //############################################
             // 7. HTML → Markdown
             var markdown = _reverseMarkdown.Convert(mainHtml);
 
@@ -134,7 +140,6 @@ public sealed class LearnIngestionPipeline
 
     private async Task SaveDocumentAsync(DocsPage page)
     {
-        Verify.NotNull(page, nameof(page));
         var sqlConnectionString = "Data Source=DESKTOP-NC01091;Initial Catalog=AIDataRAG;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False;Command Timeout=30";
         await using SqlConnection connection = new(sqlConnectionString);
         await connection.OpenAsync();

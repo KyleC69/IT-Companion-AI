@@ -1,4 +1,8 @@
-﻿namespace ITCompanionAI.Ingestion.Docs;
+﻿using ITCompanionAI.Ingestion.Docs;
+
+
+
+namespace ITCompanionAI.Models;
 
 
 public sealed class LearnPageParseResult

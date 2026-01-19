@@ -16,11 +16,20 @@ public sealed record CustomModelDefinition(
     /// <exception cref="ArgumentException">Thrown when any required field is missing or invalid.</exception>
     public void Validate()
     {
-        if (string.IsNullOrWhiteSpace(Id)) throw new ArgumentException("Id is required.", nameof(Id));
+        if (string.IsNullOrWhiteSpace(Id))
+        {
+            throw new ArgumentException("Id is required.", nameof(Id));
+        }
 
-        if (string.IsNullOrWhiteSpace(Connection)) throw new ArgumentException("Connection is required.", nameof(Connection));
+        if (string.IsNullOrWhiteSpace(Connection))
+        {
+            throw new ArgumentException("Connection is required.", nameof(Connection));
+        }
 
-        if (string.IsNullOrWhiteSpace(Api)) throw new ArgumentException("Api (model identifier) is required.", nameof(Api));
+        if (string.IsNullOrWhiteSpace(Api))
+        {
+            throw new ArgumentException("Api (model identifier) is required.", nameof(Api));
+        }
 
         ArgumentNullException.ThrowIfNull(Options);
     }
@@ -37,11 +46,17 @@ public sealed record CustomModelDefinition(
     /// </summary>
     public T GetOptionOrDefault<T>(string key, T defaultValue)
     {
-        if (Options.TryGetValue(key, out var value) && value is T typed) return typed;
+        if (Options.TryGetValue(key, out var value) && value is T typed)
+        {
+            return typed;
+        }
 
         try
         {
-            if (Options.TryGetValue(key, out value) && value is not null) return (T)Convert.ChangeType(value, typeof(T));
+            if (Options.TryGetValue(key, out value) && value is not null)
+            {
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
         }
         catch
         {

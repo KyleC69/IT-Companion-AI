@@ -8,6 +8,16 @@ using Microsoft.Data.SqlClient;
 
 
 
+/// <summary>
+///     Provides methods for inserting documentation pages, sections, and code blocks into the database as part of a
+///     documentation ingestion process.
+/// </summary>
+/// <remarks>
+///     This class is intended for use in scenarios where documentation content needs to be persisted in a
+///     SQL Server database. It encapsulates transactional operations to ensure that related entities (pages, sections, and
+///     code blocks) are inserted atomically. Instances of this class are immutable and thread-safe for concurrent use,
+///     provided that the supplied connection string is valid and the database is accessible.
+/// </remarks>
 public sealed class DocRepository
 {
     private readonly string _connectionString;
@@ -31,6 +41,25 @@ public sealed class DocRepository
 
 
 
+    /// <summary>
+    ///     Asynchronously inserts a documentation page along with its associated sections and code blocks into the database
+    ///     as a single transaction.
+    /// </summary>
+    /// <remarks>
+    ///     If any part of the insert operation fails, all changes are rolled back to maintain data
+    ///     consistency. This method is not thread-safe and should not be called concurrently on the same
+    ///     instance.
+    /// </remarks>
+    /// <param name="page">The documentation page to insert. Cannot be null.</param>
+    /// <param name="sections">
+    ///     The collection of sections to associate with the page. Each section will be inserted as part of the transaction.
+    ///     Cannot be null.
+    /// </param>
+    /// <param name="codeBlocks">
+    ///     The collection of code blocks to associate with the page. Each code block will be inserted as part of the
+    ///     transaction. Cannot be null.
+    /// </param>
+    /// <returns>A task that represents the asynchronous insert operation.</returns>
     public async Task InsertPageAsync(DocPage page, IEnumerable<DocSection> sections, IEnumerable<CodeBlock> codeBlocks)
     {
         using SqlConnection conn = new(_connectionString);

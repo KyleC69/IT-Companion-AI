@@ -11,22 +11,32 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="220"/>
-            <RowDefinition Height="220"  />
-            <RowDefinition Height="210"/>
+            <RowDefinition Height="150" />
+            <RowDefinition Height="150" />
+            <RowDefinition Height="150" />
         </Grid.RowDefinitions>
-        <Border BorderThickness="3" Grid.Row="2" BorderBrush="CadetBlue" Padding="5" Margin="5" CornerRadius="30">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="7" MinHeight="125">
+        <Border BorderThickness="3" Grid.Row="0" BorderBrush="CadetBlue" Padding="5" Margin="5" CornerRadius="30">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="7"
+                        MinHeight="175">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="7">
+                    <Button Content="Harvest GH Repos" Width="150" Height="40" Command="{Binding HarvestApiCommand}"
+                            Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                            IsEnabled="True" />
+                    <Button Content="Ingest Local Code" Width="150" Height="40"
+                            Command="{Binding IngestLocalCodeCommand}"
+                            Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                            IsEnabled="True" />
+                    <Button Content="Get MS Learn" Width="150" Height="40" Command="{Binding GetMSLearnCommand}"
+                            Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                            IsEnabled="True" />
+                    <Button Content="Start Ingesting" Width="150" Height="40" Command="{Binding HarvestDocsCommand}"
+                            Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                            IsEnabled="True" />
+                </StackPanel>
 
-                <Button Content="Harvest Api" Width="150" Height="40" Command="{Binding HarvestApiCommand}" Background="{ThemeResource ButtonBackgroundThemeBrush}"
-                        IsEnabled="True" />
-                <Button Content="Harvest xml docx"  Width="150" Height="40" Command="{Binding HarvestXmlDocxCommand}"   Background="{ThemeResource ButtonBackgroundThemeBrush}"
-                        IsEnabled="True" />
-                    <Button Content="Get Doc Blocs" Width="150" Height="40" Command="{Binding GetDocBlocsCommand}"  Background="{ThemeResource ButtonBackgroundThemeBrush}"
-                        IsEnabled="True" />
-                <Button Content="Harvest Docs" Width="150" Height="40" Command="{Binding HarvestDocsCommand}"  Background="{ThemeResource ButtonBackgroundThemeBrush}"
-                        IsEnabled="True" />
-                <TextBox x:Name="InputTextBox" Text="{Binding IngestTarget}" Height="50" MinWidth="500" HorizontalAlignment="Center" VerticalAlignment="Bottom" PlaceholderText="Url to ingest....." />
+                <TextBox x:Name="InputTextBox"
+                         Text="{Binding IngestTarget, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Height="50"
+                         MinWidth="500" HorizontalAlignment="Center" PlaceholderText="Url to ingest....." />
             </StackPanel>
         </Border>
     </Grid>

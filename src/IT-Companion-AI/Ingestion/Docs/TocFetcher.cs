@@ -50,17 +50,24 @@ public sealed class TocFetcher
         foreach (Uri uri in candidates)
         {
             using HttpResponseMessage resp = await _http.GetAsync(uri);
-            if (!resp.IsSuccessStatusCode) continue;
+            if (!resp.IsSuccessStatusCode)
+            {
+                continue;
+            }
 
             var mediaType = resp.Content.Headers.ContentType?.MediaType;
             if (mediaType is not null && !mediaType.Contains("json", StringComparison.OrdinalIgnoreCase))
+            {
                 continue;
+            }
 
             // Microsoft Learn TOC is commonly shaped as { "items": [ ... ] } with fields like "toc_title" and "children".
             // Some doc sets may still return a raw array; support both.
             var json = await resp.Content.ReadAsStringAsync();
             if (string.IsNullOrWhiteSpace(json))
+            {
                 continue;
+            }
 
             JsonSerializerOptions jsonPropertyName = new()
             {
@@ -72,7 +79,9 @@ public sealed class TocFetcher
             {
                 LearnTocResponse2? learn = JsonSerializer.Deserialize<LearnTocResponse2>(json, jsonPropertyName);
                 if (learn?.Items is { Count: > 0 })
+                {
                     return learn.Items;
+                }
             }
             catch (JsonException)
             {
@@ -106,11 +115,15 @@ public sealed class TocFetcher
     private static string? NormalizeHref(string? href)
     {
         if (string.IsNullOrWhiteSpace(href))
+        {
             return href;
+        }
 
         // Learn TOC often returns site-relative paths like "overview/xyz".
         if (href.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
             return href;
+        }
 
         href = href.TrimStart('/');
         return $"https://learn.microsoft.com/en-us/agent-framework/{href}";
@@ -127,7 +140,7 @@ public sealed class TocFetcher
     {
         public static void Normalize(List<TocItem> items, string baseUrl)
         {
-            var baseUri = new Uri(baseUrl, UriKind.Absolute);
+            Uri baseUri = new(baseUrl, UriKind.Absolute);
 
             // Resolve relative hrefs against the directory that contains the docset's toc.json.
             // For Learn, toc.json lives at the docset root, so base for hrefs should be:
@@ -149,10 +162,14 @@ public sealed class TocFetcher
             {
                 if (!string.IsNullOrWhiteSpace(item.Href) &&
                     !item.Href.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
                     item.Href = new Uri(root, item.Href.TrimStart('/')).ToString().TrimEnd('/');
+                }
 
                 if (item.Items?.Count > 0)
+                {
                     Normalize(item.Items, baseUrl);
+                }
             }
         }
     }
@@ -190,8 +207,16 @@ public sealed class TocFetcher
         {
             get
             {
-                if (Children.Count > 0) return Children;
-                if (NestedItems.Count > 0) return NestedItems;
+                if (Children.Count > 0)
+                {
+                    return Children;
+                }
+
+                if (NestedItems.Count > 0)
+                {
+                    return NestedItems;
+                }
+
                 return new List<TocItem>();
             }
         }

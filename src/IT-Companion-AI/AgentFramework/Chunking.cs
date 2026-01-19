@@ -1,10 +1,4 @@
-﻿// ============================================================================
-// CHUNKING (Microsoft.ML.Tokenizers-based)
-// ============================================================================
-
-
-
-namespace ITCompanionAI.AgentFramework;
+﻿namespace ITCompanionAI.AgentFramework;
 
 
 public sealed record Chunk(
@@ -47,7 +41,10 @@ public sealed class TokenizerChunker : IChunker
     public TokenizerChunker(HFTokenizer.Tokenizer tokenizer, int maxTokens = 512)
     {
         _tokenizer = tokenizer;
-        if (maxTokens <= 0) throw new ArgumentOutOfRangeException(nameof(maxTokens));
+        if (maxTokens <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxTokens));
+        }
 
         _maxTokens = maxTokens;
     }
@@ -61,12 +58,18 @@ public sealed class TokenizerChunker : IChunker
 
     public IReadOnlyList<Chunk> Chunk(string text, string section = null)
     {
-        if (string.IsNullOrWhiteSpace(text)) return Array.Empty<Chunk>();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return Array.Empty<Chunk>();
+        }
 
         // Encode the text using the tokenizer
         var ids = _tokenizer.Encode(text, false) as IReadOnlyList<int> ?? Array.Empty<int>();
         // If no tokens are generated, return an empty list
-        if (ids.Count == 0) return Array.Empty<Chunk>();
+        if (ids.Count == 0)
+        {
+            return Array.Empty<Chunk>();
+        }
 
         var total = ids.Count;
         var chunkCount = (total + _maxTokens - 1) / _maxTokens;

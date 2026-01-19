@@ -429,7 +429,9 @@ public partial class ApiFeature : INotifyPropertyChanging, INotifyPropertyChange
     {
         PropertyChangingEventHandler handler = PropertyChanging;
         if (handler != null)
+        {
             handler(this, emptyChangingEventArgs);
+        }
     }
 
 
@@ -443,7 +445,9 @@ public partial class ApiFeature : INotifyPropertyChanging, INotifyPropertyChange
     {
         PropertyChangingEventHandler handler = PropertyChanging;
         if (handler != null)
+        {
             handler(this, new PropertyChangingEventArgs(propertyName));
+        }
     }
 
 
@@ -457,6 +461,8 @@ public partial class ApiFeature : INotifyPropertyChanging, INotifyPropertyChange
     {
         PropertyChangedEventHandler handler = PropertyChanged;
         if (handler != null)
+        {
             handler(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

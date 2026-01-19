@@ -1,12 +1,4 @@
-﻿// Project Name: SKAgent
-// File Name: DependencyInjection.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
-namespace ITCompanionAI.Helpers;
+﻿namespace ITCompanionAI.Helpers;
 
 
 public class DependencyInjection
@@ -16,8 +8,5 @@ public class DependencyInjection
         var path = Path.Combine(@"d:\skApiRepo\semantic-kernel\dotnet", "src");
 
         //    var orchestrator = new IngestionOrchestrator(new AiagentRagContext(), new ApiHarvester(path), new XmlDocExtractor(), new MarkdownDocParser());
-
-
-
     }
 }

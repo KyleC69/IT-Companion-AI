@@ -105,6 +105,7 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260101001" />
 		<PackageReference Include="ReverseMarkdown" Version="5.0.0" />
+		<PackageReference Include="ReverseMarkdown.Aot" Version="4.8.0" />
 		<PackageReference Include="Tokenizers.HuggingFace" Version="2.21.4" />
 		<PackageReference Include="Octokit" Version="14.0.0" />
 

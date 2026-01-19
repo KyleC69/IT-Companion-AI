@@ -1,4 +1,8 @@
-﻿using HtmlAgilityPack;
+﻿#nullable enable
+
+using HtmlAgilityPack;
+
+using ITCompanionAI.Services;
 
 
 
@@ -7,23 +11,77 @@ namespace ITCompanionAI.Ingestion.Docs;
 
 public sealed class LearnPageParser
 {
+    private readonly HttpClientService _httpClient;
+
+
+
+
+
+
+
+
+    public LearnPageParser()
+    {
+        _httpClient = App.GetService<HttpClientService>();
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Parses a Microsoft Learn page from the specified URL and extracts its main content, metadata, and code blocks
+    ///     into a structured result.
+    /// </summary>
+    /// <remarks>
+    ///     The method targets the main article content of a Microsoft Learn page for extraction. Only
+    ///     the primary article section is parsed; other page elements are ignored. The returned result includes the page in
+    ///     markdown format, along with any identified sections and code blocks.
+    /// </remarks>
+    /// <param name="url">The URL of the Microsoft Learn page to parse. Must be a valid, accessible HTTP or HTTPS address.</param>
+    /// <param name="ingestionRunId">The unique identifier for the ingestion run associated with this parsing operation.</param>
+    /// <param name="sourceSnapshotId">
+    ///     The unique identifier of the source snapshot representing the state of the source at the
+    ///     time of parsing.
+    /// </param>
+    /// <returns>
+    ///     A <see cref="LearnPageParseResult" /> containing the parsed page metadata, content sections, and code blocks
+    ///     extracted from the specified Learn page.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    ///     Thrown if the main content of the Learn page cannot be located in the HTML
+    ///     document.
+    /// </exception>
     public LearnPageParseResult Parse(string url, Guid ingestionRunId, Guid sourceSnapshotId)
     {
-        HtmlWeb web = new();
-        HtmlDocument doc = web.Load(url);
+        var htmlstring = _httpClient.GetWebDocument(url);
 
-        DateTime now = DateTime.UtcNow;
+
+        HtmlDocument? doc = null;
+
+        if (doc is null)
+        {
+            return new LearnPageParseResult();
+        }
+
+        DateTime now = DateTime.Now;
 
         // Anchor on Learn main article
-        HtmlNode article = doc.DocumentNode.SelectSingleNode("//article[@id='main']")
-                           ?? doc.DocumentNode.SelectSingleNode("//*[@id='main-content']")
-                           ?? doc.DocumentNode.SelectSingleNode("//body");
+        HtmlNode? article = doc.DocumentNode.SelectSingleNode("//article[@id='main']")
+                            ?? doc.DocumentNode.SelectSingleNode("//*[@id='main-content']")
+                            ?? doc.DocumentNode.SelectSingleNode("//body");
 
-        if (article is null) throw new InvalidOperationException("Unable to locate main content on Learn page.");
+        if (article is null)
+        {
+            throw new InvalidOperationException("Unable to locate main content on Learn page.");
+        }
 
-        HtmlNode titleNode = article.SelectSingleNode(".//h1")
-                             ?? doc.DocumentNode.SelectSingleNode("//h1")
-                             ?? doc.DocumentNode.SelectSingleNode("//title");
+        HtmlNode? titleNode = article.SelectSingleNode(".//h1")
+                              ?? doc.DocumentNode.SelectSingleNode("//h1")
+                              ?? doc.DocumentNode.SelectSingleNode("//title");
 
         var title = HtmlEntity.DeEntitize(titleNode?.InnerText?.Trim() ?? string.Empty);
 
@@ -183,7 +241,9 @@ public sealed class LearnPageParser
             if (current.NodeType == HtmlNodeType.Element &&
                 (current.Name == "h2" || current.Name == "h3"))
                 // Stop at next peer heading
+            {
                 break;
+            }
 
             // Skip Learn chrome/feedback wrappers by class/id if necessary (can be extended)
             if (IsLearnChromeNode(current))
@@ -197,6 +257,7 @@ public sealed class LearnPageParser
                 // Extract code blocks inside this segment
                 HtmlNodeCollection codeNodes = current.SelectNodes(".//pre/code");
                 if (codeNodes != null)
+                {
                     foreach (HtmlNode codeNode in codeNodes)
                     {
                         var languageClass = codeNode.GetAttributeValue("class", string.Empty);
@@ -230,6 +291,7 @@ public sealed class LearnPageParser
 
                         codeBlocks.Add(codeBlock);
                     }
+                }
 
                 builder.Append(current.OuterHtml);
             }
@@ -257,14 +319,19 @@ public sealed class LearnPageParser
     /// </summary>
     private static bool IsLearnChromeNode(HtmlNode node)
     {
-        if (node.NodeType != HtmlNodeType.Element) return false;
+        if (node.NodeType != HtmlNodeType.Element)
+        {
+            return false;
+        }
 
         var id = node.GetAttributeValue("id", string.Empty);
         if (id.Contains("toc", StringComparison.OrdinalIgnoreCase) ||
             id.Contains("breadcrumbs", StringComparison.OrdinalIgnoreCase) ||
             id.Contains("rating", StringComparison.OrdinalIgnoreCase) ||
             id.Contains("feedback", StringComparison.OrdinalIgnoreCase))
+        {
             return true;
+        }
 
         var classes = string.Join(" ", node.GetClasses());
         if (classes.Contains("feedback", StringComparison.OrdinalIgnoreCase) ||
@@ -272,7 +339,9 @@ public sealed class LearnPageParser
             classes.Contains("breadcrumb", StringComparison.OrdinalIgnoreCase) ||
             classes.Contains("toc", StringComparison.OrdinalIgnoreCase) ||
             classes.Contains("sidebar", StringComparison.OrdinalIgnoreCase))
+        {
             return true;
+        }
 
         return false;
     }
@@ -286,13 +355,23 @@ public sealed class LearnPageParser
 
     private static string ExtractLanguageFromClass(string classAttr)
     {
-        if (string.IsNullOrWhiteSpace(classAttr)) return null;
+        if (string.IsNullOrWhiteSpace(classAttr))
+        {
+            return null;
+        }
 
         var parts = classAttr.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         foreach (var p in parts)
         {
-            if (p.StartsWith("language-", StringComparison.OrdinalIgnoreCase)) return p["language-".Length..];
-            if (p.StartsWith("lang-", StringComparison.OrdinalIgnoreCase)) return p["lang-".Length..];
+            if (p.StartsWith("language-", StringComparison.OrdinalIgnoreCase))
+            {
+                return p["language-".Length..];
+            }
+
+            if (p.StartsWith("lang-", StringComparison.OrdinalIgnoreCase))
+            {
+                return p["lang-".Length..];
+            }
         }
 
         return null;
@@ -305,7 +384,8 @@ public sealed class LearnPageParser
 
 
 
-    public object Parse(string url)
+/*
+    public LearnPageParseResult Parse(string url)
     {
         HtmlWeb web = new();
         HtmlDocument doc = web.Load(url);
@@ -331,14 +411,15 @@ public sealed class LearnPageParser
         var articleHtml = article.InnerHtml;
         var pageMarkdown = HtmlToMarkdown.Convert(articleHtml);
 
-        /*
+
         //select all the links from the table of contents
       //  HtmlNode? toc = article.SelectSingleNode("//*[@id='ms--toc-content']");
 
         HtmlNodeCollection? links = toc?.SelectNodes("//a[@href]");
         if (links is null || links.Count == 0)
             throw new InvalidOperationException("No links found in the table of contents.");
-        */
+
         return default;
     }
+*/
 }

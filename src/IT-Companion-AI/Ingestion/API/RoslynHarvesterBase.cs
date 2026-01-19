@@ -147,7 +147,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestPath);
 
         if (!File.Exists(manifestPath))
+        {
             throw new FileNotFoundException($"Manifest file not found: {manifestPath}");
+        }
 
         await using FileStream stream = File.OpenRead(manifestPath);
 
@@ -162,7 +164,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             cancellationToken);
 
         if (manifest is null)
+        {
             throw new InvalidOperationException("Failed to deserialize solution manifest.");
+        }
 
         return manifest;
     }
@@ -197,12 +201,16 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             cancellationToken.ThrowIfCancellationRequested();
 
             if (string.IsNullOrWhiteSpace(relativeProjectPath))
+            {
                 continue;
+            }
 
             var fullProjectPath = Path.Combine(repoRoot, relativeProjectPath);
 
             if (!File.Exists(fullProjectPath))
+            {
                 throw new FileNotFoundException($"Project file not found: {fullProjectPath}");
+            }
 
             // This loads the project, references, analyzers, and documents
 
@@ -212,7 +220,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         Solution solution = workspace.CurrentSolution;
 
         if (!solution.Projects.Any())
+        {
             throw new InvalidOperationException("No projects were loaded from the manifest.");
+        }
 
         return solution;
     }
@@ -230,6 +240,7 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         var tpa = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
         if (!string.IsNullOrWhiteSpace(tpa))
+        {
             foreach (var path in tpa.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
             {
                 var fileName = Path.GetFileName(path);
@@ -237,8 +248,11 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                     && ReferenceAssemblyFileNames.Contains(fileName, StringComparer.OrdinalIgnoreCase)
                     && File.Exists(path)
                     && yielded.Add(path))
+                {
                     yield return path;
+                }
             }
+        }
 
         string[] fallbackAssemblies =
         {
@@ -252,7 +266,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         foreach (var fallback in fallbackAssemblies)
             if (!string.IsNullOrWhiteSpace(fallback) && File.Exists(fallback) && yielded.Add(fallback))
+            {
                 yield return fallback;
+            }
 
         // NOTE: We no longer depend on bin/obj being present in the repo. This scan
         //       is effectively a no-op for source-only snapshots, but harmless.
@@ -262,7 +278,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             foreach (var binDir in binDirs)
             foreach (var dll in Directory.EnumerateFiles(binDir, "*.dll", SearchOption.AllDirectories))
                 if (File.Exists(dll) && yielded.Add(dll))
+                {
                     yield return dll;
+                }
         }
     }
 
@@ -278,7 +296,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         try
         {
             var relative = Path.GetRelativePath(repositoryRoot, filePath);
-            if (!string.IsNullOrWhiteSpace(relative) && !relative.StartsWith("..", StringComparison.Ordinal)) return relative.Replace(Path.DirectorySeparatorChar, '/');
+            if (!string.IsNullOrWhiteSpace(relative) && !relative.StartsWith("..", StringComparison.Ordinal))
+            {
+                return relative.Replace(Path.DirectorySeparatorChar, '/');
+            }
         }
         catch
         {
@@ -337,7 +358,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                 ct.ThrowIfCancellationRequested();
 
                 SyntaxNode root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
-                if (root is null) continue;
+                if (root is null)
+                {
+                    continue;
+                }
 
                 SemanticModel semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
 
@@ -350,6 +374,7 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
                     INamedTypeSymbol symbol = null;
                     if (semanticModel is not null)
+                    {
                         try
                         {
                             symbol = semanticModel.GetDeclaredSymbol(typeDecl, ct);
@@ -358,13 +383,21 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                         {
                             symbol = null;
                         }
+                    }
 
                     if (symbol is not null && symbol.TypeKind is not TypeKind.Error)
+                    {
                         apiType = CreateApiTypeFromSymbol(symbol, typeDecl, ct);
+                    }
                     else
+                    {
                         apiType = CreateApiTypeFromSyntax(typeDecl);
+                    }
 
-                    if (string.IsNullOrWhiteSpace(apiType.SemanticUid)) continue;
+                    if (string.IsNullOrWhiteSpace(apiType.SemanticUid))
+                    {
+                        continue;
+                    }
 
                     output.Add(apiType);
                 }
@@ -525,7 +558,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                 if (typeDecl is ClassDeclarationSyntax && typeNames.Count > 0)
                 {
                     baseTypeUid = typeNames[0];
-                    if (typeNames.Count > 1) interfaces = string.Join(";", typeNames.Skip(1).OrderBy(s => s, StringComparer.Ordinal));
+                    if (typeNames.Count > 1)
+                    {
+                        interfaces = string.Join(";", typeNames.Skip(1).OrderBy(s => s, StringComparer.Ordinal));
+                    }
                 }
                 else
                 {
@@ -615,7 +651,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         {
             ct.ThrowIfCancellationRequested();
 
-            if (string.IsNullOrWhiteSpace(type.SemanticUid)) continue;
+            if (string.IsNullOrWhiteSpace(type.SemanticUid))
+            {
+                continue;
+            }
 
             if (roslynTypeSymbolsByUid.TryGetValue(type.SemanticUid, out INamedTypeSymbol typeSymbol) &&
                 typeSymbol is not null)
@@ -624,16 +663,27 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    if (member.IsImplicitlyDeclared) continue;
+                    if (member.IsImplicitlyDeclared)
+                    {
+                        continue;
+                    }
 
                     if (member is IMethodSymbol method &&
                         method.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.EventAdd
                             or MethodKind.EventRemove)
+                    {
                         continue;
+                    }
 
-                    if (member is IFieldSymbol { AssociatedSymbol: not null }) continue;
+                    if (member is IFieldSymbol { AssociatedSymbol: not null })
+                    {
+                        continue;
+                    }
 
-                    if (member.DeclaredAccessibility == Accessibility.NotApplicable) continue;
+                    if (member.DeclaredAccessibility == Accessibility.NotApplicable)
+                    {
+                        continue;
+                    }
 
                     SyntaxNode memberDecl = null;
                     try
@@ -765,7 +815,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                 ct.ThrowIfCancellationRequested();
 
                 SyntaxNode root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
-                if (root is null) continue;
+                if (root is null)
+                {
+                    continue;
+                }
 
                 var typeDecls = root.DescendantNodes().OfType<TypeDeclarationSyntax>();
                 foreach (TypeDeclarationSyntax typeDecl in typeDecls)
@@ -777,14 +830,19 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
                     if (!string.Equals(typeName, type.Name, StringComparison.Ordinal) ||
                         !string.Equals(ns, type.NamespacePath, StringComparison.Ordinal))
+                    {
                         continue;
+                    }
 
                     foreach (MemberDeclarationSyntax memberDecl in typeDecl.Members)
                     {
                         ct.ThrowIfCancellationRequested();
 
                         ApiMember apiMember = CreateApiMemberFromSyntax(memberDecl, type);
-                        if (apiMember is null) continue;
+                        if (apiMember is null)
+                        {
+                            continue;
+                        }
 
                         output.Add(apiMember);
                     }
@@ -812,7 +870,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             _ => string.Empty
         };
 
-        if (string.IsNullOrWhiteSpace(name)) return null;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return null;
+        }
 
         var kind = memberDecl.Kind().ToString();
         var methodKind = memberDecl is MethodDeclarationSyntax ? "Ordinary" : null;
@@ -902,9 +963,15 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         {
             ct.ThrowIfCancellationRequested();
 
-            if (string.IsNullOrWhiteSpace(member.SemanticUid)) continue;
+            if (string.IsNullOrWhiteSpace(member.SemanticUid))
+            {
+                continue;
+            }
 
-            if (!roslynMemberSymbolsByUid.TryGetValue(member.SemanticUid, out ISymbol symbol)) continue;
+            if (!roslynMemberSymbolsByUid.TryGetValue(member.SemanticUid, out ISymbol symbol))
+            {
+                continue;
+            }
 
             IReadOnlyList<IParameterSymbol> parameters = symbol switch
             {
@@ -916,7 +983,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                 _ => Array.Empty<IParameterSymbol>()
             };
 
-            if (parameters.Count == 0) continue;
+            if (parameters.Count == 0)
+            {
+                continue;
+            }
 
             for (var i = 0; i < parameters.Count; i++)
             {
@@ -970,7 +1040,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
     private static string NormalizePath(string path)
     {
-        if (string.IsNullOrWhiteSpace(path)) return null;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
 
         return path.Replace('\\', '/');
     }
@@ -1051,7 +1124,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         // Assign deterministic Ids so members/parameters can link without needing a DbContext.
         foreach (ApiType t in uniqueTypes)
             if (t.Id == Guid.Empty)
+            {
                 t.Id = Guid.NewGuid();
+            }
 
         Dictionary<string, ISymbol> roslynMemberSymbolsByUid = new(StringComparer.Ordinal);
         List<ApiMember> members = new(Math.Max(128, uniqueTypes.Count * 8));
@@ -1074,7 +1149,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         foreach (ApiMember m in uniqueMembers)
             if (m.Id == Guid.Empty)
+            {
                 m.Id = Guid.NewGuid();
+            }
 
         List<ApiParameter> parameters = new(Math.Max(256, uniqueMembers.Count * 2));
         await ExtractParametersAsync(solution, uniqueMembers, roslynMemberSymbolsByUid, parameters, ct)
@@ -1102,9 +1179,13 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
             List<ApiParameter> typeParameters = new();
             if (typeMembers.Count > 0)
+            {
                 foreach (ApiMember m in typeMembers)
                     if (parametersByMember.TryGetValue(m.Id, out var mp))
+                    {
                         typeParameters.AddRange(mp);
+                    }
+            }
 
             trees.Add(new SyntaxTypeTree(t, typeMembers.ToList(), typeParameters));
         }
@@ -1130,24 +1211,36 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         HashSet<string> typeUidSet = new(typeSemanticUids.Where(u => !string.IsNullOrWhiteSpace(u)), StringComparer.Ordinal);
         Dictionary<string, INamedTypeSymbol> result = new(StringComparer.Ordinal);
 
-        if (typeUidSet.Count == 0) return result;
+        if (typeUidSet.Count == 0)
+        {
+            return result;
+        }
 
         foreach (Project project in solution.Projects)
         {
             ct.ThrowIfCancellationRequested();
 
             Compilation compilation = await project.GetCompilationAsync(ct).ConfigureAwait(false);
-            if (compilation is null) continue;
+            if (compilation is null)
+            {
+                continue;
+            }
 
             foreach (Document document in project.Documents)
             {
                 ct.ThrowIfCancellationRequested();
 
                 SyntaxNode root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
-                if (root is null) continue;
+                if (root is null)
+                {
+                    continue;
+                }
 
                 SemanticModel semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
-                if (semanticModel is null) continue;
+                if (semanticModel is null)
+                {
+                    continue;
+                }
 
                 foreach (BaseTypeDeclarationSyntax typeDecl in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
                 {
@@ -1163,10 +1256,16 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                         continue;
                     }
 
-                    if (symbol is null) continue;
+                    if (symbol is null)
+                    {
+                        continue;
+                    }
 
                     var uid = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                    if (!typeUidSet.Contains(uid)) continue;
+                    if (!typeUidSet.Contains(uid))
+                    {
+                        continue;
+                    }
 
                     // Prefer the first-seen declaration per project; higher-level dedupe happens in WalkSolutionAsync.
                     result.TryAdd(uid, symbol);
@@ -1189,7 +1288,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     /// </summary>
     private static (string Summary, string Remarks) ExtractSummaryAndRemarks(string xml)
     {
-        if (string.IsNullOrWhiteSpace(xml)) return (null, null);
+        if (string.IsNullOrWhiteSpace(xml))
+        {
+            return (null, null);
+        }
 
         try
         {
@@ -1222,10 +1324,16 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                 t.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
                 t.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia));
 
-        if (trivia == default) return (null, null);
+        if (trivia == default)
+        {
+            return (null, null);
+        }
 
         SyntaxNode structure = trivia.GetStructure();
-        if (structure is not DocumentationCommentTriviaSyntax doc) return (null, null);
+        if (structure is not DocumentationCommentTriviaSyntax doc)
+        {
+            return (null, null);
+        }
 
         var summary = doc.Content
             .OfType<XmlElementSyntax>()
@@ -1253,7 +1361,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     /// </summary>
     public static (string FilePath, int? StartLine, int? EndLine) GetSourceSpan(SyntaxTree tree, TextSpan span)
     {
-        if (tree is null) return (null, null, null);
+        if (tree is null)
+        {
+            return (null, null, null);
+        }
 
         FileLinePositionSpan lineSpan = tree.GetLineSpan(span);
         var startLine = lineSpan.StartLinePosition.Line + 1;
@@ -1273,21 +1384,39 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     /// </summary>
     public static string BuildTypeParameterConstraintString(ITypeParameterSymbol p)
     {
-        if (p is null) return null;
+        if (p is null)
+        {
+            return null;
+        }
 
         List<string> parts = new();
 
-        if (p.HasReferenceTypeConstraint) parts.Add("class");
+        if (p.HasReferenceTypeConstraint)
+        {
+            parts.Add("class");
+        }
 
-        if (p.HasValueTypeConstraint) parts.Add("struct");
+        if (p.HasValueTypeConstraint)
+        {
+            parts.Add("struct");
+        }
 
-        if (p.HasNotNullConstraint) parts.Add("notnull");
+        if (p.HasNotNullConstraint)
+        {
+            parts.Add("notnull");
+        }
 
-        if (p.HasUnmanagedTypeConstraint) parts.Add("unmanaged");
+        if (p.HasUnmanagedTypeConstraint)
+        {
+            parts.Add("unmanaged");
+        }
 
         foreach (ITypeSymbol t in p.ConstraintTypes) parts.Add(t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 
-        if (p.HasConstructorConstraint) parts.Add("new()");
+        if (p.HasConstructorConstraint)
+        {
+            parts.Add("new()");
+        }
 
         return parts.Count == 0 ? null : $"{p.Name}:{string.Join(",", parts)}";
     }
@@ -1302,10 +1431,16 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     private static string GetNamespaceFromSyntax(SyntaxNode node)
     {
         NamespaceDeclarationSyntax nsDecl = node.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
-        if (nsDecl is not null) return nsDecl.Name.ToString();
+        if (nsDecl is not null)
+        {
+            return nsDecl.Name.ToString();
+        }
 
         FileScopedNamespaceDeclarationSyntax fileNsDecl = node.Ancestors().OfType<FileScopedNamespaceDeclarationSyntax>().FirstOrDefault();
-        if (fileNsDecl is not null) return fileNsDecl.Name.ToString();
+        if (fileNsDecl is not null)
+        {
+            return fileNsDecl.Name.ToString();
+        }
 
         return null;
     }
@@ -1324,7 +1459,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             ? $"<{string.Join(",", typeParams.Select<TypeParameterSyntax, string>(p => p.Identifier.Text).OrderBy(s => s, StringComparer.Ordinal))}>"
             : string.Empty;
 
-        if (string.IsNullOrWhiteSpace(ns)) return $"global::{name}{genericSuffix}";
+        if (string.IsNullOrWhiteSpace(ns))
+        {
+            return $"global::{name}{genericSuffix}";
+        }
 
         return $"global::{ns}.{name}{genericSuffix}";
     }
@@ -1338,11 +1476,31 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
     private static string GetAccessibilityFromModifiers(SyntaxTokenList modifiers)
     {
-        if (modifiers.Any(SyntaxKind.PublicKeyword)) return "Public";
-        if (modifiers.Any(SyntaxKind.InternalKeyword) && modifiers.Any(SyntaxKind.ProtectedKeyword)) return "ProtectedInternal";
-        if (modifiers.Any(SyntaxKind.InternalKeyword)) return "Internal";
-        if (modifiers.Any(SyntaxKind.ProtectedKeyword)) return "Protected";
-        if (modifiers.Any(SyntaxKind.PrivateKeyword)) return "Private";
+        if (modifiers.Any(SyntaxKind.PublicKeyword))
+        {
+            return "Public";
+        }
+
+        if (modifiers.Any(SyntaxKind.InternalKeyword) && modifiers.Any(SyntaxKind.ProtectedKeyword))
+        {
+            return "ProtectedInternal";
+        }
+
+        if (modifiers.Any(SyntaxKind.InternalKeyword))
+        {
+            return "Internal";
+        }
+
+        if (modifiers.Any(SyntaxKind.ProtectedKeyword))
+        {
+            return "Protected";
+        }
+
+        if (modifiers.Any(SyntaxKind.PrivateKeyword))
+        {
+            return "Private";
+        }
+
         return null;
     }
 
@@ -1375,7 +1533,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
     private static string ExtractGenericConstraintsFromSyntax(BaseTypeDeclarationSyntax typeDecl)
     {
-        if (typeDecl is not TypeDeclarationSyntax tds || tds.ConstraintClauses.Count == 0) return null;
+        if (typeDecl is not TypeDeclarationSyntax tds || tds.ConstraintClauses.Count == 0)
+        {
+            return null;
+        }
 
         var constraints = new List<string>();
 
@@ -1401,7 +1562,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                         break;
                 }
 
-            if (parts.Count > 0) constraints.Add($"{name}:{string.Join(",", parts)}");
+            if (parts.Count > 0)
+            {
+                constraints.Add($"{name}:{string.Join(",", parts)}");
+            }
         }
 
         return constraints.Count == 0 ? null : string.Join(";", constraints.OrderBy(s => s, StringComparer.Ordinal));

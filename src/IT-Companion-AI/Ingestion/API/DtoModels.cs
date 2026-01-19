@@ -1,4 +1,5 @@
-﻿namespace ITCompanionAI.Ingestion.API; 
+﻿namespace ITCompanionAI.Ingestion.API;
+
 
 public sealed class ApiTypeExtraction
 {
@@ -21,6 +22,10 @@ public sealed class ApiTypeExtraction
     public int EndLine { get; set; }
 }
 
+
+
+
+
 public sealed class ApiMemberExtraction
 {
     public string SemanticUid { get; set; }
@@ -41,6 +46,10 @@ public sealed class ApiMemberExtraction
     public int StartLine { get; set; }
     public int EndLine { get; set; }
 }
+
+
+
+
 
 public sealed class ApiParameterExtraction
 {

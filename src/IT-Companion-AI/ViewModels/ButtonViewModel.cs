@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 
 using ITCompanionAI.Ingestion.API;
+using ITCompanionAI.Ingestion.Docs;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,12 +13,9 @@ using KBContext = ITCompanionAI.EFModels.KBContext;
 namespace ITCompanionAI.ViewModels;
 
 
-public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
+public partial class ButtonViewModel : BaseViewModel
 {
     private readonly ILogger<ButtonViewModel> logger;
-
-
-    [ObservableProperty] private string _ingestTarget;
 
 
 
@@ -30,9 +27,11 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     public ButtonViewModel()
     {
         logger = App.Services.GetRequiredService<ILogger<ButtonViewModel>>();
-
-
         logger.LogInformation("ButtonViewModel initialized.");
+        HarvestApiCommand = new RelayCommand(async () => await HarvestApi());
+        GetMSLearnCommand = new RelayCommand(async () => await GetMSLearn());
+        IngestLocalCodeCommand = new RelayCommand(IngestLocalCode);
+        HarvestDocCommand = new RelayCommand(async () => await HarvestDocAsync());
     }
 
 
@@ -40,6 +39,14 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 
 
 
+
+
+    public RelayCommand IngestLocalCodeCommand { get; set; }
+    public RelayCommand HarvestDocCommand { get; set; }
+    public RelayCommand HarvestApiCommand { get; set; }
+    public RelayCommand GetMSLearnCommand { get; set; }
+
+    public string IngestTarget { get; set; }
 
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -53,8 +60,7 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
 
     /// Executes the action behind the "Harvest Api" button.
     /// </summary>
-    [RelayCommand]
-    public async Task HarvestApiAsync()
+    public async Task HarvestApi()
     {
         logger.LogInformation("Application Starting Up");
 
@@ -89,8 +95,7 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     /// <summary>
     ///     Executes the action behind the "Harvest xml docx" button.
     /// </summary>
-    [RelayCommand]
-    private async Task HarvestXmlDocxAsync()
+    private async Task HarvestDocAsync()
     {
         logger.LogInformation("Ingestion Complete");
         await Task.CompletedTask.ConfigureAwait(false);
@@ -106,10 +111,10 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     /// <summary>
     ///     Executes the action behind the "Get Doc Blocs" button.
     /// </summary>
-    [RelayCommand]
-    private async Task GetDocBlocsAsync()
+    private async Task GetMSLearn()
     {
-        await Entrypoint.Main(_ingestTarget);
+        DocIngester ingester = new();
+        await ingester.RunIngestion(IngestTarget).ConfigureAwait(false);
 
 
         logger.LogInformation("Ingestion Complete");
@@ -125,7 +130,6 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     /// <summary>
     ///     Executes the action behind the "Harvest Docs" button.
     /// </summary>
-    [RelayCommand]
     private async Task HarvestDocsAsync()
     {
         await Task.CompletedTask.ConfigureAwait(false);
@@ -142,8 +146,7 @@ public partial class ButtonViewModel : BaseViewModel, INotifyPropertyChanged
     /// <summary>
     ///     Executes the action behind the "Action 2" button.
     /// </summary>
-    [RelayCommand]
-    private void Action2()
+    private void IngestLocalCode()
     {
         logger.LogInformation("Ingestion Complete");
     }

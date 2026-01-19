@@ -1,17 +1,12 @@
-﻿// Project Name: SKAgent
-// File Name: APIIngestion.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+
 using ApiMember = ITCompanionAI.EFModels.ApiMember;
 using ApiParameter = ITCompanionAI.EFModels.ApiParameter;
 using ApiType = ITCompanionAI.EFModels.ApiType;
 using KBContext = ITCompanionAI.EFModels.KBContext;
+
+
 
 namespace ITCompanionAI.Ingestion.API;
 
@@ -23,6 +18,7 @@ public class APIIngestion : RoslynHarvesterBase
     private readonly KBContext _db;
 
     private Guid? runid;
+
 
 
 
@@ -44,6 +40,8 @@ public class APIIngestion : RoslynHarvesterBase
 
 
 
+
+
     public async Task<Guid> StartIngestionAsync()
     {
         var schemaVersion = "1.0";
@@ -52,19 +50,19 @@ public class APIIngestion : RoslynHarvesterBase
         // The solution serves as the root container for all projects, files, and code elements within the codebase being analyzed.
         // TODO: Move this path into configuration.
         SolutionManifest manifest = new();
-       
-       
-        var slnpath=@"F:\SkApiRepo\src\semantic-kernel-dotnet-1.68.0\dotnet";
+
+
+        var slnpath = @"F:\SkApiRepo\src\semantic-kernel-dotnet-1.68.0\dotnet";
         // Load the solution from the directory.
-        var solutionpath=@"F:\SkApiRepo\semantic-kernel\dotnet\";
-        
+        var solutionpath = @"F:\SkApiRepo\semantic-kernel\dotnet\";
+
         manifest = await LoadManifestAsync(Path.Combine(slnpath, "SK-release.slnf"));
-        
-            var solution =await LoadSolutionFromManifestAsync(manifest, solutionpath, CancellationToken.None);
+
+        Solution solution = await LoadSolutionFromManifestAsync(manifest, solutionpath, CancellationToken.None);
         // Begin ingestion run.
         Guid ingestionRunId;
         {
-            Tuple<Guid?> ingestionRunIdResult =
+            var ingestionRunIdResult =
                 await _db.SpBeginIngestionRunAsync(schemaVersion, notes, Guid.NewGuid()).ConfigureAwait(false);
 
             ingestionRunId = ingestionRunIdResult.Item1
@@ -86,7 +84,7 @@ public class APIIngestion : RoslynHarvesterBase
             var packageVersion = "";
             var configJson = "{}";
 
-            Tuple<Guid?> snapshotIdResult = await _db.SpCreateSourceSnapshotAsync(
+            var snapshotIdResult = await _db.SpCreateSourceSnapshotAsync(
                     ingestionRunId,
                     snapshotUid,
                     repoUrl,
@@ -111,13 +109,11 @@ public class APIIngestion : RoslynHarvesterBase
         await ExtractTypesAsync(solution, apiTypes, CancellationToken.None).ConfigureAwait(false);
 
         // Ensure IDs exist for all types BEFORE member extraction so ApiFeatureId is non-empty.
-        foreach (var type in apiTypes)
-        {
+        foreach (ApiType type in apiTypes)
             if (type.Id == Guid.Empty)
             {
                 type.Id = Guid.NewGuid();
             }
-        }
 
         // Build type symbol map now that types are extracted.
         var roslynTypeSymbolsByUid = await BuildTypeSymbolMapAsync(
@@ -140,13 +136,11 @@ public class APIIngestion : RoslynHarvesterBase
             .ConfigureAwait(false);
 
         // Ensure IDs exist for all members BEFORE parameter extraction so ApiMemberId is non-empty.
-        foreach (var member in apiMembers)
-        {
+        foreach (ApiMember member in apiMembers)
             if (member.Id == Guid.Empty)
             {
                 member.Id = Guid.NewGuid();
             }
-        }
 
         // Parameters
         List<ApiParameter> apiParameters = new();
@@ -310,7 +304,6 @@ public class APIIngestion : RoslynHarvesterBase
 
         return sourceSnapshotId;
     }
-
 }
 
 
@@ -321,10 +314,24 @@ public sealed class IngestionVerifier
 {
     private readonly KBContext _db;
 
+
+
+
+
+
+
+
     public IngestionVerifier(KBContext db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
+
+
+
+
+
+
+
 
     public async Task VerifyApiTypesAsync(Guid sourceSnapshotId, CancellationToken ct = default)
     {
@@ -340,7 +347,7 @@ public sealed class IngestionVerifier
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        foreach (var t in types)
+        foreach (ApiType t in types)
         {
             // 1. SemanticUid must not be null/empty
             if (string.IsNullOrWhiteSpace(t.SemanticUid))
@@ -379,6 +386,13 @@ public sealed class IngestionVerifier
         }
     }
 
+
+
+
+
+
+
+
     public async Task VerifyMembersAndParametersAsync(Guid sourceSnapshotId, CancellationToken ct = default)
     {
         var types = await _db.ApiTypes
@@ -394,7 +408,7 @@ public sealed class IngestionVerifier
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        foreach (var m in members)
+        foreach (ApiMember m in members)
         {
             if (string.IsNullOrWhiteSpace(m.SemanticUid))
             {
@@ -414,7 +428,7 @@ public sealed class IngestionVerifier
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        foreach (var p in parameters)
+        foreach (ApiParameter p in parameters)
         {
             if (!memberIds.Contains(p.ApiMemberId))
             {
@@ -428,4 +442,3 @@ public sealed class IngestionVerifier
         }
     }
 }
-

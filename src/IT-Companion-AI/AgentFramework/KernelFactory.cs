@@ -1,15 +1,8 @@
-﻿// Project Name: SKAgent
-// File Name: KernelFactory.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+
 
 
 #pragma warning disable SKEXP0110
@@ -21,6 +14,7 @@ namespace ITCompanionAI.AgentFramework;
 public static class KernelFactory
 {
     private static readonly object SyncRoot = new();
+
 
 
 
@@ -61,6 +55,7 @@ public static class KernelFactory
 
 
 
+
     /// <summary>
     ///     Creates a default kernel using all configured models for convenience.
     /// </summary>
@@ -70,6 +65,7 @@ public static class KernelFactory
     {
         return GetKernel(loggerFactory);
     }
+
 
 
 
@@ -104,6 +100,7 @@ public static class KernelFactory
 
         return builder.Build();
     }
+
 
 
 

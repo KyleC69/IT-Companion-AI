@@ -3,7 +3,6 @@ using ITCompanionAI.Ingestion.Docs;
 
 
 
-namespace ITCompanionAI.Utilities;
 
 
 public static class TocFlattener
@@ -30,12 +29,16 @@ public static class TocFlattener
             };
 
             if (item.Children.Count > 0)
+            {
                 foreach (FlatTocEntry child in Flatten(item.Children, breadcrumb.ToList(), depth + 1))
                     yield return child;
+            }
 
             if (item.NestedItems.Count > 0)
+            {
                 foreach (FlatTocEntry child in Flatten(item.NestedItems, breadcrumb.ToList(), depth + 1))
                     yield return child;
+            }
         }
     }
 }

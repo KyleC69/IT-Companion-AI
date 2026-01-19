@@ -8,8 +8,7 @@
     xmlns:local="using:ITCompanionAI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local1="using:ITCompanionAI.Converters"
-    xmlns:vm="using:ITCompanionAI.ViewModels"
-    mc:Ignorable="d"  >
+    mc:Ignorable="d">
     <Page.Resources>
         <local1:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <DataTemplate x:Key="MessageTemplate">
@@ -37,7 +36,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-         
+
             <ProgressBar Grid.Row="2" IsIndeterminate="True"
                          Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
                          Height="4"
@@ -47,7 +46,7 @@
                               ItemTemplate="{StaticResource MessageTemplate}" />
             </ScrollViewer>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
-                 
+
                 <TextBox Text="{Binding UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          AcceptsReturn="True"
                          Height="80"
@@ -65,13 +64,13 @@
                             Command="{Binding CancelCommand}"
                             IsEnabled="{Binding CanCancel}" />
                 </StackPanel>
-                
-            </StackPanel>
-                <local:ButtonOverlay Grid.Row="0" Grid.RowSpan="2" Background="Brown" Height="200"
-                                     VerticalAlignment="Top"
-                                     Canvas.ZIndex="1000" />
 
-  
+            </StackPanel>
+            <local:ButtonOverlay Grid.Row="0" Grid.RowSpan="2" Background="Brown" Height="200"
+                                 VerticalAlignment="Top"
+                                 Canvas.ZIndex="1000" />
+
+
         </Grid>
     </Page.Content>
 </Page>

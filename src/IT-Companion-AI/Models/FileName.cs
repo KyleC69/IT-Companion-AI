@@ -1,14 +1,8 @@
-﻿// Project Name: SKAgent
-// File Name: FileName.cs
-// Author: Kyle Crowder
-// Github:  OldSkoolzRoolz KyleC69
-// License: All Rights Reserved. No use without consent.
-// Do not remove file headers
-
-
-using ApiMember = ITCompanionAI.EFModels.ApiMember;
+﻿using ApiMember = ITCompanionAI.EFModels.ApiMember;
 using ApiParameter = ITCompanionAI.EFModels.ApiParameter;
 using ApiType = ITCompanionAI.EFModels.ApiType;
+
+
 
 namespace ITCompanionAI.Models;
 
@@ -29,6 +23,7 @@ public sealed class SyntaxTypeTree
         MemberSymbols.AddRange(memberSymbols);
         ParameterSymbols.AddRange(parameterSymbols);
     }
+
 
 
 

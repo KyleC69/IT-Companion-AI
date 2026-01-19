@@ -11,10 +11,10 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
-
             <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}" />
             <SolidColorBrush x:Key="WhiteBrush" Color="White" />
             <SolidColorBrush x:Key="BlackBrush" Color="Black" />
