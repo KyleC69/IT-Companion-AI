@@ -1,16 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 
-using ITCompanionAI.Ingestion.API;
 using ITCompanionAI.Ingestion.Docs;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using KBContext = ITCompanionAI.EFModels.KBContext;
 
 
 
 namespace ITCompanionAI.ViewModels;
+
+
+
 
 
 public partial class ButtonViewModel : BaseViewModel
@@ -31,7 +32,7 @@ public partial class ButtonViewModel : BaseViewModel
         HarvestApiCommand = new RelayCommand(async () => await HarvestApi());
         GetMSLearnCommand = new RelayCommand(async () => await GetMSLearn());
         IngestLocalCodeCommand = new RelayCommand(IngestLocalCode);
-        HarvestDocCommand = new RelayCommand(async () => await HarvestDocAsync());
+        HarvestDocsCommand = new RelayCommand(async () => await HarvestDocAsync());
     }
 
 
@@ -42,14 +43,11 @@ public partial class ButtonViewModel : BaseViewModel
 
 
     public RelayCommand IngestLocalCodeCommand { get; set; }
-    public RelayCommand HarvestDocCommand { get; set; }
+    public RelayCommand HarvestDocsCommand { get; set; }
     public RelayCommand HarvestApiCommand { get; set; }
     public RelayCommand GetMSLearnCommand { get; set; }
 
     public string IngestTarget { get; set; }
-
-
-    public event PropertyChangedEventHandler PropertyChanged;
 
 
 
@@ -68,15 +66,15 @@ public partial class ButtonViewModel : BaseViewModel
         //  var results =  await harvester.ExtractAsync(filePath, CancellationToken.None);
 
 
-        //   var ingester = new APIIngestion(new KBContext());
-        //  var sourceSnapshotId =  await ingester.StartIngestionAsync();
+        // APIIngestion ingester = new(new KBContext());
+        //   Guid sourceSnapshotId = await ingester.StartIngestionAsync();
+
+        /*
         Guid sourceSnapshotId = new("997BE774-96B5-44D8-B6AD-14FC2EBDDABB");
-
-
         IngestionVerifier verifier = new(new KBContext());
         await verifier.VerifyApiTypesAsync(sourceSnapshotId, CancellationToken.None);
         await verifier.VerifyMembersAndParametersAsync(sourceSnapshotId, CancellationToken.None);
-
+        */
 
         logger.LogInformation("Ingestion Complete");
     }
@@ -109,6 +107,9 @@ public partial class ButtonViewModel : BaseViewModel
     /// </summary>
     private async Task GetMSLearn()
     {
+        //  LearnIngestionRunner runner = new(new LearnPageParser(), new DocRepository("Data Source=Desktop-NC01091;Initial Catalog=KnowledgeBase;Integrated Security=True;Encrypt=True;Trust Server Certificate=True"));
+        //runner.IngestAsync([IngestTarget], Guid.Empty, Guid.Empty, CancellationToken.None).ConfigureAwait(false);
+
         DocIngester ingester = new();
         await ingester.RunIngestion(IngestTarget).ConfigureAwait(false);
 

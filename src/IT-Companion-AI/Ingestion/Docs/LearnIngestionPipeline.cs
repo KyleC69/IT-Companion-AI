@@ -1,20 +1,16 @@
-﻿#nullable enable
+﻿using ITCompanionAI.Services;
 
-using ITCompanionAI.Services;
-
-using Markdig;
-
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-
-using System.Data;
-using System.Text.Json;
 
 using RMarkdown = ReverseMarkdown;
 
 
 
+
 namespace ITCompanionAI.Ingestion.Docs;
+
+
+
 
 
 public sealed class LearnIngestionPipeline
@@ -44,6 +40,8 @@ public sealed class LearnIngestionPipeline
 
 
 
+
+    /*
 
     public async Task IngestAsync(string baseUrl)
     {
@@ -116,87 +114,49 @@ public sealed class LearnIngestionPipeline
 
 
             // 11. Build page model
-            DocsPage page = new()
+            DocPage page = new()
             {
-                Url = entry.Url,
-                Uid = entry.Uid,
-                Title = entry.Title,
-                Breadcrumb = entry.Breadcrumb,
-                Html = html, // Raw response from server
-                Markdown = markdown,
-                NormalizedMarkdown = normalized,
-                Hash = hash,
-                LastFetched = DateTimeOffset.UtcNow
+
+                    SemanticUid = entry.Uid,
+                    SourceSnapshotId = default,
+                    SourcePath = null,
+                    Url = entry.Url,
+                    RawMarkdown = null,
+                    VersionNumber = 0,
+                    CreatedIngestionRunId = default,
+                    UpdatedIngestionRunId = null,
+                    RemovedIngestionRunId = null,
+                    ValidFromUtc = default,
+                    ValidToUtc = null,
+                    IsActive = false,
+                    ContentHash = new byte[]
+                    {
+                    },
+                    SemanticUidHash = new byte[]
+                    {
+                    },
+                    RawPageSource = null,
+                    CreatedIngestionRun = null,
+                    DocSections = null,
+                    SourceSnapshot = null,
+
+                    Title = entry.Title,
+                    Language = null
+
+
             };
 
             // 12. Persist
-            await SaveDocumentAsync(page);
+            //await SaveDocumentAsync(page);
 
             Console.WriteLine($"[SAVED] {entry.Url}");
+
+
+
+
+
         }
+
     }
-
-
-
-
-
-
-
-
-    private async Task SaveDocumentAsync(DocsPage page)
-    {
-        var sqlConnectionString = "Data Source=DESKTOP-NC01091;Initial Catalog=AIDataRAG;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False;Command Timeout=30";
-        await using SqlConnection connection = new(sqlConnectionString);
-        await connection.OpenAsync();
-
-        // Check if document already exists
-        SqlCommand selectCommand = new("SELECT COUNT(*) FROM Documents WHERE Url = @Url", connection);
-        _ = selectCommand.Parameters.AddWithValue("@Url", page.Url);
-        var exists = (int)await selectCommand.ExecuteScalarAsync() > 0;
-
-        if (exists)
-        {
-            // Update existing document
-            await using SqlCommand updateCommand = new(
-                "UPDATE Documents SET Uid = @Uid, Title = @Title, Breadcrumb = @Breadcrumb, DocHtml = @DocHtml, NormalizedMarkdown = @NormalizedMarkdown, Hash = @Hash, LastFetched = @LastFetched WHERE Url = @Url",
-                connection);
-            AddDocumentParameters(updateCommand, page);
-            _ = await updateCommand.ExecuteNonQueryAsync();
-        }
-        else
-        {
-            // Insert new document
-            await using SqlCommand insertCommand = new(
-                "INSERT INTO Documents (Url, Uid, Title, ContentRaw, Breadcrumb, DocHtml, NormalizedMarkdown, Hash, LastFetched) VALUES (@Url, @Uid, @Title, @ContentRaw, @Breadcrumb, @DocHtml, @NormalizedMarkdown, @Hash, @LastFetched)",
-                connection);
-            AddDocumentParameters(insertCommand, page);
-            insertCommand.Parameters.Add("@ContentRaw", SqlDbType.NVarChar, -1).Value = (object?)page.Html ?? DBNull.Value;
-            _ = await insertCommand.ExecuteNonQueryAsync();
-        }
-    }
-
-
-
-
-
-
-
-
-    private static void AddDocumentParameters(SqlCommand command, DocsPage page)
-    {
-        command.Parameters.Add("@Url", SqlDbType.NVarChar, 2048).Value = page.Url;
-
-        // Keep Uid as NVARCHAR to match DocsPage.Uid (string) and avoid implicit conversions.
-        command.Parameters.Add("@Uid", SqlDbType.NVarChar, 128).Value = (object?)page.Uid ?? DBNull.Value;
-
-        command.Parameters.Add("@Title", SqlDbType.NVarChar, 512).Value = (object?)page.Title ?? DBNull.Value;
-
-        var breadcrumbJson = page.Breadcrumb is null ? null : JsonSerializer.Serialize(page.Breadcrumb);
-        command.Parameters.Add("@Breadcrumb", SqlDbType.NVarChar, -1).Value = (object?)breadcrumbJson ?? DBNull.Value;
-
-        command.Parameters.Add("@DocHtml", SqlDbType.NVarChar, -1).Value = (object?)page.Html ?? DBNull.Value;
-        command.Parameters.Add("@NormalizedMarkdown", SqlDbType.NVarChar, -1).Value = (object?)page.NormalizedMarkdown ?? DBNull.Value;
-        command.Parameters.Add("@Hash", SqlDbType.NVarChar, 128).Value = (object?)page.Hash ?? DBNull.Value;
-        command.Parameters.Add("@LastFetched", SqlDbType.DateTimeOffset).Value = page.LastFetched;
-    }
+    */
 }

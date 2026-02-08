@@ -9,15 +9,16 @@ using Microsoft.CodeAnalysis.Text;
 
 using Octokit;
 
-using ApiMember = ITCompanionAI.EFModels.ApiMember;
-using ApiParameter = ITCompanionAI.EFModels.ApiParameter;
-using ApiType = ITCompanionAI.EFModels.ApiType;
 using Document = Microsoft.CodeAnalysis.Document;
 using Project = Microsoft.CodeAnalysis.Project;
 
 
 
+
 namespace ITCompanionAI.Ingestion.API;
+
+
+
 
 
 public class RoslynHarvesterBase : CSharpSyntaxWalker
@@ -26,12 +27,12 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
     private static readonly string[] ReferenceAssemblyFileNames =
     {
-        "System.Runtime.dll",
-        "System.Collections.dll",
-        "System.Linq.dll",
-        "System.Threading.Tasks.dll",
-        "System.Console.dll",
-        "netstandard.dll"
+            "System.Runtime.dll",
+            "System.Collections.dll",
+            "System.Linq.dll",
+            "System.Threading.Tasks.dll",
+            "System.Console.dll",
+            "netstandard.dll"
     };
 
     private readonly IGitHubClientFactory _gitHubClientFactory;
@@ -112,12 +113,12 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     ///     <paramref name="destinationDirectory" /> is null/empty/whitespace.
     /// </exception>
     protected async Task DownloadRepositoryAsync(
-        string owner,
-        string repo,
-        string branch,
-        string destinationDirectory,
-        Func<string, bool> includePath,
-        CancellationToken cancellationToken)
+            string owner,
+            string repo,
+            string branch,
+            string destinationDirectory,
+            Func<string, bool> includePath,
+            CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(owner);
         ArgumentException.ThrowIfNullOrWhiteSpace(repo);
@@ -141,8 +142,8 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
     public static async Task<SolutionManifest> LoadManifestAsync(
-        string manifestPath,
-        CancellationToken cancellationToken = default)
+            string manifestPath,
+            CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestPath);
 
@@ -154,14 +155,14 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         await using FileStream stream = File.OpenRead(manifestPath);
 
         SolutionManifest manifest = await JsonSerializer.DeserializeAsync<SolutionManifest>(
-            stream,
-            new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                AllowTrailingCommas = true
-            },
-            cancellationToken);
+                stream,
+                new JsonSerializerOptions
+                {
+                        PropertyNameCaseInsensitive = true,
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true
+                },
+                cancellationToken);
 
         return manifest is null ? throw new InvalidOperationException("Failed to deserialize solution manifest.") : manifest;
     }
@@ -174,9 +175,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
     public static async Task<Solution> LoadSolutionFromManifestAsync(
-        SolutionManifest manifest,
-        string repoRoot,
-        CancellationToken cancellationToken)
+            SolutionManifest manifest,
+            string repoRoot,
+            CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentException.ThrowIfNullOrWhiteSpace(repoRoot);
@@ -185,7 +186,7 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         // Required for MSBuildWorkspace to function
         var properties = new Dictionary<string, string>
         {
-            ["LoadMetadataForReferencedProjects"] = "false"
+                ["LoadMetadataForReferencedProjects"] = "false"
         };
 
         using MSBuildWorkspace workspace = MSBuildWorkspace.Create(properties);
@@ -246,21 +247,19 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         string[] fallbackAssemblies =
         {
-            typeof(object).Assembly.Location,
-            typeof(Enumerable).Assembly.Location,
-            typeof(Task).Assembly.Location,
-            typeof(Uri).Assembly.Location,
-            typeof(ValueTuple<int>).Assembly.Location,
-            typeof(IAsyncEnumerable<int>).Assembly.Location
+                typeof(object).Assembly.Location,
+                typeof(Enumerable).Assembly.Location,
+                typeof(Task).Assembly.Location,
+                typeof(Uri).Assembly.Location,
+                typeof(ValueTuple<int>).Assembly.Location,
+                typeof(IAsyncEnumerable<int>).Assembly.Location
         };
 
         foreach (var fallback in fallbackAssemblies)
-        {
             if (!string.IsNullOrWhiteSpace(fallback) && File.Exists(fallback) && yielded.Add(fallback))
             {
                 yield return fallback;
             }
-        }
 
         // NOTE: We no longer depend on bin/obj being present in the repo. This scan
         //       is effectively a no-op for source-only snapshots, but harmless.
@@ -270,12 +269,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             foreach (var binDir in binDirs)
             {
                 foreach (var dll in Directory.EnumerateFiles(binDir, "*.dll", SearchOption.AllDirectories))
-                {
                     if (File.Exists(dll) && yielded.Add(dll))
                     {
                         yield return dll;
                     }
-                }
             }
         }
     }
@@ -335,9 +332,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     ///     Hybrid type extraction: semantic when available, syntactic fallback when semantic binding fails.
     /// </summary>
     public static async Task ExtractTypesAsync(
-        Solution solution,
-        List<ApiType> output,
-        CancellationToken ct)
+            Solution solution,
+            List<ApiType> output,
+            CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(solution);
         ArgumentNullException.ThrowIfNull(output);
@@ -382,8 +379,8 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                     }
 
                     apiType = symbol is not null && symbol.TypeKind is not TypeKind.Error
-                        ? CreateApiTypeFromSymbol(symbol, typeDecl, ct)
-                        : CreateApiTypeFromSyntax(typeDecl);
+                            ? CreateApiTypeFromSymbol(symbol, typeDecl, ct)
+                            : CreateApiTypeFromSyntax(typeDecl);
 
                     if (string.IsNullOrWhiteSpace(apiType.SemanticUid))
                     {
@@ -408,8 +405,8 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         var semanticUid = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var ns = symbol.ContainingNamespace?.IsGlobalNamespace == true
-            ? null
-            : symbol.ContainingNamespace?.ToDisplayString();
+                ? null
+                : symbol.ContainingNamespace?.ToDisplayString();
 
         var kind = symbol.TypeKind.ToString();
         var accessibility = symbol.DeclaredAccessibility.ToString();
@@ -422,40 +419,40 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         bool? isRefLike = symbol.IsRefLikeType;
 
         var baseTypeUid = symbol.BaseType is null || symbol.BaseType.SpecialType == SpecialType.System_Object
-            ? null
-            : symbol.BaseType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                ? null
+                : symbol.BaseType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var interfaces = symbol.AllInterfaces.Length == 0
-            ? null
-            : string.Join(";",
-                symbol.AllInterfaces
-                    .Select(i => i.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
-                    .OrderBy(s => s, StringComparer.Ordinal));
+                ? null
+                : string.Join(";",
+                        symbol.AllInterfaces
+                                .Select(i => i.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                                .OrderBy(s => s, StringComparer.Ordinal));
 
         var containingTypeUid = symbol.ContainingType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var genericParameters = symbol.TypeParameters.Length == 0
-            ? null
-            : string.Join(",",
-                symbol.TypeParameters
-                    .Select(p => p.Name)
-                    .OrderBy(s => s, StringComparer.Ordinal));
+                ? null
+                : string.Join(",",
+                        symbol.TypeParameters
+                                .Select(p => p.Name)
+                                .OrderBy(s => s, StringComparer.Ordinal));
 
         var genericConstraints = symbol.TypeParameters.Length == 0
-            ? null
-            : string.Join(";",
-                symbol.TypeParameters
-                    .Select(BuildTypeParameterConstraintString)
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .OrderBy(s => s, StringComparer.Ordinal));
+                ? null
+                : string.Join(";",
+                        symbol.TypeParameters
+                                .Select(BuildTypeParameterConstraintString)
+                                .Where(s => !string.IsNullOrWhiteSpace(s))
+                                .OrderBy(s => s, StringComparer.Ordinal));
 
         var attributes = symbol.GetAttributes().Length == 0
-            ? null
-            : string.Join(";",
-                symbol.GetAttributes()
-                    .Select(a => a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .OrderBy(s => s, StringComparer.Ordinal));
+                ? null
+                : string.Join(";",
+                        symbol.GetAttributes()
+                                .Select(a => a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                                .Where(s => !string.IsNullOrWhiteSpace(s))
+                                .OrderBy(s => s, StringComparer.Ordinal));
 
         var xml = symbol.GetDocumentationCommentXml(cancellationToken: ct);
         var (summary, remarks) = ExtractSummaryAndRemarks(xml);
@@ -464,39 +461,39 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         return new ApiType
         {
-            SemanticUid = semanticUid,
-            SourceSnapshotId = default,
-            Name = symbol.Name,
-            NamespacePath = ns,
-            Kind = kind,
-            Accessibility = accessibility,
-            IsStatic = isStatic,
-            IsGeneric = isGeneric,
-            IsAbstract = isAbstract,
-            IsSealed = isSealed,
-            IsRecord = isRecord,
-            IsRefLike = isRefLike,
-            BaseTypeUid = baseTypeUid,
-            Interfaces = interfaces,
-            ContainingTypeUid = containingTypeUid,
-            GenericParameters = genericParameters,
-            GenericConstraints = genericConstraints,
-            Summary = summary,
-            Remarks = remarks,
-            Attributes = attributes,
-            SourceFilePath = NormalizePath(filePath),
-            SourceStartLine = startLine,
-            SourceEndLine = endLine,
-            VersionNumber = 0,
-            CreatedIngestionRunId = default,
-            UpdatedIngestionRunId = default,
-            RemovedIngestionRunId = null,
-            ValidFromUtc = default,
-            ValidToUtc = null,
-            IsActive = false,
-            ContentHash = Array.Empty<byte>(),
-            SemanticUidHash = Array.Empty<byte>(),
-            IngestionRun = null
+                SemanticUid = semanticUid,
+                SourceSnapshotId = default,
+                Name = symbol.Name,
+                NamespacePath = ns,
+                Kind = kind,
+                Accessibility = accessibility,
+                IsStatic = isStatic,
+                IsGeneric = isGeneric,
+                IsAbstract = isAbstract,
+                IsSealed = isSealed,
+                IsRecord = isRecord,
+                IsRefLike = isRefLike,
+                BaseTypeUid = baseTypeUid,
+                Interfaces = interfaces,
+                ContainingTypeUid = containingTypeUid,
+                GenericParameters = genericParameters,
+                GenericConstraints = genericConstraints,
+                Summary = summary,
+                Remarks = remarks,
+                Attributes = attributes,
+                SourceFilePath = NormalizePath(filePath),
+                SourceStartLine = startLine,
+                SourceEndLine = endLine,
+                VersionNumber = 0,
+                CreatedIngestionRunId = default,
+                UpdatedIngestionRunId = default,
+                RemovedIngestionRunId = null,
+                ValidFromUtc = default,
+                ValidToUtc = null,
+                IsActive = false,
+                ContentHash = Array.Empty<byte>(),
+                SemanticUidHash = Array.Empty<byte>()
+                // IngestionRun = null
         };
     }
 
@@ -517,12 +514,12 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         var kind = typeDecl switch
         {
-            ClassDeclarationSyntax => "Class",
-            StructDeclarationSyntax => "Struct",
-            InterfaceDeclarationSyntax => "Interface",
-            EnumDeclarationSyntax => "Enum",
-            RecordDeclarationSyntax => "Record",
-            _ => "Unknown"
+                ClassDeclarationSyntax => "Class",
+                StructDeclarationSyntax => "Struct",
+                InterfaceDeclarationSyntax => "Interface",
+                EnumDeclarationSyntax => "Enum",
+                RecordDeclarationSyntax => "Record",
+                _ => "Unknown"
         };
 
         var accessibility = GetAccessibilityFromModifiers(typeDecl.Modifiers) ?? "Internal";
@@ -538,9 +535,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         if (typeDecl.BaseList is { Types: { Count: > 0 } baseTypes })
         {
             var typeNames = baseTypes
-                .Select(t => t.Type.ToString().Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .ToList();
+                    .Select(t => t.Type.ToString().Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .ToList();
 
             if (typeNames.Count > 0)
             {
@@ -567,47 +564,47 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         var genericParameters = (typeDecl as TypeDeclarationSyntax)?.TypeParameterList?.Parameters;
         var genericParams = genericParameters is { Count: > 0 }
-            ? string.Join(",",
-                genericParameters.Select<TypeParameterSyntax, string>(p => p.Identifier.Text).OrderBy(s => s, StringComparer.Ordinal))
-            : null;
+                ? string.Join(",",
+                        genericParameters.Select<TypeParameterSyntax, string>(p => p.Identifier.Text).OrderBy(s => s, StringComparer.Ordinal))
+                : null;
 
         var genericConstraints = ExtractGenericConstraintsFromSyntax(typeDecl);
 
         return new ApiType
         {
-            SemanticUid = semanticUid,
-            SourceSnapshotId = default,
-            Name = name,
-            NamespacePath = ns,
-            Kind = kind,
-            Accessibility = accessibility,
-            IsStatic = isStatic,
-            IsGeneric = isGeneric,
-            IsAbstract = isAbstract,
-            IsSealed = isSealed,
-            IsRecord = isRecord,
-            IsRefLike = null,
-            BaseTypeUid = baseTypeUid,
-            Interfaces = interfaces,
-            ContainingTypeUid = null,
-            GenericParameters = genericParams,
-            GenericConstraints = genericConstraints,
-            Summary = summary,
-            Remarks = remarks,
-            Attributes = attrs,
-            SourceFilePath = NormalizePath(filePath),
-            SourceStartLine = startLine,
-            SourceEndLine = endLine,
-            VersionNumber = 0,
-            CreatedIngestionRunId = default,
-            UpdatedIngestionRunId = default,
-            RemovedIngestionRunId = null,
-            ValidFromUtc = default,
-            ValidToUtc = null,
-            IsActive = false,
-            ContentHash = Array.Empty<byte>(),
-            SemanticUidHash = Array.Empty<byte>(),
-            IngestionRun = null
+                SemanticUid = semanticUid,
+                SourceSnapshotId = default,
+                Name = name,
+                NamespacePath = ns,
+                Kind = kind,
+                Accessibility = accessibility,
+                IsStatic = isStatic,
+                IsGeneric = isGeneric,
+                IsAbstract = isAbstract,
+                IsSealed = isSealed,
+                IsRecord = isRecord,
+                IsRefLike = null,
+                BaseTypeUid = baseTypeUid,
+                Interfaces = interfaces,
+                ContainingTypeUid = null,
+                GenericParameters = genericParams,
+                GenericConstraints = genericConstraints,
+                Summary = summary,
+                Remarks = remarks,
+                Attributes = attrs,
+                SourceFilePath = NormalizePath(filePath),
+                SourceStartLine = startLine,
+                SourceEndLine = endLine,
+                VersionNumber = 0,
+                CreatedIngestionRunId = default,
+                UpdatedIngestionRunId = default,
+                RemovedIngestionRunId = null,
+                ValidFromUtc = default,
+                ValidToUtc = null,
+                IsActive = false,
+                ContentHash = Array.Empty<byte>(),
+                SemanticUidHash = Array.Empty<byte>()
+                //IngestionRun = null
         };
     }
 
@@ -622,12 +619,12 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     ///     Hybrid member extraction: semantic when type symbols are available, syntactic fallback otherwise.
     /// </summary>
     public static async Task ExtractMembersAsync(
-        Solution solution,
-        IReadOnlyList<ApiType> types,
-        IReadOnlyDictionary<string, INamedTypeSymbol> roslynTypeSymbolsByUid,
-        List<ApiMember> output,
-        Dictionary<string, ISymbol> roslynMemberSymbolsByUid,
-        CancellationToken ct)
+            Solution solution,
+            IReadOnlyList<ApiType> types,
+            IReadOnlyDictionary<string, INamedTypeSymbol> roslynTypeSymbolsByUid,
+            List<ApiMember> output,
+            Dictionary<string, ISymbol> roslynMemberSymbolsByUid,
+            CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(solution);
         ArgumentNullException.ThrowIfNull(types);
@@ -659,7 +656,7 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
                     if (member is IMethodSymbol method &&
                         method.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.EventAdd
-                            or MethodKind.EventRemove)
+                                or MethodKind.EventRemove)
                     {
                         continue;
                     }
@@ -677,7 +674,7 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                     SyntaxNode memberDecl = null;
                     try
                     {
-                        memberDecl = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(ct);
+                        memberDecl = await member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntaxAsync(ct);
                     }
                     catch
                     {
@@ -685,8 +682,8 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                     }
 
                     var (filePath, startLine, endLine) = memberDecl is null
-                        ? (null, null, null)
-                        : GetSourceSpan(memberDecl.SyntaxTree, memberDecl.Span);
+                            ? (null, null, null)
+                            : GetSourceSpan(memberDecl.SyntaxTree, memberDecl.Span);
 
                     var semanticUid = member.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                     var name = member.Name;
@@ -708,65 +705,65 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                                      mds.Modifiers.Any(SyntaxKind.UnsafeKeyword);
 
                     var returnTypeUid = member is IMethodSymbol methodSym
-                        ? methodSym.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
-                        : member is IPropertySymbol propSym
-                            ? propSym.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
-                            : null;
+                            ? methodSym.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+                            : member is IPropertySymbol propSym
+                                    ? propSym.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+                                    : null;
 
                     var returnNullable = member is IMethodSymbol methodNullable
-                        ? methodNullable.ReturnNullableAnnotation.ToString()
-                        : member is IPropertySymbol propNullable
-                            ? propNullable.NullableAnnotation.ToString()
-                            : null;
+                            ? methodNullable.ReturnNullableAnnotation.ToString()
+                            : member is IPropertySymbol propNullable
+                                    ? propNullable.NullableAnnotation.ToString()
+                                    : null;
 
                     var genericParameters = member is IMethodSymbol genM && genM.TypeParameters.Length > 0
-                        ? string.Join(",", genM.TypeParameters.Select(p => p.Name))
-                        : null;
+                            ? string.Join(",", genM.TypeParameters.Select(p => p.Name))
+                            : null;
 
                     var genericConstraints = member is IMethodSymbol genMc && genMc.TypeParameters.Length > 0
-                        ? string.Join(";",
-                            genMc.TypeParameters.Select(BuildTypeParameterConstraintString)
-                                .Where(s => !string.IsNullOrWhiteSpace(s)))
-                        : null;
+                            ? string.Join(";",
+                                    genMc.TypeParameters.Select(BuildTypeParameterConstraintString)
+                                            .Where(s => !string.IsNullOrWhiteSpace(s)))
+                            : null;
 
                     var attributes = member.GetAttributes().Length == 0
-                        ? null
-                        : string.Join(";",
-                            member.GetAttributes()
-                                .Select(a => a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
-                                .Where(s => !string.IsNullOrWhiteSpace(s)));
+                            ? null
+                            : string.Join(";",
+                                    member.GetAttributes()
+                                            .Select(a => a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                                            .Where(s => !string.IsNullOrWhiteSpace(s)));
 
                     var xml = member.GetDocumentationCommentXml(cancellationToken: ct);
                     var (summary, remarks) = ExtractSummaryAndRemarks(xml);
 
                     ApiMember efMember = new()
                     {
-                        SemanticUid = semanticUid,
-                        ApiFeatureId = type.Id,
-                        Name = name,
-                        Kind = kind,
-                        MethodKind = methodKind,
-                        Accessibility = accessibility,
-                        IsStatic = isStatic,
-                        IsExtensionMethod = isExtensionMethod,
-                        IsAsync = isAsync,
-                        IsVirtual = isVirtual,
-                        IsOverride = isOverride,
-                        IsAbstract = isAbstract,
-                        IsSealed = isSealed,
-                        IsReadonly = isReadOnly,
-                        IsConst = isConst,
-                        IsUnsafe = isUnsafe,
-                        ReturnTypeUid = returnTypeUid,
-                        ReturnNullable = returnNullable,
-                        GenericParameters = genericParameters,
-                        GenericConstraints = genericConstraints,
-                        Summary = summary,
-                        Remarks = remarks,
-                        Attributes = attributes,
-                        SourceFilePath = NormalizePath(filePath),
-                        SourceStartLine = startLine,
-                        SourceEndLine = endLine
+                            SemanticUid = semanticUid,
+                            ApiFeatureId = type.Id,
+                            Name = name,
+                            Kind = kind,
+                            MethodKind = methodKind,
+                            Accessibility = accessibility,
+                            IsStatic = isStatic,
+                            IsExtensionMethod = isExtensionMethod,
+                            IsAsync = isAsync,
+                            IsVirtual = isVirtual,
+                            IsOverride = isOverride,
+                            IsAbstract = isAbstract,
+                            IsSealed = isSealed,
+                            IsReadonly = isReadOnly,
+                            IsConst = isConst,
+                            IsUnsafe = isUnsafe,
+                            ReturnTypeUid = returnTypeUid,
+                            ReturnNullable = returnNullable,
+                            GenericParameters = genericParameters,
+                            GenericConstraints = genericConstraints,
+                            Summary = summary,
+                            Remarks = remarks,
+                            Attributes = attributes,
+                            SourceFilePath = NormalizePath(filePath),
+                            SourceStartLine = startLine,
+                            SourceEndLine = endLine
                     };
 
                     output.Add(efMember);
@@ -789,10 +786,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
     private static async Task ExtractMembersFromSyntaxForTypeAsync(
-        Solution solution,
-        ApiType type,
-        List<ApiMember> output,
-        CancellationToken ct)
+            Solution solution,
+            ApiType type,
+            List<ApiMember> output,
+            CancellationToken ct)
     {
         // Match by namespace + name. This is best-effort but stable enough for fallback.
         foreach (Project project in solution.Projects)
@@ -851,12 +848,12 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     {
         var name = memberDecl switch
         {
-            MethodDeclarationSyntax m => m.Identifier.Text,
-            PropertyDeclarationSyntax p => p.Identifier.Text,
-            EventDeclarationSyntax e => e.Identifier.Text,
-            IndexerDeclarationSyntax => "this[]",
-            ConstructorDeclarationSyntax c => c.Identifier.Text,
-            _ => string.Empty
+                MethodDeclarationSyntax m => m.Identifier.Text,
+                PropertyDeclarationSyntax p => p.Identifier.Text,
+                EventDeclarationSyntax e => e.Identifier.Text,
+                IndexerDeclarationSyntax => "this[]",
+                ConstructorDeclarationSyntax c => c.Identifier.Text,
+                _ => string.Empty
         };
 
         if (string.IsNullOrWhiteSpace(name))
@@ -883,10 +880,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         var returnType = memberDecl switch
         {
-            MethodDeclarationSyntax m => m.ReturnType.ToString().Trim(),
-            PropertyDeclarationSyntax p => p.Type.ToString().Trim(),
-            IndexerDeclarationSyntax i => i.Type.ToString().Trim(),
-            _ => null
+                MethodDeclarationSyntax m => m.ReturnType.ToString().Trim(),
+                PropertyDeclarationSyntax p => p.Type.ToString().Trim(),
+                IndexerDeclarationSyntax i => i.Type.ToString().Trim(),
+                _ => null
         };
 
         var attrs = ExtractAttributeTypeNamesFromSyntax(memberDecl.AttributeLists);
@@ -899,32 +896,32 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         return new ApiMember
         {
-            SemanticUid = semanticUid,
-            ApiFeatureId = owningType.Id,
-            Name = name,
-            Kind = kind,
-            MethodKind = methodKind,
-            Accessibility = accessibility,
-            IsStatic = isStatic,
-            IsExtensionMethod = false,
-            IsAsync = isAsync,
-            IsVirtual = isVirtual,
-            IsOverride = isOverride,
-            IsAbstract = isAbstract,
-            IsSealed = isSealed,
-            IsReadonly = isReadonly,
-            IsConst = isConst,
-            IsUnsafe = isUnsafe,
-            ReturnTypeUid = returnType,
-            ReturnNullable = null,
-            GenericParameters = null,
-            GenericConstraints = null,
-            Summary = summary,
-            Remarks = remarks,
-            Attributes = attrs,
-            SourceFilePath = NormalizePath(filePath),
-            SourceStartLine = startLine,
-            SourceEndLine = endLine
+                SemanticUid = semanticUid,
+                ApiFeatureId = owningType.Id,
+                Name = name,
+                Kind = kind,
+                MethodKind = methodKind,
+                Accessibility = accessibility,
+                IsStatic = isStatic,
+                IsExtensionMethod = false,
+                IsAsync = isAsync,
+                IsVirtual = isVirtual,
+                IsOverride = isOverride,
+                IsAbstract = isAbstract,
+                IsSealed = isSealed,
+                IsReadonly = isReadonly,
+                IsConst = isConst,
+                IsUnsafe = isUnsafe,
+                ReturnTypeUid = returnType,
+                ReturnNullable = null,
+                GenericParameters = null,
+                GenericConstraints = null,
+                Summary = summary,
+                Remarks = remarks,
+                Attributes = attrs,
+                SourceFilePath = NormalizePath(filePath),
+                SourceStartLine = startLine,
+                SourceEndLine = endLine
         };
     }
 
@@ -936,11 +933,11 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
 
     public static Task ExtractParametersAsync(
-        Solution solution,
-        IReadOnlyList<ApiMember> members,
-        IReadOnlyDictionary<string, ISymbol> roslynMemberSymbolsByUid,
-        List<ApiParameter> output,
-        CancellationToken ct)
+            Solution solution,
+            IReadOnlyList<ApiMember> members,
+            IReadOnlyDictionary<string, ISymbol> roslynMemberSymbolsByUid,
+            List<ApiParameter> output,
+            CancellationToken ct)
     {
         _ = solution;
 
@@ -964,12 +961,12 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
             IReadOnlyList<IParameterSymbol> parameters = symbol switch
             {
-                IMethodSymbol method => method.Parameters,
-                IPropertySymbol prop when prop.IsIndexer => prop.Parameters,
-                IEventSymbol ev when ev.Type is INamedTypeSymbol delegateType
-                                     && delegateType.DelegateInvokeMethod is { } invoke
-                    => invoke.Parameters,
-                _ => Array.Empty<IParameterSymbol>()
+                    IMethodSymbol method => method.Parameters,
+                    IPropertySymbol prop when prop.IsIndexer => prop.Parameters,
+                    IEventSymbol ev when ev.Type is INamedTypeSymbol delegateType
+                                         && delegateType.DelegateInvokeMethod is { } invoke
+                            => invoke.Parameters,
+                    _ => Array.Empty<IParameterSymbol>()
             };
 
             if (parameters.Count == 0)
@@ -984,22 +981,22 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                 IParameterSymbol p = parameters[i];
 
                 var modifier = p.RefKind != RefKind.None
-                    ? p.RefKind.ToString().ToLowerInvariant()
-                    : null;
+                        ? p.RefKind.ToString().ToLowerInvariant()
+                        : null;
 
                 var hasDefault = p.HasExplicitDefaultValue;
                 var defaultLiteral = hasDefault ? p.ExplicitDefaultValue?.ToString() : null;
 
                 output.Add(new ApiParameter
                 {
-                    ApiMemberId = member.Id,
-                    Name = p.Name,
-                    TypeUid = p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                    NullableAnnotation = p.NullableAnnotation.ToString(),
-                    Position = p.Ordinal,
-                    Modifier = modifier,
-                    HasDefaultValue = hasDefault,
-                    DefaultValueLiteral = defaultLiteral
+                        ApiMemberId = member.Id,
+                        Name = p.Name,
+                        TypeUid = p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        NullableAnnotation = p.NullableAnnotation.ToString(),
+                        Position = p.Ordinal,
+                        Modifier = modifier,
+                        HasDefaultValue = hasDefault,
+                        DefaultValueLiteral = defaultLiteral
                 });
             }
         }
@@ -1046,26 +1043,28 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             return value == true ? "1" : "0";
         }
 
+
+
         return string.Join("|", new[]
         {
-            t.Name ?? string.Empty,
-            t.NamespacePath ?? string.Empty,
-            t.Kind ?? string.Empty,
-            t.Accessibility ?? string.Empty,
-            BoolToBitString(t.IsStatic),
-            BoolToBitString(t.IsGeneric),
-            BoolToBitString(t.IsAbstract),
-            BoolToBitString(t.IsSealed),
-            BoolToBitString(t.IsRecord),
-            BoolToBitString(t.IsRefLike),
-            t.BaseTypeUid ?? string.Empty,
-            t.Interfaces ?? string.Empty,
-            t.ContainingTypeUid ?? string.Empty,
-            t.GenericParameters ?? string.Empty,
-            t.GenericConstraints ?? string.Empty,
-            t.Summary ?? string.Empty,
-            t.Remarks ?? string.Empty,
-            t.Attributes ?? string.Empty
+                t.Name ?? string.Empty,
+                t.NamespacePath ?? string.Empty,
+                t.Kind ?? string.Empty,
+                t.Accessibility ?? string.Empty,
+                BoolToBitString(t.IsStatic),
+                BoolToBitString(t.IsGeneric),
+                BoolToBitString(t.IsAbstract),
+                BoolToBitString(t.IsSealed),
+                BoolToBitString(t.IsRecord),
+                BoolToBitString(t.IsRefLike),
+                t.BaseTypeUid ?? string.Empty,
+                t.Interfaces ?? string.Empty,
+                t.ContainingTypeUid ?? string.Empty,
+                t.GenericParameters ?? string.Empty,
+                t.GenericConstraints ?? string.Empty,
+                t.Summary ?? string.Empty,
+                t.Remarks ?? string.Empty,
+                t.Attributes ?? string.Empty
         });
     }
 
@@ -1088,74 +1087,70 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
 
         // Dedupe types by semantic uid to avoid multiple declarations (partials) across documents.
         var uniqueTypes = types
-            .Where(t => !string.IsNullOrWhiteSpace(t.SemanticUid))
-            .GroupBy(t => t.SemanticUid, StringComparer.Ordinal)
-            .Select(g =>
-            {
-                // Prefer entries with source info, then shortest path, then lexicographically
-                return g
-                    .OrderByDescending(x => x.SourceFilePath is not null)
-                    .ThenBy(x => x.SourceFilePath?.Length ?? int.MaxValue)
-                    .ThenBy(x => x.SourceFilePath, StringComparer.OrdinalIgnoreCase)
-                    .First();
-            })
-            .ToList();
+                .Where(t => !string.IsNullOrWhiteSpace(t.SemanticUid))
+                .GroupBy(t => t.SemanticUid, StringComparer.Ordinal)
+                .Select(g =>
+                {
+                    // Prefer entries with source info, then shortest path, then lexicographically
+                    return g
+                            .OrderByDescending(x => x.SourceFilePath is not null)
+                            .ThenBy(x => x.SourceFilePath?.Length ?? int.MaxValue)
+                            .ThenBy(x => x.SourceFilePath, StringComparer.OrdinalIgnoreCase)
+                            .First();
+                })
+                .ToList();
 
         // Build Roslyn type symbol map once.
         var roslynTypeSymbolsByUid =
-            await BuildTypeSymbolMapAsync(solution, uniqueTypes.Select(t => t.SemanticUid), ct).ConfigureAwait(false);
+                await BuildTypeSymbolMapAsync(solution, uniqueTypes.Select(t => t.SemanticUid), ct).ConfigureAwait(false);
 
         // Assign deterministic Ids so members/parameters can link without needing a DbContext.
         foreach (ApiType t in uniqueTypes)
-        {
             if (t.Id == Guid.Empty)
             {
                 t.Id = Guid.NewGuid();
             }
-        }
 
         Dictionary<string, ISymbol> roslynMemberSymbolsByUid = new(StringComparer.Ordinal);
         List<ApiMember> members = new(Math.Max(128, uniqueTypes.Count * 8));
         await ExtractMembersAsync(solution, uniqueTypes, roslynTypeSymbolsByUid, members, roslynMemberSymbolsByUid, ct)
-            .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
         // Dedupe members by semantic uid.
         var uniqueMembers = members
-            .Where(m => !string.IsNullOrWhiteSpace(m.SemanticUid))
-            .GroupBy(m => m.SemanticUid, StringComparer.Ordinal)
-            .Select(g =>
-            {
-                return g
-                    .OrderByDescending(x => x.SourceFilePath is not null)
-                    .ThenBy(x => x.SourceFilePath?.Length ?? int.MaxValue)
-                    .ThenBy(x => x.SourceFilePath, StringComparer.OrdinalIgnoreCase)
-                    .First();
-            })
-            .ToList();
+                .Where(m => !string.IsNullOrWhiteSpace(m.SemanticUid))
+                .GroupBy(m => m.SemanticUid, StringComparer.Ordinal)
+                .Select(g =>
+                {
+                    return g
+                            .OrderByDescending(x => x.SourceFilePath is not null)
+                            .ThenBy(x => x.SourceFilePath?.Length ?? int.MaxValue)
+                            .ThenBy(x => x.SourceFilePath, StringComparer.OrdinalIgnoreCase)
+                            .First();
+                })
+                .ToList();
 
         foreach (ApiMember m in uniqueMembers)
-        {
             if (m.Id == Guid.Empty)
             {
                 m.Id = Guid.NewGuid();
             }
-        }
 
         List<ApiParameter> parameters = new(Math.Max(256, uniqueMembers.Count * 2));
         await ExtractParametersAsync(solution, uniqueMembers, roslynMemberSymbolsByUid, parameters, ct)
-            .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
         // Group for fast assembly per type.
         var membersByType = uniqueMembers
-            .GroupBy(m => m.ApiFeatureId)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<ApiMember>)g.ToList());
+                .GroupBy(m => m.ApiFeatureId)
+                .ToDictionary(g => g.Key, g => (IReadOnlyList<ApiMember>)g.ToList());
 
         var parametersByMember = parameters
-            .GroupBy(p => p.ApiMemberId)
-            .ToDictionary(g => g.Key,
-                g => (IReadOnlyList<ApiParameter>)g.OrderBy(x => x.Position)
-                    .ThenBy(x => x.Name, StringComparer.Ordinal)
-                    .ToList());
+                .GroupBy(p => p.ApiMemberId)
+                .ToDictionary(g => g.Key,
+                        g => (IReadOnlyList<ApiParameter>)g.OrderBy(x => x.Position)
+                                .ThenBy(x => x.Name, StringComparer.Ordinal)
+                                .ToList());
 
         List<SyntaxTypeTree> trees = new(uniqueTypes.Count);
         foreach (ApiType t in uniqueTypes.OrderBy(t => t.SemanticUid, StringComparer.Ordinal))
@@ -1169,12 +1164,10 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             if (typeMembers.Count > 0)
             {
                 foreach (ApiMember m in typeMembers)
-                {
                     if (parametersByMember.TryGetValue(m.Id, out var mp))
                     {
                         typeParameters.AddRange(mp);
                     }
-                }
             }
 
             trees.Add(new SyntaxTypeTree(t, typeMembers.ToList(), typeParameters));
@@ -1194,9 +1187,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     ///     Builds a lookup of Roslyn type symbols keyed by the fully-qualified semantic UID string.
     /// </summary>
     public static async Task<Dictionary<string, INamedTypeSymbol>> BuildTypeSymbolMapAsync(
-        Solution solution,
-        IEnumerable<string> typeSemanticUids,
-        CancellationToken ct)
+            Solution solution,
+            IEnumerable<string> typeSemanticUids,
+            CancellationToken ct)
     {
         HashSet<string> typeUidSet = new(typeSemanticUids.Where(u => !string.IsNullOrWhiteSpace(u)), StringComparer.Ordinal);
         Dictionary<string, INamedTypeSymbol> result = new(StringComparer.Ordinal);
@@ -1289,7 +1282,7 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             var summary = doc.Root?.Element("summary")?.Value?.Trim();
             var remarks = doc.Root?.Element("remarks")?.Value?.Trim();
             return (string.IsNullOrWhiteSpace(summary) ? null : summary,
-                string.IsNullOrWhiteSpace(remarks) ? null : remarks);
+                    string.IsNullOrWhiteSpace(remarks) ? null : remarks);
         }
         catch
         {
@@ -1310,9 +1303,9 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     private static (string Summary, string Remarks) ExtractSummaryAndRemarksFromSyntax(MemberDeclarationSyntax member)
     {
         SyntaxTrivia trivia = member.GetLeadingTrivia()
-            .FirstOrDefault(t =>
-                t.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
-                t.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia));
+                .FirstOrDefault(t =>
+                        t.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
+                        t.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia));
 
         if (trivia == default)
         {
@@ -1326,17 +1319,17 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         }
 
         var summary = doc.Content
-            .OfType<XmlElementSyntax>()
-            .FirstOrDefault(e => e.StartTag.Name.LocalName.Text == "summary")
-            ?.Content.ToString().Trim();
+                .OfType<XmlElementSyntax>()
+                .FirstOrDefault(e => e.StartTag.Name.LocalName.Text == "summary")
+                ?.Content.ToString().Trim();
 
         var remarks = doc.Content
-            .OfType<XmlElementSyntax>()
-            .FirstOrDefault(e => e.StartTag.Name.LocalName.Text == "remarks")
-            ?.Content.ToString().Trim();
+                .OfType<XmlElementSyntax>()
+                .FirstOrDefault(e => e.StartTag.Name.LocalName.Text == "remarks")
+                ?.Content.ToString().Trim();
 
         return (string.IsNullOrWhiteSpace(summary) ? null : summary,
-            string.IsNullOrWhiteSpace(remarks) ? null : remarks);
+                string.IsNullOrWhiteSpace(remarks) ? null : remarks);
     }
 
 
@@ -1401,10 +1394,7 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             parts.Add("unmanaged");
         }
 
-        foreach (ITypeSymbol t in p.ConstraintTypes)
-        {
-            parts.Add(t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-        }
+        foreach (ITypeSymbol t in p.ConstraintTypes) parts.Add(t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 
         if (p.HasConstructorConstraint)
         {
@@ -1444,8 +1434,8 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     {
         var typeParams = (typeDecl as TypeDeclarationSyntax)?.TypeParameterList?.Parameters;
         var genericSuffix = typeParams is { Count: > 0 }
-            ? $"<{string.Join(",", typeParams.Select<TypeParameterSyntax, string>(p => p.Identifier.Text).OrderBy(s => s, StringComparer.Ordinal))}>"
-            : string.Empty;
+                ? $"<{string.Join(",", typeParams.Select<TypeParameterSyntax, string>(p => p.Identifier.Text).OrderBy(s => s, StringComparer.Ordinal))}>"
+                : string.Empty;
 
         return string.IsNullOrWhiteSpace(ns) ? $"global::{name}{genericSuffix}" : $"global::{ns}.{name}{genericSuffix}";
     }
@@ -1460,16 +1450,16 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     private static string GetAccessibilityFromModifiers(SyntaxTokenList modifiers)
     {
         return modifiers.Any(SyntaxKind.PublicKeyword)
-            ? "Public"
-            : modifiers.Any(SyntaxKind.InternalKeyword) && modifiers.Any(SyntaxKind.ProtectedKeyword)
-                ? "ProtectedInternal"
-                : modifiers.Any(SyntaxKind.InternalKeyword)
-                    ? "Internal"
-                    : modifiers.Any(SyntaxKind.ProtectedKeyword)
-                        ? "Protected"
-                        : modifiers.Any(SyntaxKind.PrivateKeyword)
-                            ? "Private"
-                            : null;
+                ? "Public"
+                : modifiers.Any(SyntaxKind.InternalKeyword) && modifiers.Any(SyntaxKind.ProtectedKeyword)
+                        ? "ProtectedInternal"
+                        : modifiers.Any(SyntaxKind.InternalKeyword)
+                                ? "Internal"
+                                : modifiers.Any(SyntaxKind.ProtectedKeyword)
+                                        ? "Protected"
+                                        : modifiers.Any(SyntaxKind.PrivateKeyword)
+                                                ? "Private"
+                                                : null;
     }
 
 
@@ -1482,12 +1472,12 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
     private static string ExtractAttributeTypeNamesFromSyntax(SyntaxList<AttributeListSyntax> attributeLists)
     {
         var names = attributeLists
-            .SelectMany(al => al.Attributes)
-            .Select(a => a.Name.ToString().Trim())
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(s => s, StringComparer.Ordinal)
-            .ToList();
+                .SelectMany(al => al.Attributes)
+                .Select(a => a.Name.ToString().Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(s => s, StringComparer.Ordinal)
+                .ToList();
 
         return names.Count == 0 ? null : string.Join(";", names);
     }
@@ -1514,7 +1504,6 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
             var parts = new List<string>();
 
             foreach (TypeParameterConstraintSyntax c in clause.Constraints)
-            {
                 switch (c)
                 {
                     case ClassOrStructConstraintSyntax cs when cs.ClassOrStructKeyword.IsKind(SyntaxKind.ClassKeyword):
@@ -1530,7 +1519,6 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
                         parts.Add("new()");
                         break;
                 }
-            }
 
             if (parts.Count > 0)
             {
@@ -1554,13 +1542,13 @@ public class RoslynHarvesterBase : CSharpSyntaxWalker
         // This does not have to match Roslyn's exact format; it just needs to be stable within this system.
         var paramSig = memberDecl switch
         {
-            MethodDeclarationSyntax m =>
-                $"({string.Join(",", m.ParameterList.Parameters.Select(p => p.Type?.ToString().Trim() ?? "object"))})",
-            ConstructorDeclarationSyntax c =>
-                $"({string.Join(",", c.ParameterList.Parameters.Select(p => p.Type?.ToString().Trim() ?? "object"))})",
-            IndexerDeclarationSyntax i =>
-                $"[{string.Join(",", i.ParameterList.Parameters.Select(p => p.Type?.ToString().Trim() ?? "object"))}]",
-            _ => string.Empty
+                MethodDeclarationSyntax m =>
+                        $"({string.Join(",", m.ParameterList.Parameters.Select(p => p.Type?.ToString().Trim() ?? "object"))})",
+                ConstructorDeclarationSyntax c =>
+                        $"({string.Join(",", c.ParameterList.Parameters.Select(p => p.Type?.ToString().Trim() ?? "object"))})",
+                IndexerDeclarationSyntax i =>
+                        $"[{string.Join(",", i.ParameterList.Parameters.Select(p => p.Type?.ToString().Trim() ?? "object"))}]",
+                _ => string.Empty
         };
 
         var owningUid = owningType.SemanticUid ?? $"{owningType.NamespacePath}.{owningType.Name}";

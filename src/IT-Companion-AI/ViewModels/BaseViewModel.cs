@@ -2,12 +2,16 @@
 
 
 
+
 namespace ITCompanionAI.ViewModels;
 
 
-public class BaseViewModel : ObservableObject, INotifyPropertyChanged
+
+
+
+public class BaseViewModel : ObservableObject
 {
-    private string _title = string.Empty;
+    private string _title;
 
 
 
@@ -15,7 +19,7 @@ public class BaseViewModel : ObservableObject, INotifyPropertyChanged
 
     public string Title
     {
-        get => _title;
-        set => SetProperty(ref _title, value);
+        get => _title ?? string.Empty;
+        set => this.SetProperty(ref _title, value);
     }
 }

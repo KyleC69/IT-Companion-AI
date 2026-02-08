@@ -1,6 +1,9 @@
 ﻿namespace ITCompanionAI.Ingestion.API;
 
 
+
+
+
 public sealed class ApiTypeExtraction
 {
     public string SemanticUid { get; set; }

@@ -2,7 +2,11 @@
 
 
 
+
 namespace ITCompanionAI.Helpers;
+
+
+
 
 
 public static class WindowHelper

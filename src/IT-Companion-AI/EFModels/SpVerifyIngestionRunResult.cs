@@ -1,4 +1,4 @@
-﻿namespace ITCompanionAI.EFModels;
+﻿namespace ITCompanionAI;
 
 
 public partial class SpVerifyIngestionRunResult : INotifyPropertyChanging, INotifyPropertyChanged

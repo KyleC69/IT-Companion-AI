@@ -7,7 +7,12 @@
 // ============================================================================
 
 
+
+
 namespace ITCompanionAI.AgentFramework.Agents;
+
+
+
 
 
 public sealed class VerificationResult

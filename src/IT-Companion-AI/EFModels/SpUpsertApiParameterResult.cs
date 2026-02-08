@@ -1,4 +1,4 @@
-﻿namespace ITCompanionAI.EFModels;
+﻿namespace ITCompanionAI;
 
 
 public partial class SpUpsertApiParameterResult : INotifyPropertyChanging, INotifyPropertyChanged

@@ -3,7 +3,11 @@ using Microsoft.UI.Xaml.Data;
 
 
 
+
 namespace ITCompanionAI.Converters;
+
+
+
 
 
 public class BooleanToVisibilityConverter : IValueConverter

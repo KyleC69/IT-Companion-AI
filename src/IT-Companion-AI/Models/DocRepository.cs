@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-using ITCompanionAI.Ingestion.Docs;
+using ITCompanionAI;
 
 using Microsoft.Data.SqlClient;
 
@@ -71,15 +71,9 @@ public sealed class DocRepository
         {
             await InsertDocPageAsync(conn, tx, page);
 
-            foreach (DocSection section in sections)
-            {
-                await InsertDocSectionAsync(conn, tx, section);
-            }
+            foreach (DocSection section in sections) await InsertDocSectionAsync(conn, tx, section);
 
-            foreach (CodeBlock block in codeBlocks)
-            {
-                await InsertCodeBlockAsync(conn, tx, block);
-            }
+            foreach (CodeBlock block in codeBlocks) await InsertCodeBlockAsync(conn, tx, block);
 
             tx.Commit();
         }
@@ -100,6 +94,35 @@ public sealed class DocRepository
     private static async Task InsertDocPageAsync(SqlConnection conn, SqlTransaction tx, DocPage page)
     {
         const string sql = @"
+set nocount on;
+
+-- If an active row exists for this semantic uid and the content hash is identical,
+-- treat this as idempotent and avoid creating a new version.
+if exists (
+    select 1
+    from dbo.doc_page p
+    where p.semantic_uid = @semantic_uid
+      and p.is_active = 1
+      and p.content_hash = @content_hash
+)
+begin
+    return;
+end;
+
+declare @next_version int;
+
+select @next_version = isnull(max(p.version_number), 0) + 1
+from dbo.doc_page p with (updlock, holdlock)
+where p.semantic_uid = @semantic_uid;
+
+-- Close any active row for this semantic uid.
+update dbo.doc_page
+set valid_to_utc = @valid_from_utc,
+    is_active = 0,
+    updated_ingestion_run_id = @created_ingestion_run_id
+where semantic_uid = @semantic_uid
+  and is_active = 1;
+
 insert into dbo.doc_page (
     id,
     semantic_uid,
@@ -126,7 +149,7 @@ insert into dbo.doc_page (
     @language,
     @url,
     @raw_markdown,
-    @version_number,
+    @next_version,
     @created_ingestion_run_id,
     @updated_ingestion_run_id,
     @removed_ingestion_run_id,
@@ -145,7 +168,7 @@ insert into dbo.doc_page (
         cmd.Parameters.Add("@language", SqlDbType.NVarChar, 200).Value = (object)page.Language ?? DBNull.Value;
         cmd.Parameters.Add("@url", SqlDbType.NVarChar, -1).Value = page.Url;
         cmd.Parameters.Add("@raw_markdown", SqlDbType.NVarChar, -1).Value = (object)page.RawMarkdown ?? DBNull.Value;
-        cmd.Parameters.Add("@version_number", SqlDbType.Int).Value = page.VersionNumber;
+        cmd.Parameters.Add("@raw_page_source", SqlDbType.NVarChar, -1).Value = (object)page.RawPageSource ?? DBNull.Value;
         cmd.Parameters.Add("@created_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = page.CreatedIngestionRunId;
         cmd.Parameters.Add("@updated_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = (object)page.UpdatedIngestionRunId ?? DBNull.Value;
         cmd.Parameters.Add("@removed_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = (object)page.RemovedIngestionRunId ?? DBNull.Value;
@@ -167,6 +190,35 @@ insert into dbo.doc_page (
     private static async Task InsertDocSectionAsync(SqlConnection conn, SqlTransaction tx, DocSection section)
     {
         const string sql = @"
+set nocount on;
+
+-- If an active row exists for this semantic uid and the content hash is identical,
+-- treat this as idempotent and avoid creating a new version.
+if exists (
+    select 1
+    from dbo.doc_section s
+    where s.semantic_uid = @semantic_uid
+      and s.is_active = 1
+      and s.content_hash = @content_hash
+)
+begin
+    return;
+end;
+
+declare @next_version int;
+
+select @next_version = isnull(max(s.version_number), 0) + 1
+from dbo.doc_section s with (updlock, holdlock)
+where s.semantic_uid = @semantic_uid;
+
+-- Close any active row for this semantic uid.
+update dbo.doc_section
+set valid_to_utc = @valid_from_utc,
+    is_active = 0,
+    updated_ingestion_run_id = @created_ingestion_run_id
+where semantic_uid = @semantic_uid
+  and is_active = 1;
+
 insert into dbo.doc_section (
     id,
     doc_page_id,
@@ -191,7 +243,7 @@ insert into dbo.doc_section (
     @level,
     @content_markdown,
     @order_index,
-    @version_number,
+    @next_version,
     @created_ingestion_run_id,
     @updated_ingestion_run_id,
     @removed_ingestion_run_id,
@@ -209,7 +261,6 @@ insert into dbo.doc_section (
         cmd.Parameters.Add("@level", SqlDbType.Int).Value = (object)section.Level ?? DBNull.Value;
         cmd.Parameters.Add("@content_markdown", SqlDbType.NVarChar, -1).Value = (object)section.ContentMarkdown ?? DBNull.Value;
         cmd.Parameters.Add("@order_index", SqlDbType.Int).Value = (object)section.OrderIndex ?? DBNull.Value;
-        cmd.Parameters.Add("@version_number", SqlDbType.Int).Value = section.VersionNumber;
         cmd.Parameters.Add("@created_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = section.CreatedIngestionRunId;
         cmd.Parameters.Add("@updated_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = (object)section.UpdatedIngestionRunId ?? DBNull.Value;
         cmd.Parameters.Add("@removed_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = (object)section.RemovedIngestionRunId ?? DBNull.Value;
@@ -231,6 +282,35 @@ insert into dbo.doc_section (
     private static async Task InsertCodeBlockAsync(SqlConnection conn, SqlTransaction tx, CodeBlock block)
     {
         const string sql = @"
+set nocount on;
+
+-- If an active row exists for this semantic uid and the content hash is identical,
+-- treat this as idempotent and avoid creating a new version.
+if exists (
+    select 1
+    from dbo.code_block cb
+    where cb.semantic_uid = @semantic_uid
+      and cb.is_active = 1
+      and cb.content_hash = @content_hash
+)
+begin
+    return;
+end;
+
+declare @next_version int;
+
+select @next_version = isnull(max(cb.version_number), 0) + 1
+from dbo.code_block cb with (updlock, holdlock)
+where cb.semantic_uid = @semantic_uid;
+
+-- Close any active row for this semantic uid.
+update dbo.code_block
+set valid_to_utc = @valid_from_utc,
+    is_active = 0,
+    updated_ingestion_run_id = @created_ingestion_run_id
+where semantic_uid = @semantic_uid
+  and is_active = 1;
+
 insert into dbo.code_block (
     id,
     doc_section_id,
@@ -257,7 +337,7 @@ insert into dbo.code_block (
     @declared_packages,
     @tags,
     @inline_comments,
-    @version_number,
+    @next_version,
     @created_ingestion_run_id,
     @updated_ingestion_run_id,
     @removed_ingestion_run_id,
@@ -276,7 +356,6 @@ insert into dbo.code_block (
         cmd.Parameters.Add("@declared_packages", SqlDbType.NVarChar, -1).Value = (object)block.DeclaredPackages ?? DBNull.Value;
         cmd.Parameters.Add("@tags", SqlDbType.NVarChar, -1).Value = (object)block.Tags ?? DBNull.Value;
         cmd.Parameters.Add("@inline_comments", SqlDbType.NVarChar, -1).Value = (object)block.InlineComments ?? DBNull.Value;
-        cmd.Parameters.Add("@version_number", SqlDbType.Int).Value = block.VersionNumber;
         cmd.Parameters.Add("@created_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = block.CreatedIngestionRunId;
         cmd.Parameters.Add("@updated_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = (object)block.UpdatedIngestionRunId ?? DBNull.Value;
         cmd.Parameters.Add("@removed_ingestion_run_id", SqlDbType.UniqueIdentifier).Value = (object)block.RemovedIngestionRunId ?? DBNull.Value;
@@ -286,5 +365,19 @@ insert into dbo.code_block (
         cmd.Parameters.Add("@content_hash", SqlDbType.Binary, 32).Value = (object)block.ContentHash ?? DBNull.Value;
 
         _ = await cmd.ExecuteNonQueryAsync();
+    }
+
+
+
+
+
+
+
+
+    public async Task InsertChunksAsync(List<RagChunk> chunks, CancellationToken cancellationToken)
+    {
+        KBContext context = new();
+        context.RagChunks.AddRange(chunks);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local1="using:ITCompanionAI.Converters"
     mc:Ignorable="d">
+
     <Page.Resources>
         <local1:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <DataTemplate x:Key="MessageTemplate">
@@ -24,7 +25,8 @@
         </DataTemplate>
     </Page.Resources>
     <Page.Content>
-        <Grid Padding="24" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderBrush="Black"
+        <Grid Padding="24" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+              BorderBrush="{ThemeResource SystemControlForegroundBaseHighBrush}"
               BorderThickness="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -66,7 +68,8 @@
                 </StackPanel>
 
             </StackPanel>
-            <local:ButtonOverlay Grid.Row="0" Grid.RowSpan="2" Background="Brown" Height="200"
+            <local:ButtonOverlay Grid.Row="0" Grid.RowSpan="2"
+                                 Background="{ThemeResource SystemControlAcrylicElementBrush}" Height="200"
                                  VerticalAlignment="Top"
                                  Canvas.ZIndex="1000" />
 

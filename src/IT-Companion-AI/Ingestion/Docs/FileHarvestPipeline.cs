@@ -1,6 +1,9 @@
 ﻿namespace ITCompanionAI.Ingestion.Docs;
 
 
+
+
+
 internal class FileHarvestPipeline
 {
 
@@ -12,7 +15,7 @@ internal class FileHarvestPipeline
         foreach (var file in files)
         {
             var content = await File.ReadAllTextAsync(file);
-            _ = new EFModels.DocPage();
+            _ = new DocPage();
             SaveInSqlDatabase(file, content);
         }
 

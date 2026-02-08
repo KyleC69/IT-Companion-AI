@@ -1,6 +1,9 @@
 ﻿namespace ITCompanionAI.Models;
 
 
+
+
+
 public sealed class FlatTocEntry
 {
     public string Title { get; set; }

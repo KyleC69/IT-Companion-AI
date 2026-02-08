@@ -5,7 +5,11 @@ using Microsoft.UI.Xaml.Controls;
 
 
 
+
 namespace ITCompanionAI.Views;
+
+
+
 
 
 public partial class MainPage : Page
@@ -14,9 +18,6 @@ public partial class MainPage : Page
     {
         InitializeComponent();
         DataContext = ViewModel;
-        MyWindow = App.AppWindow!;
-
-        MyWindow.Activated += OnWindowActivated;
     }
 
 
@@ -28,15 +29,4 @@ public partial class MainPage : Page
 
     public MainViewModel ViewModel { get; } = new();
     private Window MyWindow { get; }
-
-
-
-
-
-
-
-
-    private async void OnWindowActivated(object sender, WindowActivatedEventArgs e)
-    {
-    }
 }

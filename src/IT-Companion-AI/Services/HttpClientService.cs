@@ -3,9 +3,16 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 
+using Polly;
+using Polly.Retry;
+
+
 
 
 namespace ITCompanionAI.Services;
+
+
+
 
 
 //Encapsulates an HttpClient with predefined settings for HTTPS requests.
@@ -13,6 +20,8 @@ public class HttpClientService : HttpClient
 {
     private const int MaxRetries = 3;
     private static readonly TimeSpan DefaultBackoff = TimeSpan.FromSeconds(2);
+
+    private static readonly ResiliencePipeline<HttpResponseMessage> RetryPipeline = CreateRetryPipeline();
 
 
 
@@ -26,7 +35,7 @@ public class HttpClientService : HttpClient
     ///     Configures the HttpClient with default settings for HTTPS requests.
     /// </summary>
     public HttpClientService()
-        : base(CreateHandlerPipeline())
+            : base(CreateHandlerPipeline())
     {
         Timeout = TimeSpan.FromSeconds(60);
 
@@ -42,13 +51,6 @@ public class HttpClientService : HttpClient
 
         DefaultRequestHeaders.AcceptLanguage.Clear();
         DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
-
-        DefaultRequestHeaders.Referrer = new Uri("https://learn.microsoft.com/");
-
-        _ = DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Site", "same-origin");
-        _ = DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Mode", "navigate");
-        _ = DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Dest", "document");
-        _ = DefaultRequestHeaders.TryAddWithoutValidation("Upgrade-Insecure-Requests", "1");
     }
 
 
@@ -62,19 +64,30 @@ public class HttpClientService : HttpClient
     {
         if (string.IsNullOrWhiteSpace(url))
         {
-            throw new ArgumentException("URL cannot be null or whitespace.", nameof(url));
+            throw new ArgumentException("URL cannot be null or empty.", nameof(url));
         }
 
-        if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri) || uri.Scheme is not ("http" or "https"))
+        Uri uri = ValidateHttpUrl(url);
+        try
         {
-            throw new ArgumentException("URL must be an absolute http/https URL.", nameof(url));
+            HttpResponseMessage response = await this.GetAsync(uri, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return string.Empty;
+            }
+
+
+
+            return await response.Content.ReadAsStringAsync(cancellationToken);
         }
-
-        using HttpRequestMessage request = new(HttpMethod.Get, uri);
-        request.Headers.Accept.Clear();
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
-
-        return await SendWithRetryAsync(request, cancellationToken);
+        catch (HttpRequestException ex)
+        {
+            throw new InvalidOperationException($"Failed to fetch the document from {url}.", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("An unexpected error occurred while fetching the web document.", ex);
+        }
     }
 
 
@@ -86,6 +99,32 @@ public class HttpClientService : HttpClient
 
     public async Task<string> GetJsonAsync(string url, CancellationToken cancellationToken = default)
     {
+        Uri uri = ValidateHttpUrl(url);
+
+        using HttpRequestMessage request = new(HttpMethod.Get, uri);
+        request.Headers.Accept.Clear();
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        HttpResponseMessage response = await this.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var preview = await SafeReadBodyPreviewAsync(response, cancellationToken).ConfigureAwait(false);
+            throw new HttpRequestException($"Request to {url} failed with status code {(int)response.StatusCode} ({response.ReasonPhrase}). {preview}");
+        }
+
+        return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+
+
+
+
+
+
+
+    private static Uri ValidateHttpUrl(string url)
+    {
         if (string.IsNullOrWhiteSpace(url))
         {
             throw new ArgumentException("URL cannot be null or whitespace.", nameof(url));
@@ -96,11 +135,7 @@ public class HttpClientService : HttpClient
             throw new ArgumentException("URL must be an absolute http/https URL.", nameof(url));
         }
 
-        using HttpRequestMessage request = new(HttpMethod.Get, uri);
-        request.Headers.Accept.Clear();
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        return await SendWithRetryAsync(request, cancellationToken);
+        return uri;
     }
 
 
@@ -116,9 +151,9 @@ public class HttpClientService : HttpClient
 
         HttpClientHandler handler = new()
         {
-            CookieContainer = cookies,
-            AllowAutoRedirect = true,
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                CookieContainer = cookies,
+                AllowAutoRedirect = true,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
 
         return new PerHostRateLimitingHandler(handler, TimeSpan.FromSeconds(10));
@@ -134,11 +169,11 @@ public class HttpClientService : HttpClient
     private static bool IsTransientStatus(HttpStatusCode statusCode)
     {
         return statusCode is HttpStatusCode.RequestTimeout
-            or HttpStatusCode.TooManyRequests
-            or HttpStatusCode.InternalServerError
-            or HttpStatusCode.BadGateway
-            or HttpStatusCode.ServiceUnavailable
-            or HttpStatusCode.GatewayTimeout;
+                or HttpStatusCode.TooManyRequests
+                or HttpStatusCode.InternalServerError
+                or HttpStatusCode.BadGateway
+                or HttpStatusCode.ServiceUnavailable
+                or HttpStatusCode.GatewayTimeout;
     }
 
 
@@ -168,59 +203,44 @@ public class HttpClientService : HttpClient
 
 
 
-    private async Task<string> SendWithRetryAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    private static ResiliencePipeline<HttpResponseMessage> CreateRetryPipeline()
     {
-        // HttpRequestMessage is single-use; we recreate it each attempt.
-        for (var attempt = 0; attempt <= MaxRetries; attempt++)
+        var builder = new ResiliencePipelineBuilder<HttpResponseMessage>();
+
+        var retry = new RetryStrategyOptions<HttpResponseMessage>
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            using HttpRequestMessage attemptRequest = request.Clone();
-            HttpResponseMessage? response = null;
-            try
-            {
-                response = await this.SendAsync(attemptRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-
-                if (!response.IsSuccessStatusCode)
+                MaxRetryAttempts = MaxRetries,
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                ShouldHandle = static args =>
                 {
-                    if (attempt < MaxRetries && IsTransientStatus(response.StatusCode))
+                    if (args.Outcome.Exception is HttpRequestException)
                     {
-                        TimeSpan delay = GetRetryDelay(response, attempt);
-                        response.Dispose();
-                        await Task.Delay(delay, cancellationToken);
-                        continue;
+                        return ValueTask.FromResult(true);
                     }
 
-                    var reason = response.ReasonPhrase ?? string.Empty;
-                    var bodyPreview = await SafeReadBodyPreviewAsync(response, cancellationToken);
-                    throw new HttpRequestException(
-                        $"Request to '{attemptRequest.RequestUri}' failed with {(int)response.StatusCode} {reason}. {bodyPreview}",
-                        null,
-                        response.StatusCode);
+                    if (args.Outcome.Result is { } response && IsTransientStatus(response.StatusCode))
+                    {
+                        return ValueTask.FromResult(true);
+                    }
+
+                    return ValueTask.FromResult(false);
+                },
+                DelayGenerator = static args =>
+                {
+                    if (args.Outcome.Result is { } response && response.Headers.RetryAfter?.Delta is { } delta)
+                    {
+                        return ValueTask.FromResult<TimeSpan?>(delta);
+                    }
+
+                    var baseDelayMs = DefaultBackoff.TotalMilliseconds * Math.Pow(2, args.AttemptNumber);
+                    var jitterMs = Random.Shared.Next(0, 250);
+                    return ValueTask.FromResult<TimeSpan?>(TimeSpan.FromMilliseconds(baseDelayMs + jitterMs));
                 }
+        };
 
-                var content = await response.Content.ReadAsStringAsync(cancellationToken);
-                response.Dispose();
-                return content;
-            }
-            catch (OperationCanceledException)
-            {
-                response?.Dispose();
-                throw;
-            }
-            catch (HttpRequestException) when (attempt < MaxRetries)
-            {
-                response?.Dispose();
-                TimeSpan delay = TimeSpan.FromMilliseconds(DefaultBackoff.TotalMilliseconds * Math.Pow(2, attempt));
-                await Task.Delay(delay, cancellationToken);
-            }
-            finally
-            {
-                response?.Dispose();
-            }
-        }
-
-        throw new InvalidOperationException("Retry loop exhausted unexpectedly.");
+        builder.AddRetry(retry);
+        return builder.Build();
     }
 
 
@@ -232,22 +252,23 @@ public class HttpClientService : HttpClient
 
     private static async Task<string> SafeReadBodyPreviewAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
+        if (response?.Content == null)
+        {
+            return string.Empty;
+        }
+
         try
         {
-            if (response.Content is null)
+            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(content))
             {
                 return string.Empty;
             }
 
-            var text = await response.Content.ReadAsStringAsync(cancellationToken);
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                return string.Empty;
-            }
-
-            const int max = 512;
-            text = text.Length <= max ? text : text[..max];
-            return $"Body: '{text}'";
+            const int MaxPreviewLength = 512;
+            return content.Length <= MaxPreviewLength
+                    ? $"Body: '{content}'"
+                    : $"Body: '{content[..MaxPreviewLength]}'";
         }
         catch
         {
@@ -264,7 +285,11 @@ internal static class HttpRequestMessageExtensions
 {
     public static HttpRequestMessage Clone(this HttpRequestMessage request)
     {
-        HttpRequestMessage clone = new(request.Method, request.RequestUri);
+        HttpRequestMessage clone = new(request.Method, request.RequestUri)
+        {
+                Version = request.Version,
+                VersionPolicy = request.VersionPolicy
+        };
 
         foreach (var header in request.Headers) _ = clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
 
@@ -291,6 +316,7 @@ internal static class HttpRequestMessageExtensions
 /// <param name="minDelay">The minimum time interval to wait between consecutive requests to the same host.</param>
 internal sealed class PerHostRateLimitingHandler(HttpMessageHandler innerHandler, TimeSpan minDelay) : DelegatingHandler(innerHandler)
 {
+    private static readonly TimeSpan GateTtl = TimeSpan.FromMinutes(30);
     private readonly ConcurrentDictionary<string, HostGate> _gates = new(StringComparer.OrdinalIgnoreCase);
     private readonly TimeSpan _minDelay = minDelay;
 
@@ -319,15 +345,18 @@ internal sealed class PerHostRateLimitingHandler(HttpMessageHandler innerHandler
             var next = gate.NextAllowedTick;
 
             delay = now >= next
-                ? null
-                : TimeSpan.FromSeconds((next - now) / (double)Stopwatch.Frequency);
+                    ? null
+                    : TimeSpan.FromSeconds((next - now) / (double)Stopwatch.Frequency);
 
             gate.NextAllowedTick = Stopwatch.GetTimestamp() + (long)(_minDelay.TotalSeconds * Stopwatch.Frequency);
+            gate.LastUsedTick = Stopwatch.GetTimestamp();
         }
         finally
         {
             _ = gate.Semaphore.Release();
         }
+
+        PruneStaleGates();
 
         if (delay is { } d && d > TimeSpan.Zero)
         {
@@ -344,9 +373,37 @@ internal sealed class PerHostRateLimitingHandler(HttpMessageHandler innerHandler
 
 
 
+    private void PruneStaleGates()
+    {
+        if (_gates.Count < 64)
+        {
+            return;
+        }
+
+        var now = Stopwatch.GetTimestamp();
+        var ttlTicks = (long)(GateTtl.TotalSeconds * Stopwatch.Frequency);
+
+        foreach (var kvp in _gates)
+        {
+            HostGate gate = kvp.Value;
+            if (now - gate.LastUsedTick > ttlTicks)
+            {
+                _ = _gates.TryRemove(kvp.Key, out _);
+            }
+        }
+    }
+
+
+
+
+
+
+
+
     private sealed class HostGate
     {
         public SemaphoreSlim Semaphore { get; } = new(1, 1);
         public long NextAllowedTick { get; set; } = Stopwatch.GetTimestamp();
+        public long LastUsedTick { get; set; } = Stopwatch.GetTimestamp();
     }
 }

@@ -1,0 +1,1 @@
+﻿namespace ITCompanionAI.Ingestion.API;

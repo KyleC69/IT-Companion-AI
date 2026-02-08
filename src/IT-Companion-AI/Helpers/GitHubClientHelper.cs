@@ -4,13 +4,17 @@ using Octokit;
 
 
 
+
 namespace ITCompanionAI.Helpers;
 
 
+
+
+
 public sealed record GitHubClientOptions(
-    string ProductName,
-    Uri ApiBaseAddress,
-    string Token)
+        string ProductName,
+        Uri ApiBaseAddress,
+        string Token)
 {
     public const string TokenConfigKey = "AIAPP:GITHUB_TOKEN";
     public const string SectionName = "AIAPP:GitHub";
@@ -41,14 +45,14 @@ public sealed record GitHubClientOptions(
         if (!Uri.TryCreate(apiBase, UriKind.Absolute, out Uri apiBaseAddress))
         {
             throw new InvalidOperationException(
-                $"Invalid GitHub API base address in configuration key '{SectionName}:ApiBaseAddress'.");
+                    $"Invalid GitHub API base address in configuration key '{SectionName}:ApiBaseAddress'.");
         }
 
         var token = configuration[TokenConfigKey];
         return string.IsNullOrWhiteSpace(token)
-            ? throw new InvalidOperationException(
-                $"Missing GitHub token in configuration key '{TokenConfigKey}'. Add it via user-secrets (recommended) or environment variables.")
-            : new GitHubClientOptions(productName, apiBaseAddress, token);
+                ? throw new InvalidOperationException(
+                        $"Missing GitHub token in configuration key '{TokenConfigKey}'. Add it via user-secrets (recommended) or environment variables.")
+                : new GitHubClientOptions(productName, apiBaseAddress, token);
     }
 }
 
@@ -95,7 +99,7 @@ public sealed class GitHubClientFactory : IGitHubClientFactory
         ProductHeaderValue productInfo = new(options.ProductName);
         GitHubClient client = new(productInfo, options.ApiBaseAddress)
         {
-            Credentials = new Credentials(options.Token)
+                Credentials = new Credentials(options.Token)
         };
 
         return client;

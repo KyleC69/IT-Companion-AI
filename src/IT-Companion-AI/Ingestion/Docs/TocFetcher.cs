@@ -1,18 +1,24 @@
-﻿using ITCompanionAI.Services;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+using ITCompanionAI.Services;
 
 using Microsoft.Extensions.Logging;
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using YamlDotNet.Serialization;
+
 
 
 
 namespace ITCompanionAI.Ingestion.Docs;
 
 
+
+
+
 public sealed class TocFetcher
 {
-    private readonly HttpClient _http;
+    private readonly HttpClientService _httpClient;
     private readonly ILogger<TocFetcher> _logger;
 
 
@@ -24,7 +30,7 @@ public sealed class TocFetcher
 
     public TocFetcher()
     {
-        _http = App.GetService<HttpClientService>();
+        _httpClient = App.GetService<HttpClientService>();
         _logger = App.GetService<ILogger<TocFetcher>>();
     }
 
@@ -35,74 +41,44 @@ public sealed class TocFetcher
 
 
 
-    public async Task<List<TocItem>> FetchAsync(string baseUrl)
+    /// <summary>
+    ///     Asynchronously fetches a table of contents (TOC) from the specified base URL.
+    ///     Grabs the toc.yml file from github directly using their API octocat. then we will grab all of the relative links
+    ///     from the TOC.
+    /// </summary>
+    /// <param name="baseUrl">
+    ///     The base URL from which the TOC will be fetched.
+    /// </param>
+    /// <returns>
+    ///     A task representing the asynchronous operation. The task result contains YML file of <see cref="TocItem" /> objects
+    ///     representing the fetched TOC, or an empty list if no TOC could be retrieved.
+    /// </returns>
+    /// <exception cref="JsonException">
+    ///     Thrown when the TOC JSON cannot be deserialized.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when the <paramref name="baseUrl" /> is null or empty.
+    /// </exception>
+    public async Task<List<string>> FetchAsync(string baseUrl)
     {
-        Uri baseUri = new(baseUrl);
 
-        // Try likely TOC locations (adjust to your needs)
-        var candidates = new[]
-        {
-            new Uri(baseUri, "toc.json"),
-            new Uri(baseUri, "../toc.json"),
-            new Uri(baseUri, "../../toc.json")
-        };
+        //TODO: and a gate to ensure we only fetch TOC from Doc Repo on github, and not from any arbitrary URL, to avoid SSRF risks.
+        HttpResponseMessage ymlTOC = await _httpClient.GetAsync(baseUrl);
 
-        foreach (Uri uri in candidates)
-        {
-            using HttpResponseMessage resp = await _http.GetAsync(uri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                continue;
-            }
+        ymlTOC.EnsureSuccessStatusCode();
+        var tocString = await ymlTOC.Content.ReadAsStringAsync();
 
-            var mediaType = resp.Content.Headers.ContentType?.MediaType;
-            if (mediaType is not null && !mediaType.Contains("json", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
 
-            // Microsoft Learn TOC is commonly shaped as { "items": [ ... ] } with fields like "toc_title" and "children".
-            // Some doc sets may still return a raw array; support both.
-            var json = await resp.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                continue;
-            }
+        IDeserializer deserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().Build();
+        TocRoot anodes = deserializer.Deserialize<TocRoot>(tocString);
 
-            JsonSerializerOptions jsonPropertyName = new()
-            {
-                PropertyNameCaseInsensitive = true
-            };
+        var mdHrefs = Flatten(anodes?.items ?? [])
+                .Select(n => n.href)
+                .Where(h => !string.IsNullOrWhiteSpace(h) && h.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
-            // 1) Try Learn's wrapper schema.
-            try
-            {
-                LearnTocResponse2? learn = JsonSerializer.Deserialize<LearnTocResponse2>(json, jsonPropertyName);
-                if (learn?.Items is { Count: > 0 })
-                {
-                    return learn.Items;
-                }
-            }
-            catch (JsonException)
-            {
-                // fall through
-                _logger.LogError("Failed to deserialize LearnTocResponse2 from {Json}", json);
-            }
 
-            // 2) Try raw array schema.
-            try
-            {
-                //    var toc = JsonSerializer.Deserialize<List<TocItem>>(json, jsonPropertyName);
-                //  if (toc is not null) return toc;
-            }
-            catch (JsonException)
-            {
-                // fall through
-                _logger.LogError("Failed to deserialize LearnTocResponse2 from {Json}", json);
-            }
-        }
-
-        throw new InvalidOperationException($"No toc.json found for {baseUrl}");
+        return mdHrefs;
     }
 
 
@@ -112,7 +88,22 @@ public sealed class TocFetcher
 
 
 
-    private static string? NormalizeHref(string? href)
+    private static IEnumerable<TocNode> Flatten(IEnumerable<TocNode> nodes)
+    {
+        return nodes.SelectMany(n => new[]
+        {
+                n
+        }.Concat(Flatten(n.items ?? [])));
+    }
+
+
+
+
+
+
+
+
+    private static string NormalizeHref(string href)
     {
         if (string.IsNullOrWhiteSpace(href))
         {
@@ -131,6 +122,27 @@ public sealed class TocFetcher
 
 
 
+
+
+
+
+
+    public sealed class TocRoot
+    {
+        public List<TocNode>? items { get; set; }
+    }
+
+
+
+
+
+    public sealed class TocNode
+    {
+        public string? name { get; set; }
+        public string? href { get; set; }
+        public bool? expanded { get; set; }
+        public List<TocNode>? items { get; set; }
+    }
 
 
 
@@ -199,10 +211,6 @@ public sealed class TocFetcher
         [JsonPropertyName("items")] public List<TocItem> NestedItems { get; set; } = [];
 
 
-
-
-
-        [JsonIgnore]
-        public List<TocItem> Items => Children.Count > 0 ? Children : NestedItems.Count > 0 ? NestedItems : [];
+        [JsonIgnore] public List<TocItem> Items => Children.Count > 0 ? Children : NestedItems.Count > 0 ? NestedItems : [];
     }
 }

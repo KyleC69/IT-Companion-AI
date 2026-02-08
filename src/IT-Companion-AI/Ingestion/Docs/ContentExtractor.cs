@@ -20,27 +20,27 @@ public sealed class ContentExtractor
             case ExtractionMode.Html:
                 return docType switch
                 {
-                    DocumentType.LearnPage => ExtractLearnMainHtml(html),
-                    DocumentType.BlogPost => ExtractBlogHtml(html),
-                    //Add more document types as needed
-                    _ => throw new NotImplementedException($"HTML extraction not implemented for document type {docType}")
+                        DocumentType.LearnPage => ExtractLearnMainHtml(html),
+                        DocumentType.BlogPost => ExtractBlogHtml(html),
+                        //Add more document types as needed
+                        _ => throw new NotImplementedException($"HTML extraction not implemented for document type {docType}")
                 };
             case ExtractionMode.Text:
                 return ExtractText(html);
             case ExtractionMode.Markdown:
                 return docType switch
                 {
-                    DocumentType.LearnPage => ExtractLearnMainMarkdown(),
-                    //Add more document types as needed
-                    _ => throw new NotImplementedException($"Markdown extraction not implemented for document type {docType}")
+                        DocumentType.LearnPage => ExtractLearnMainMarkdown(),
+                        //Add more document types as needed
+                        _ => throw new NotImplementedException($"Markdown extraction not implemented for document type {docType}")
                 };
             case ExtractionMode.Code:
             {
                 return docType switch
                 {
-                    DocumentType.LearnPage => ExtractCodeFromLearnPage(html),
-                    //Add more document types as needed
-                    _ => throw new NotImplementedException($"Code extraction not implemented for document type {docType}")
+                        DocumentType.LearnPage => ExtractCodeFromLearnPage(html),
+                        //Add more document types as needed
+                        _ => throw new NotImplementedException($"Code extraction not implemented for document type {docType}")
                 };
             }
             default:

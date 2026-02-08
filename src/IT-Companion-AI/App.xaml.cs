@@ -1,22 +1,21 @@
 using ITCompanionAI.Services;
-using ITCompanionAI.Views;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
-using Windows.Graphics;
+using OllamaSharp;
 
-using KBContext = ITCompanionAI.EFModels.KBContext;
 
 
 
 namespace ITCompanionAI;
+
+
+
 
 
 /// <summary>
@@ -24,7 +23,7 @@ namespace ITCompanionAI;
 /// </summary>
 public partial class App : Application
 {
-    private Window window = Window.Current;
+    private Window _window;
 
 
 
@@ -33,41 +32,11 @@ public partial class App : Application
 
 
 
-    /// <summary>
-    ///     Initializes the singleton application object.  This is the first line of authored code
-    ///     executed, and as such is the logical equivalent of main() or WinMain().
-    /// </summary>
     public App()
     {
         InitializeComponent();
-
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureAppConfiguration((context, config) =>
-        {
-            // Explicitly load user-secrets for this WinUI host so keys like "ITAI:GITHUB_TOKEN" are available.
-            _ = config.AddUserSecrets<App>(true);
-        }).ConfigureServices((context, services) =>
-        {
-            _ = services.AddSingleton<IGitHubClientFactory, GitHubClientFactory>();
-            _ = services.AddSingleton<HttpClientService>();
-            _ = services.AddDbContext<KBContext>();
-            _ = services.AddLogging(loggingBuilder =>
-            {
-                _ = loggingBuilder.AddConsole();
-                _ = loggingBuilder.AddDebug();
-                _ = loggingBuilder.SetMinimumLevel(LogLevel.Trace);
-            });
-        }).Build();
-
+        Host = CreateHost();
         Services = Host.Services;
-        //  TheKernel = Services.GetRequiredService<Kernel>();
-
-        Host.Services.GetRequiredService<ILogger<App>>().LogInformation("Application Starting Up");
-
-        Current.UnhandledException += (sender, args) =>
-        {
-            var logger = Host.Services.GetRequiredService<ILogger<App>>();
-            logger.LogError(args.Exception, "Unhandled exception occurred");
-        };
     }
 
 
@@ -77,7 +46,8 @@ public partial class App : Application
 
 
 
-    public IHost Host { get; set; }
+    public IHost Host { get; }
+
 
     public static Application AppHost => Current;
 
@@ -85,10 +55,9 @@ public partial class App : Application
     /// <summary>
     ///     Gets the service provider for dependency injection.
     /// </summary>
-    public static IServiceProvider Services { get; private set; } = null!;
+    public static IServiceProvider Services { get; private set; }
 
     public static Window AppWindow { get; private set; }
-    public static Kernel TheKernel { get; set; }
 
 
 
@@ -97,13 +66,9 @@ public partial class App : Application
 
 
 
-    public static T GetService<T>()
-        where T : class
+    public static T GetService<T>() where T : class
     {
-        return (Current as App)!.Host!.Services.GetService(typeof(T)) is not T service
-            ? throw new ArgumentException(
-                $"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.")
-            : service;
+        return Services.GetRequiredService<T>();
     }
 
 
@@ -113,27 +78,69 @@ public partial class App : Application
 
 
 
-    /// <summary>
-    ///     Invoked when the application is launched normally by the end user.  Other entry points
-    ///     will be used such as when the application is launched to open a specific file.
-    /// </summary>
-    /// <param name="e">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs e)
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        window ??= new Window();
-        window.AppWindow.Resize(new SizeInt32(900, 750));
-        AppWindow = window;
-        if (window.Content is not Frame rootFrame)
-        {
-            rootFrame = new Frame();
-            rootFrame.NavigationFailed += OnNavigationFailed;
-            window.Content = rootFrame;
-        }
+        _window ??= new MainWindow();
+        AppWindow = _window;
 
-        _ = rootFrame.Navigate(typeof(MainPage), e.Arguments);
-        window.Activate();
+        // Root UI composition via DI.
+        MainWindow mainWindow = GetService<MainWindow>();
+        //  mainWindow.RequestedTheme = ElementTheme.Default;
 
-        base.OnLaunched(e);
+
+        _window.Activate();
+        base.OnLaunched(args);
+    }
+
+
+
+
+
+
+
+
+    private static IHost CreateHost()
+    {
+        return Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    // Typical desktop configuration sources
+                    config.AddJsonFile("appsettings.json", true, true);
+                    config.AddEnvironmentVariables();
+                    config.SetBasePath(AppContext.BaseDirectory);
+                })
+                .ConfigureLogging((context, logging) =>
+                {
+                    logging.ClearProviders();
+                    logging.AddDebug();
+                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                })
+                .ConfigureServices((context, services) => { ConfigureServices(context.Configuration, services); })
+                .Build();
+    }
+
+
+
+
+
+
+
+
+    private static void ConfigureServices(IConfiguration configuration, IServiceCollection services)
+    {
+        // Views / composition root
+        services.AddSingleton<MainWindow>();
+        services.AddSingleton<HttpClientService>();
+        services.AddSingleton(sp => { return new OllamaApiClient(new Uri("http://localhost:11434"), "bge-large:latest"); });
+
+
+        // Example registrations (remove if unused):
+        // services.AddSingleton<IMyService, MyService>();
+        // services.AddTransient<MyViewModel>();
+        //
+        // If you use options:
+        // services.AddOptions<MyOptions>().Bind(configuration.GetSection("MyOptions"));
     }
 
 
@@ -151,64 +158,5 @@ public partial class App : Application
     private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
     {
         throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
-    }
-}
-
-
-
-
-
-/// <summary>
-///     Provides extension methods for registering ITAI kernel and related AI services with an ASP.NET Core dependency
-///     injection container.
-/// </summary>
-/// <remarks>
-///     This static class contains methods to simplify the configuration and registration of AI-related
-///     services, such as the ITAI kernel, vector stores, and agent components, into an application's service collection.
-///     These extensions are intended to be used during application startup to ensure all required AI infrastructure is
-///     available via dependency injection.
-/// </remarks>
-public static class ServiceCollectionExtensions
-{
-    public static IServiceCollection RegisterKernel(this IServiceCollection services)
-    {
-        // DO NOT REMOVE THESE LINES BELOW - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
-        // ****************  AI DO NOT REMOVE THESE LINES BELOW    **********************
-        _ = Environment.GetEnvironmentVariable("GITHUB_TOKEN")
-                          ?? throw new InvalidOperationException("Missing GitHub API key in configuration.");
-        var postgresConnectionString =
-            """Host=127.0.0.1;Database=postgres;Username=postgres;Password=Agent1234;Persist Security Info=True"""
-            ?? throw new InvalidOperationException(
-                "Missing Postgres connection string in environment variable 'POSTGRES_CONNECTIONSTRING'.");
-
-        var phiModel = "Phi-4-mini-instruct";
-        _ = new Uri("https://models.github.ai/inference");
-
-        _ = phiModel;
-        _ = c => c.AddConsole().SetMinimumLevel(LogLevel.Trace);
-        // ****************  AI DO NOT REMOVE THESE LINES ABOVE    **********************
-        // DO NOT REMOVE THESE LINES ABOVE - THEY ARE REQUIRED TO RUN THE APPLICATION WITH OPENAI
-        //#####################################################################
-        //#####################################################################
-        //#####################################################################
-
-
-
-        //services.AddSingleton<Kernel>(sp =>
-        //{
-        //    var builder = Kernel.CreateBuilder();
-        //    builder.AddOpenAIChatCompletion(phiModel, githubToken, openAiEndpoint.ToString());
-        //    builder.Services.AddLogging(loggingConfiguration);
-        //    return builder.Build();
-        //});
-
-
-
-
-
-
-
-
-        return services;
     }
 }

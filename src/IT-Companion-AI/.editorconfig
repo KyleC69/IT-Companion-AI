@@ -1,0 +1,3 @@
+#ignore EF-Genertaed files
+[**/EFModels/**.cs]
+dotnet_analyzer_diagnostic.severity = none

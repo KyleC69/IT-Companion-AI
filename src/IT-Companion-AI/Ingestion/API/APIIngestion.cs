@@ -1,14 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 
-using ApiMember = ITCompanionAI.EFModels.ApiMember;
-using ApiParameter = ITCompanionAI.EFModels.ApiParameter;
-using ApiType = ITCompanionAI.EFModels.ApiType;
-using KBContext = ITCompanionAI.EFModels.KBContext;
 
 
 
 namespace ITCompanionAI.Ingestion.API;
+
+
+
 
 
 /// <summary>
@@ -62,16 +61,12 @@ public class APIIngestion : RoslynHarvesterBase
         // Begin ingestion run.
         Guid ingestionRunId;
         {
-            var ingestionRunIdResult =
-                await _db.SpBeginIngestionRunAsync(schemaVersion, notes, Guid.NewGuid()).ConfigureAwait(false);
+            //   var ingestionRunIdResult =await _db.SpBeginIngestionRunAsync(schemaVersion, notes, Guid.NewGuid()).ConfigureAwait(false);
 
-            ingestionRunId = ingestionRunIdResult.Item1
-                             ?? throw new InvalidOperationException(
-                                 "sp_BeginIngestionRun did not return an ingestion run id.");
+            // ingestionRunId = ingestionRunIdResult.Item1?? throw new InvalidOperationException("sp_BeginIngestionRun did not return an ingestion run id.");
 
             runid = ingestionRunId;
         }
-
         // Create source snapshot tied to this ingestion run.
         Guid sourceSnapshotId;
         {
@@ -85,21 +80,21 @@ public class APIIngestion : RoslynHarvesterBase
             var configJson = "{}";
 
             var snapshotIdResult = await _db.SpCreateSourceSnapshotAsync(
-                    ingestionRunId,
-                    snapshotUid,
-                    repoUrl,
-                    branch,
-                    repoCommit,
-                    language,
-                    packageName,
-                    packageVersion,
-                    configJson,
-                    Guid.NewGuid())
-                .ConfigureAwait(false);
+                            ingestionRunId,
+                            snapshotUid,
+                            repoUrl,
+                            branch,
+                            repoCommit,
+                            language,
+                            packageName,
+                            packageVersion,
+                            configJson,
+                            Guid.NewGuid())
+                    .ConfigureAwait(false);
 
             sourceSnapshotId = snapshotIdResult.Item1
                                ?? throw new InvalidOperationException(
-                                   "CreateSourceSnapshot did not return a snapshot id.");
+                                       "CreateSourceSnapshot did not return a snapshot id.");
         }
 
         // Harvest symbols (types -> members -> parameters).
@@ -110,51 +105,47 @@ public class APIIngestion : RoslynHarvesterBase
 
         // Ensure IDs exist for all types BEFORE member extraction so ApiFeatureId is non-empty.
         foreach (ApiType type in apiTypes)
-        {
             if (type.Id == Guid.Empty)
             {
                 type.Id = Guid.NewGuid();
             }
-        }
 
         // Build type symbol map now that types are extracted.
         var roslynTypeSymbolsByUid = await BuildTypeSymbolMapAsync(
-                solution,
-                apiTypes.Select(t => t.SemanticUid),
-                CancellationToken.None)
-            .ConfigureAwait(false);
+                        solution,
+                        apiTypes.Select(t => t.SemanticUid),
+                        CancellationToken.None)
+                .ConfigureAwait(false);
 
         // Members
         List<ApiMember> apiMembers = [];
         var roslynMemberSymbolsByUid = new Dictionary<string, ISymbol>(StringComparer.Ordinal);
 
         await ExtractMembersAsync(
-                solution,
-                apiTypes,
-                roslynTypeSymbolsByUid,
-                apiMembers,
-                roslynMemberSymbolsByUid,
-                CancellationToken.None)
-            .ConfigureAwait(false);
+                        solution,
+                        apiTypes,
+                        roslynTypeSymbolsByUid,
+                        apiMembers,
+                        roslynMemberSymbolsByUid,
+                        CancellationToken.None)
+                .ConfigureAwait(false);
 
         // Ensure IDs exist for all members BEFORE parameter extraction so ApiMemberId is non-empty.
         foreach (ApiMember member in apiMembers)
-        {
             if (member.Id == Guid.Empty)
             {
                 member.Id = Guid.NewGuid();
             }
-        }
 
         // Parameters
         List<ApiParameter> apiParameters = [];
         await ExtractParametersAsync(
-                solution,
-                apiMembers,
-                roslynMemberSymbolsByUid,
-                apiParameters,
-                CancellationToken.None)
-            .ConfigureAwait(false);
+                        solution,
+                        apiMembers,
+                        roslynMemberSymbolsByUid,
+                        apiParameters,
+                        CancellationToken.None)
+                .ConfigureAwait(false);
 
         // Persist (types -> members -> parameters) in parent-first order.
         // Use the DB upsert sprocs as the canonical persistence API.
@@ -177,31 +168,31 @@ public class APIIngestion : RoslynHarvesterBase
             type.IsActive = true;
 
             await _db.SpUpsertApiTypeAsync(
-                    type.SemanticUid,
-                    type.SourceSnapshotId,
-                    ingestionRunId,
-                    type.Name,
-                    type.NamespacePath,
-                    type.Kind,
-                    type.Accessibility,
-                    type.IsStatic,
-                    type.IsGeneric,
-                    type.IsAbstract,
-                    type.IsSealed,
-                    type.IsRecord,
-                    type.IsRefLike,
-                    type.BaseTypeUid,
-                    type.Interfaces,
-                    type.ContainingTypeUid,
-                    type.GenericParameters,
-                    type.GenericConstraints,
-                    type.Summary,
-                    type.Remarks,
-                    type.Attributes,
-                    type.SourceFilePath,
-                    type.SourceStartLine,
-                    type.SourceEndLine)
-                .ConfigureAwait(false);
+                            type.SemanticUid,
+                            type.SourceSnapshotId,
+                            ingestionRunId,
+                            type.Name,
+                            type.NamespacePath,
+                            type.Kind,
+                            type.Accessibility,
+                            type.IsStatic,
+                            type.IsGeneric,
+                            type.IsAbstract,
+                            type.IsSealed,
+                            type.IsRecord,
+                            type.IsRefLike,
+                            type.BaseTypeUid,
+                            type.Interfaces,
+                            type.ContainingTypeUid,
+                            type.GenericParameters,
+                            type.GenericConstraints,
+                            type.Summary,
+                            type.Remarks,
+                            type.Attributes,
+                            type.SourceFilePath,
+                            type.SourceStartLine,
+                            type.SourceEndLine)
+                    .ConfigureAwait(false);
 
             typeIdBySemanticUid[type.SemanticUid] = type.Id;
         }
@@ -236,34 +227,34 @@ public class APIIngestion : RoslynHarvesterBase
             }
 
             await _db.SpUpsertApiMemberAsync(
-                    member.SemanticUid,
-                    member.ApiFeatureId,
-                    ingestionRunId,
-                    member.Name,
-                    member.Kind,
-                    member.MethodKind,
-                    member.Accessibility,
-                    member.IsStatic,
-                    member.IsExtensionMethod,
-                    member.IsAsync,
-                    member.IsVirtual,
-                    member.IsOverride,
-                    member.IsAbstract,
-                    member.IsSealed,
-                    member.IsReadonly,
-                    member.IsConst,
-                    member.IsUnsafe,
-                    member.ReturnTypeUid,
-                    member.ReturnNullable,
-                    member.GenericParameters,
-                    member.GenericConstraints,
-                    member.Summary,
-                    member.Remarks,
-                    member.Attributes,
-                    member.SourceFilePath,
-                    member.SourceStartLine,
-                    member.SourceEndLine)
-                .ConfigureAwait(false);
+                            member.SemanticUid,
+                            member.ApiFeatureId,
+                            ingestionRunId,
+                            member.Name,
+                            member.Kind,
+                            member.MethodKind,
+                            member.Accessibility,
+                            member.IsStatic,
+                            member.IsExtensionMethod,
+                            member.IsAsync,
+                            member.IsVirtual,
+                            member.IsOverride,
+                            member.IsAbstract,
+                            member.IsSealed,
+                            member.IsReadonly,
+                            member.IsConst,
+                            member.IsUnsafe,
+                            member.ReturnTypeUid,
+                            member.ReturnNullable,
+                            member.GenericParameters,
+                            member.GenericConstraints,
+                            member.Summary,
+                            member.Remarks,
+                            member.Attributes,
+                            member.SourceFilePath,
+                            member.SourceStartLine,
+                            member.SourceEndLine)
+                    .ConfigureAwait(false);
 
             memberIdBySemanticUid[member.SemanticUid] = member.Id;
         }
@@ -290,16 +281,16 @@ public class APIIngestion : RoslynHarvesterBase
             p.IsActive = true;
 
             _ = await _db.SpUpsertApiParameterAsync(
-                    p.ApiMemberId,
-                    p.Name,
-                    p.TypeUid,
-                    p.NullableAnnotation,
-                    p.Position,
-                    p.Modifier,
-                    p.HasDefaultValue,
-                    p.DefaultValueLiteral,
-                    ingestionRunId)
-                .ConfigureAwait(false);
+                            p.ApiMemberId,
+                            p.Name,
+                            p.TypeUid,
+                            p.NullableAnnotation,
+                            p.Position,
+                            p.Modifier,
+                            p.HasDefaultValue,
+                            p.DefaultValueLiteral,
+                            ingestionRunId)
+                    .ConfigureAwait(false);
         }
 
         // TODO: Features + doc pages orchestration.
@@ -347,9 +338,9 @@ public sealed class IngestionVerifier
 
 
         var types = await _db.ApiTypes
-            .Where(t => t.SourceSnapshotId == sourceSnapshotId && t.IsActive)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+                .Where(t => t.SourceSnapshotId == sourceSnapshotId && t.IsActive)
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
 
         foreach (ApiType t in types)
         {
@@ -400,17 +391,17 @@ public sealed class IngestionVerifier
     public async Task VerifyMembersAndParametersAsync(Guid sourceSnapshotId, CancellationToken ct = default)
     {
         var types = await _db.ApiTypes
-            .Where(t => t.SourceSnapshotId == sourceSnapshotId && t.IsActive)
-            .Select(t => t.Id)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+                .Where(t => t.SourceSnapshotId == sourceSnapshotId && t.IsActive)
+                .Select(t => t.Id)
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
 
         var typeIdSet = new HashSet<Guid>(types);
 
         var members = await _db.ApiMembers
-            .Where(m => typeIdSet.Contains(m.ApiFeatureId) && m.IsActive)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+                .Where(m => typeIdSet.Contains(m.ApiFeatureId) && m.IsActive)
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
 
         foreach (ApiMember m in members)
         {
@@ -428,9 +419,9 @@ public sealed class IngestionVerifier
         var memberIds = new HashSet<Guid>(members.Select(m => m.Id));
 
         var parameters = await _db.ApiParameters
-            .Where(p => memberIds.Contains(p.ApiMemberId) && p.IsActive)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+                .Where(p => memberIds.Contains(p.ApiMemberId) && p.IsActive)
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
 
         foreach (ApiParameter p in parameters)
         {
