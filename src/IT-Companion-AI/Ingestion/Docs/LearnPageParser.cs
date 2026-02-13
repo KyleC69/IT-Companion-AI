@@ -2,7 +2,7 @@
 
 using HtmlAgilityPack;
 
-using ITCompanionAI.Services;
+using ITCompanionAI.Utilities;
 
 using Microsoft.Extensions.Logging;
 
@@ -17,8 +17,7 @@ namespace ITCompanionAI.Ingestion.Docs;
 
 public sealed class LearnPageParser
 {
-    private readonly HttpClientService _httpClient;
-    private ILogger<LearnPageParser> _logger;
+    private ILogger<LearnPageParser>? _logger;
 
 
 
@@ -27,105 +26,76 @@ public sealed class LearnPageParser
 
 
 
-    public async Task<LearnPageParseResult?> ParseAsync(string url, Guid ingestionRunId, Guid sourceSnapshotId, CancellationToken cancellationToken = default)
+    public async Task<LearnPageParseResult?> ParseAsync(string pagePath, Guid? ingestionRunId, Guid? sourceSnapshotId, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(url))
+        if (string.IsNullOrWhiteSpace(pagePath))
         {
-            throw new ArgumentException("URL cannot be null or whitespace.", nameof(url));
+            throw new ArgumentException("Page path cannot be null or whitespace.", nameof(pagePath));
         }
 
         _logger = App.GetService<ILogger<LearnPageParser>>();
         cancellationToken.ThrowIfCancellationRequested();
+        LearnPageParseResult? result = new();
+        DocPage page = new();
 
         using IDisposable? scope = _logger.BeginScope(new Dictionary<string, object>
         {
-                ["Url"] = url,
+                ["PagePath"] = pagePath,
                 ["IngestionRunId"] = ingestionRunId,
                 ["SourceSnapshotId"] = sourceSnapshotId
         });
 
         try
         {
-            var htmlstring = await SourceExtractor.GetRenderedHtmlAsync(url, cancellationToken);
-            if (string.IsNullOrWhiteSpace(htmlstring))
-            {
-                _logger.LogWarning("Fetched HTML was empty for URL: {Url}", url);
-                return null;
-            }
-
+            var markdown = await File.ReadAllTextAsync(pagePath, cancellationToken);
+            Guid PageID = Guid.NewGuid();
             cancellationToken.ThrowIfCancellationRequested();
 
+            var extracted = MarkdownExtractor.Extract(markdown);
+            //  Transer page metadata and content for the page as a whole
+            page.Url = pagePath; // Assuming URL is the same as the file path for now TODO: change db schema to this can map to either url or path depending on source type
+            page.CreatedIngestionRunId = ingestionRunId ?? Guid.Empty;
+            page.SourceSnapshotId = sourceSnapshotId ?? Guid.Empty;
+            page.Id = PageID;
+            page.Language = "en"; // default to English for now, we can enhance the parser later to detect language from metadata or content
+            page.RawMarkdown = markdown;
+            page.SourcePath = pagePath;
+            page.ValidFromUtc = DateTime.Now;
+            page.ContentHash = HashUtils.ComputeSha256(markdown);
 
-            HtmlDocument doc = new();
-            doc.LoadHtml(htmlstring);
+            //Document/Page sections by kind
+            foreach (MarkdownExtractor.ExtractedItem item in extracted)
+                switch (item.Kind)
+                {
+                    case "DocPageMeta":
 
+                        page.Title = item.Content.Split('\n').FirstOrDefault(line => line.StartsWith("title:", StringComparison.OrdinalIgnoreCase))?
+                                .Split(':', 2)[1].Trim() ?? "Untitled";
+                        _logger.LogInformation("Extracted DocPage metadata from markdown front matter.");
+                        break;
+                    case "Heading":
+                        _logger.LogInformation("Extracted heading: {Heading}", item.Content);
+                        break;
+                    case "Paragraph":
+                        _logger.LogInformation("Extracted paragraph with length {Length}.", item.Content.Length);
+                        break;
+                    case "CodeBlock":
+                        _logger.LogInformation("Extracted code block with length {Length}.", item.Content.Length);
+                        break;
+                    default:
+                        _logger.LogInformation("Extracted item of kind {Kind} with length {Length}.", item.Kind, item.Content.Length);
+                        break;
+                }
 
-            //DO NOT CHANGE
-            DateTime now = DateTime.Now;
-
-            HtmlNode? article = doc.DocumentNode?.SelectSingleNode("//div[@class='content'][2]")
-                                ?? doc.DocumentNode?.SelectSingleNode("//*[@id='main-content']")
-                                ?? doc.DocumentNode?.SelectSingleNode("//body");
-
-            if (article is null)
-            {
-                _logger.LogWarning("Unable to locate main content on Learn page.");
-            }
-
-            HtmlNode? titleNode = article.SelectSingleNode(".//h1")
-                                  ?? doc.DocumentNode?.SelectSingleNode("//h1")
-                                  ?? doc.DocumentNode?.SelectSingleNode("//title");
-
-            var title = HtmlEntity.DeEntitize(titleNode?.InnerText?.Trim() ?? string.Empty);
-
-            var pageSemanticUid = HashUtils.ComputeSemanticUidForPage(url);
-
-            var articleHtml = article.InnerHtml ?? string.Empty;
-            var pageMarkdown = HtmlToMarkdown.Convert(articleHtml);
-
-            DocPage page = new()
-            {
-                    Id = Guid.NewGuid(),
-                    SemanticUid = pageSemanticUid,
-                    SourceSnapshotId = sourceSnapshotId,
-                    SourcePath = url,
-                    Title = title,
-                    Language = "en-us",
-                    Url = url,
-                    RawMarkdown = pageMarkdown,
-                    RawPageSource = htmlstring,
-                    VersionNumber = 1,
-                    CreatedIngestionRunId = ingestionRunId,
-                    UpdatedIngestionRunId = null,
-                    RemovedIngestionRunId = null,
-                    ValidFromUtc = now,
-                    ValidToUtc = null,
-                    IsActive = true,
-                    ContentHash = HashUtils.ComputeSha256(pageMarkdown)
-            };
-
-            var (sections, codeBlocks) = ExtractSectionsAndCodeBlocks(article, page, ingestionRunId, now, _logger);
-
-
-            _logger.LogInformation("Learn page parsed successfully.Url={url} Sections={SectionCount} CodeBlocks={CodeBlockCount}", url, sections.Count, codeBlocks.Count);
-
-            return new LearnPageParseResult
-            {
-                    Page = page,
-                    Sections = sections,
-                    CodeBlocks = codeBlocks
-            };
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogWarning("Learn page parsing canceled.");
-            return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Learn page parsing failed.");
+            _logger.LogError(ex, "Failed to parse learn page.");
             return null;
+
         }
+
+        return result;
     }
 
 
@@ -141,8 +111,8 @@ public sealed class LearnPageParser
         ArgumentNullException.ThrowIfNull(page);
         ArgumentNullException.ThrowIfNull(logger);
 
-        var sections = new List<DocSection>();
-        var codeBlocks = new List<CodeBlock>();
+        List<DocSection> sections = [];
+        List<CodeBlock> codeBlocks = [];
 
         HtmlNodeCollection headingNodes = article.SelectNodes(".//h2 | .//h3")
                                           ?? new HtmlNodeCollection(null);
@@ -160,11 +130,11 @@ public sealed class LearnPageParser
                 var headingText = HtmlEntity.DeEntitize(headingNode.InnerText?.Trim() ?? string.Empty);
                 headingTextForLog = headingText;
 
-                var level = headingNode.Name switch
+                int? level = headingNode.Name switch
                 {
                         "h2" => 2,
                         "h3" => 3,
-                        _ => (int?)null
+                        _ => null
                 };
 
                 var (sectionHtml, localCodeBlocks) = CollectSectionHtmlAndCodeBlocks(
@@ -245,7 +215,7 @@ public sealed class LearnPageParser
         ArgumentNullException.ThrowIfNull(logger);
 
         StringBuilder builder = new();
-        var codeBlocks = new List<CodeBlock>();
+        List<CodeBlock> codeBlocks = [];
 
         _ = builder.Append(headingNode.OuterHtml);
 

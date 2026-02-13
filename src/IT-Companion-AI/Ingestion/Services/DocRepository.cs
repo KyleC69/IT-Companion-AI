@@ -1,8 +1,11 @@
 ﻿using System.Data;
 
-using ITCompanionAI;
-
 using Microsoft.Data.SqlClient;
+
+
+
+
+namespace ITCompanionAI.Ingestion.Services;
 
 
 
@@ -21,18 +24,6 @@ using Microsoft.Data.SqlClient;
 public sealed class DocRepository
 {
     private readonly string _connectionString;
-
-
-
-
-
-
-
-
-    public DocRepository(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
 
 
 
@@ -60,7 +51,7 @@ public sealed class DocRepository
     ///     transaction. Cannot be null.
     /// </param>
     /// <returns>A task that represents the asynchronous insert operation.</returns>
-    public async Task InsertPageAsync(DocPage page, IEnumerable<DocSection> sections, IEnumerable<CodeBlock> codeBlocks)
+    public async Task InsertPageAsync(LearnPageParseResult result)
     {
         using SqlConnection conn = new(_connectionString);
         await conn.OpenAsync();
@@ -69,12 +60,11 @@ public sealed class DocRepository
 
         try
         {
-            await InsertDocPageAsync(conn, tx, page);
+            await InsertDocPageAsync(conn, tx, result.Page);
 
-            foreach (DocSection section in sections) await InsertDocSectionAsync(conn, tx, section);
+            foreach (DocSection section in result.Sections) await InsertDocSectionAsync(conn, tx, section);
 
-            foreach (CodeBlock block in codeBlocks) await InsertCodeBlockAsync(conn, tx, block);
-
+            foreach (CodeBlock block in result.CodeBlocks) await InsertCodeBlockAsync(conn, tx, block);
             tx.Commit();
         }
         catch
@@ -378,6 +368,6 @@ insert into dbo.code_block (
     {
         KBContext context = new();
         context.RagChunks.AddRange(chunks);
-        await context.SaveChangesAsync(cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 }

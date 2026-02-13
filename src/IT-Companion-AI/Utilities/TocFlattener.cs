@@ -15,26 +15,32 @@ public static class TocFlattener
 
         foreach (TocFetcher.TocItem item in items)
         {
-            var title = item.Name ?? string.Empty;
-            var breadcrumb = parents.Append(title).ToArray();
+            string title = item.Name ?? string.Empty;
+            string[] breadcrumb = parents.Append(title).ToArray();
 
             yield return new FlatTocEntry
             {
-                    Title = title,
-                    Url = item.Href,
-                    Uid = Guid.NewGuid().ToString(),
-                    Depth = depth,
-                    Breadcrumb = breadcrumb
+                Title = title,
+                Url = item.Href,
+                Uid = Guid.NewGuid().ToString(),
+                Depth = depth,
+                Breadcrumb = breadcrumb
             };
 
             if (item.Children.Count > 0)
             {
-                foreach (FlatTocEntry child in Flatten(item.Children, breadcrumb.ToList(), depth + 1)) yield return child;
+                foreach (FlatTocEntry child in Flatten(item.Children, breadcrumb.ToList(), depth + 1))
+                {
+                    yield return child;
+                }
             }
 
             if (item.NestedItems.Count > 0)
             {
-                foreach (FlatTocEntry child in Flatten(item.NestedItems, breadcrumb.ToList(), depth + 1)) yield return child;
+                foreach (FlatTocEntry child in Flatten(item.NestedItems, breadcrumb.ToList(), depth + 1))
+                {
+                    yield return child;
+                }
             }
         }
     }
@@ -46,9 +52,9 @@ public static class TocFlattener
 
 
 
-    public static IEnumerable<(TocFetcher.TocNode Node, string? ParentHref, int Depth, int Order)> FlattenToc(List<TocFetcher.TocNode> nodes, string? parentHref = null, int depth = 0)
+    public static IEnumerable<(TocFetcher.TocNode Node, string ParentHref, int Depth, int Order)> FlattenToc(List<TocFetcher.TocNode> nodes, string parentHref = null, int depth = 0)
     {
-        var order = 0;
+        int order = 0;
 
         foreach (TocFetcher.TocNode node in nodes)
         {
@@ -57,7 +63,9 @@ public static class TocFlattener
             if (node.items != null)
             {
                 foreach ((TocFetcher.TocNode Node, string ParentHref, int Depth, int Order) child in FlattenToc(node.items, node.href, depth + 1))
+                {
                     yield return child;
+                }
             }
         }
     }

@@ -6,25 +6,6 @@ public partial class SpCheckTemporalConsistencyResult2 : INotifyPropertyChanging
 
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
-    private DateTime? _NextFrom;
-
-    private string _SemanticUid;
-
-    private string _TableName;
-
-    private DateTime _ValidFromUtc;
-
-    private DateTime? _ValidToUtc;
-
-    private int _VersionNumber;
-
-
-
-
-
-
-
-
     public SpCheckTemporalConsistencyResult2()
     {
         OnCreated();
@@ -39,13 +20,13 @@ public partial class SpCheckTemporalConsistencyResult2 : INotifyPropertyChanging
 
     public string TableName
     {
-        get => _TableName;
+        get;
         set
         {
-            if (_TableName != value)
+            if (field != value)
             {
                 SendPropertyChanging("TableName");
-                _TableName = value;
+                field = value;
                 SendPropertyChanged("TableName");
             }
         }
@@ -57,13 +38,13 @@ public partial class SpCheckTemporalConsistencyResult2 : INotifyPropertyChanging
 
     public string SemanticUid
     {
-        get => _SemanticUid;
+        get;
         set
         {
-            if (_SemanticUid != value)
+            if (field != value)
             {
                 SendPropertyChanging("SemanticUid");
-                _SemanticUid = value;
+                field = value;
                 SendPropertyChanged("SemanticUid");
             }
         }
@@ -75,13 +56,13 @@ public partial class SpCheckTemporalConsistencyResult2 : INotifyPropertyChanging
 
     public int VersionNumber
     {
-        get => _VersionNumber;
+        get;
         set
         {
-            if (_VersionNumber != value)
+            if (field != value)
             {
                 SendPropertyChanging("VersionNumber");
-                _VersionNumber = value;
+                field = value;
                 SendPropertyChanged("VersionNumber");
             }
         }
@@ -93,13 +74,13 @@ public partial class SpCheckTemporalConsistencyResult2 : INotifyPropertyChanging
 
     public DateTime ValidFromUtc
     {
-        get => _ValidFromUtc;
+        get;
         set
         {
-            if (_ValidFromUtc != value)
+            if (field != value)
             {
                 SendPropertyChanging("ValidFromUtc");
-                _ValidFromUtc = value;
+                field = value;
                 SendPropertyChanged("ValidFromUtc");
             }
         }
@@ -111,13 +92,13 @@ public partial class SpCheckTemporalConsistencyResult2 : INotifyPropertyChanging
 
     public DateTime? ValidToUtc
     {
-        get => _ValidToUtc;
+        get;
         set
         {
-            if (_ValidToUtc != value)
+            if (field != value)
             {
                 SendPropertyChanging("ValidToUtc");
-                _ValidToUtc = value;
+                field = value;
                 SendPropertyChanged("ValidToUtc");
             }
         }
@@ -129,13 +110,13 @@ public partial class SpCheckTemporalConsistencyResult2 : INotifyPropertyChanging
 
     public DateTime? NextFrom
     {
-        get => _NextFrom;
+        get;
         set
         {
-            if (_NextFrom != value)
+            if (field != value)
             {
                 SendPropertyChanging("NextFrom");
-                _NextFrom = value;
+                field = value;
                 SendPropertyChanged("NextFrom");
             }
         }

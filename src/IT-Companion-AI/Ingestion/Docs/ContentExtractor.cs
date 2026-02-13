@@ -20,29 +20,29 @@ public sealed class ContentExtractor
             case ExtractionMode.Html:
                 return docType switch
                 {
-                        DocumentType.LearnPage => ExtractLearnMainHtml(html),
-                        DocumentType.BlogPost => ExtractBlogHtml(html),
-                        //Add more document types as needed
-                        _ => throw new NotImplementedException($"HTML extraction not implemented for document type {docType}")
+                    DocumentType.LearnPage => ExtractLearnMainHtml(html),
+                    DocumentType.BlogPost => ExtractBlogHtml(html),
+                    //Add more document types as needed
+                    _ => throw new NotImplementedException($"HTML extraction not implemented for document type {docType}")
                 };
             case ExtractionMode.Text:
                 return ExtractText(html);
             case ExtractionMode.Markdown:
                 return docType switch
                 {
-                        DocumentType.LearnPage => ExtractLearnMainMarkdown(),
-                        //Add more document types as needed
-                        _ => throw new NotImplementedException($"Markdown extraction not implemented for document type {docType}")
+                    DocumentType.LearnPage => ExtractLearnMainMarkdown(),
+                    //Add more document types as needed
+                    _ => throw new NotImplementedException($"Markdown extraction not implemented for document type {docType}")
                 };
             case ExtractionMode.Code:
-            {
-                return docType switch
                 {
+                    return docType switch
+                    {
                         DocumentType.LearnPage => ExtractCodeFromLearnPage(html),
                         //Add more document types as needed
                         _ => throw new NotImplementedException($"Code extraction not implemented for document type {docType}")
-                };
-            }
+                    };
+                }
             default:
                 throw new NotImplementedException($"Extraction mode {mode} not implemented");
         }
@@ -68,7 +68,7 @@ public sealed class ContentExtractor
             return string.Empty;
         }
 
-        var cleaned = Cleaner.PreTidy(main.InnerHtml, false);
+        string cleaned = Cleaner.PreTidy(main.InnerHtml, false);
 
 
         // Optionally strip nav, feedback, etc. here if needed
@@ -93,13 +93,13 @@ public sealed class ContentExtractor
         Converter markdownConverter = new();
         foreach (HtmlNode node in codeNodes)
         {
-            var codeText = node.InnerText;
-            var markdownCodeBlock = $"```\n{codeText}\n```";
+            string codeText = node.InnerText;
+            string markdownCodeBlock = $"```\n{codeText}\n```";
             node.InnerHtml = markdownCodeBlock;
         }
 
-        var markdownContent = string.Join("\n", codeNodes.Select(node => node.InnerText));
-        var result = markdownConverter.Convert(markdownContent);
+        string markdownContent = string.Join("\n", codeNodes.Select(node => node.InnerText));
+        string result = markdownConverter.Convert(markdownContent);
 
         return result;
     }

@@ -1,4 +1,4 @@
-﻿namespace ITCompanionAI.Ingestion.API;
+﻿namespace ITCompanionAI.Models;
 
 
 

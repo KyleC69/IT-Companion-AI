@@ -70,15 +70,8 @@ public class HttpClientService : HttpClient
         Uri uri = ValidateHttpUrl(url);
         try
         {
-            HttpResponseMessage response = await this.GetAsync(uri, cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
-                return string.Empty;
-            }
-
-
-
-            return await response.Content.ReadAsStringAsync(cancellationToken);
+            HttpResponseMessage response = await GetAsync(uri, cancellationToken);
+            return !response.IsSuccessStatusCode ? string.Empty : await response.Content.ReadAsStringAsync(cancellationToken);
         }
         catch (HttpRequestException ex)
         {
@@ -105,11 +98,11 @@ public class HttpClientService : HttpClient
         request.Headers.Accept.Clear();
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-        HttpResponseMessage response = await this.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
-            var preview = await SafeReadBodyPreviewAsync(response, cancellationToken).ConfigureAwait(false);
+            string preview = await SafeReadBodyPreviewAsync(response, cancellationToken).ConfigureAwait(false);
             throw new HttpRequestException($"Request to {url} failed with status code {(int)response.StatusCode} ({response.ReasonPhrase}). {preview}");
         }
 
@@ -125,17 +118,11 @@ public class HttpClientService : HttpClient
 
     private static Uri ValidateHttpUrl(string url)
     {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            throw new ArgumentException("URL cannot be null or whitespace.", nameof(url));
-        }
-
-        if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri) || uri.Scheme is not ("http" or "https"))
-        {
-            throw new ArgumentException("URL must be an absolute http/https URL.", nameof(url));
-        }
-
-        return uri;
+        return string.IsNullOrWhiteSpace(url)
+            ? throw new ArgumentException("URL cannot be null or whitespace.", nameof(url))
+            : !Uri.TryCreate(url, UriKind.Absolute, out Uri uri) || uri.Scheme is not ("http" or "https")
+            ? throw new ArgumentException("URL must be an absolute http/https URL.", nameof(url))
+            : uri;
     }
 
 
@@ -151,9 +138,9 @@ public class HttpClientService : HttpClient
 
         HttpClientHandler handler = new()
         {
-                CookieContainer = cookies,
-                AllowAutoRedirect = true,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            CookieContainer = cookies,
+            AllowAutoRedirect = true,
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
 
         return new PerHostRateLimitingHandler(handler, TimeSpan.FromSeconds(10));
@@ -192,7 +179,7 @@ public class HttpClientService : HttpClient
 
         // Basic exponential backoff with jitter.
         TimeSpan baseDelay = TimeSpan.FromMilliseconds(DefaultBackoff.TotalMilliseconds * Math.Pow(2, attempt));
-        var jitterMs = Random.Shared.Next(0, 250);
+        int jitterMs = Random.Shared.Next(0, 250);
         return baseDelay + TimeSpan.FromMilliseconds(jitterMs);
     }
 
@@ -205,41 +192,35 @@ public class HttpClientService : HttpClient
 
     private static ResiliencePipeline<HttpResponseMessage> CreateRetryPipeline()
     {
-        var builder = new ResiliencePipelineBuilder<HttpResponseMessage>();
+        ResiliencePipelineBuilder<HttpResponseMessage> builder = new();
 
-        var retry = new RetryStrategyOptions<HttpResponseMessage>
+        RetryStrategyOptions<HttpResponseMessage> retry = new()
         {
-                MaxRetryAttempts = MaxRetries,
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = static args =>
+            MaxRetryAttempts = MaxRetries,
+            BackoffType = DelayBackoffType.Exponential,
+            UseJitter = true,
+            ShouldHandle = static args =>
+            {
+                return args.Outcome.Exception is HttpRequestException
+                    ? ValueTask.FromResult(true)
+                    : args.Outcome.Result is { } response && IsTransientStatus(response.StatusCode)
+                    ? ValueTask.FromResult(true)
+                    : ValueTask.FromResult(false);
+            },
+            DelayGenerator = static args =>
+            {
+                if (args.Outcome.Result is { } response && response.Headers.RetryAfter?.Delta is { } delta)
                 {
-                    if (args.Outcome.Exception is HttpRequestException)
-                    {
-                        return ValueTask.FromResult(true);
-                    }
-
-                    if (args.Outcome.Result is { } response && IsTransientStatus(response.StatusCode))
-                    {
-                        return ValueTask.FromResult(true);
-                    }
-
-                    return ValueTask.FromResult(false);
-                },
-                DelayGenerator = static args =>
-                {
-                    if (args.Outcome.Result is { } response && response.Headers.RetryAfter?.Delta is { } delta)
-                    {
-                        return ValueTask.FromResult<TimeSpan?>(delta);
-                    }
-
-                    var baseDelayMs = DefaultBackoff.TotalMilliseconds * Math.Pow(2, args.AttemptNumber);
-                    var jitterMs = Random.Shared.Next(0, 250);
-                    return ValueTask.FromResult<TimeSpan?>(TimeSpan.FromMilliseconds(baseDelayMs + jitterMs));
+                    return ValueTask.FromResult<TimeSpan?>(delta);
                 }
+
+                double baseDelayMs = DefaultBackoff.TotalMilliseconds * Math.Pow(2, args.AttemptNumber);
+                int jitterMs = Random.Shared.Next(0, 250);
+                return ValueTask.FromResult<TimeSpan?>(TimeSpan.FromMilliseconds(baseDelayMs + jitterMs));
+            }
         };
 
-        builder.AddRetry(retry);
+        _ = builder.AddRetry(retry);
         return builder.Build();
     }
 
@@ -259,7 +240,7 @@ public class HttpClientService : HttpClient
 
         try
         {
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(content))
             {
                 return string.Empty;
@@ -287,11 +268,14 @@ internal static class HttpRequestMessageExtensions
     {
         HttpRequestMessage clone = new(request.Method, request.RequestUri)
         {
-                Version = request.Version,
-                VersionPolicy = request.VersionPolicy
+            Version = request.Version,
+            VersionPolicy = request.VersionPolicy
         };
 
-        foreach (var header in request.Headers) _ = clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        foreach (KeyValuePair<string, IEnumerable<string>> header in request.Headers)
+        {
+            _ = clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
 
         return clone;
     }
@@ -329,7 +313,7 @@ internal sealed class PerHostRateLimitingHandler(HttpMessageHandler innerHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var host = request.RequestUri?.Host;
+        string host = request.RequestUri?.Host;
         if (string.IsNullOrWhiteSpace(host))
         {
             return await base.SendAsync(request, cancellationToken);
@@ -341,8 +325,8 @@ internal sealed class PerHostRateLimitingHandler(HttpMessageHandler innerHandler
         await gate.Semaphore.WaitAsync(cancellationToken);
         try
         {
-            var now = Stopwatch.GetTimestamp();
-            var next = gate.NextAllowedTick;
+            long now = Stopwatch.GetTimestamp();
+            long next = gate.NextAllowedTick;
 
             delay = now >= next
                     ? null
@@ -380,10 +364,10 @@ internal sealed class PerHostRateLimitingHandler(HttpMessageHandler innerHandler
             return;
         }
 
-        var now = Stopwatch.GetTimestamp();
-        var ttlTicks = (long)(GateTtl.TotalSeconds * Stopwatch.Frequency);
+        long now = Stopwatch.GetTimestamp();
+        long ttlTicks = (long)(GateTtl.TotalSeconds * Stopwatch.Frequency);
 
-        foreach (var kvp in _gates)
+        foreach (KeyValuePair<string, HostGate> kvp in _gates)
         {
             HostGate gate = kvp.Value;
             if (now - gate.LastUsedTick > ttlTicks)

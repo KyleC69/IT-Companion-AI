@@ -15,9 +15,9 @@ public static class HtmlToMarkdown
 {
     private static readonly Converter _converter = new(new Config
     {
-            GithubFlavored = true,
-            RemoveComments = true,
-            SmartHrefHandling = true
+        GithubFlavored = true,
+        RemoveComments = true,
+        SmartHrefHandling = true
     });
 
 
@@ -40,20 +40,20 @@ public static class HtmlToMarkdown
 
 
 
-        var innerhtml = doc.DocumentNode.InnerHtml;
+        string innerhtml = doc.DocumentNode.InnerHtml;
 
 
         Converter converter = new(new Config
         {
-                GithubFlavored = true,
-                RemoveComments = true,
-                SmartHrefHandling = true,
-                UnknownTags = Config.UnknownTagsOption.PassThrough
+            GithubFlavored = true,
+            RemoveComments = true,
+            SmartHrefHandling = true,
+            UnknownTags = Config.UnknownTagsOption.PassThrough
         });
 
 
 
-        var markdown = converter.Convert(innerhtml);
+        string markdown = converter.Convert(innerhtml);
 
         Console.WriteLine(markdown);
 

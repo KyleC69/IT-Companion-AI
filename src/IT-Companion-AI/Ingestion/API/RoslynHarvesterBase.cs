@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
+using ITCompanionAI.Services;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

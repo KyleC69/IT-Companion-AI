@@ -3,7 +3,7 @@
 
 
 
-namespace ITCompanionAI.Helpers;
+namespace ITCompanionAI.Ingestion;
 
 
 
@@ -70,12 +70,7 @@ internal class SourceExtractor
         }
 
         var statusCode = (int)response.Status;
-        if (statusCode < 200 || statusCode >= 300)
-        {
-            return string.Empty;
-        }
-
-        return await page.GetContentAsync().ConfigureAwait(false);
+        return statusCode is < 200 or >= 300 ? string.Empty : await page.GetContentAsync().ConfigureAwait(false);
     }
 
 

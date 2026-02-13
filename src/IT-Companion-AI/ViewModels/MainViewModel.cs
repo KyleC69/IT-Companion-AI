@@ -2,6 +2,9 @@
 
 using CommunityToolkit.Mvvm.Input;
 
+using ITCompanionAI.Services;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 
@@ -17,17 +20,7 @@ public partial class MainViewModel : BaseViewModel
 {
     private readonly ILoggerFactory _loggerFactory;
     private CancellationTokenSource _cts;
-
-
     private bool _isBusy;
-    private string _userInput = string.Empty;
-
-
-
-
-
-
-
 
     public MainViewModel()
     {
@@ -39,6 +32,7 @@ public partial class MainViewModel : BaseViewModel
             _ = builder.AddConsole();
             _ = builder.SetMinimumLevel(LogLevel.Trace);
         });
+
     }
 
 
@@ -50,20 +44,20 @@ public partial class MainViewModel : BaseViewModel
 
     public string UserInput
     {
-        get => _userInput;
+        get;
         set
         {
-            if (_userInput == value)
+            if (field == value)
             {
                 return;
             }
 
-            _userInput = value;
+            field = value;
             this.OnPropertyChanged();
             this.OnPropertyChanged(nameof(CanSend));
             OnUserInputChanged(value);
         }
-    }
+    } = string.Empty;
 
 
 
@@ -80,12 +74,10 @@ public partial class MainViewModel : BaseViewModel
         get => _isBusy;
         set
         {
-            if (_isBusy != value)
+            if (SetProperty(ref _isBusy, value))
             {
-                _isBusy = value;
-                this.OnPropertyChanged();
-                this.OnPropertyChanged(nameof(CanSend));
-                this.OnPropertyChanged(nameof(CanCancel));
+                OnPropertyChanged(nameof(CanSend));
+                OnPropertyChanged(nameof(CanCancel));
                 OnIsBusyChanged(value);
             }
         }
@@ -150,11 +142,7 @@ public partial class MainViewModel : BaseViewModel
         // Example usage (e.g., from a hosted service or controller):
         // var orchestrator = App.GetService<KnowledgeIngestionOrchestrator>();
 
-
-
-
         IsBusy = true;
-
 
         try
         {
@@ -170,8 +158,6 @@ public partial class MainViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
-            this.OnPropertyChanged(nameof(CanSend));
-            this.OnPropertyChanged(nameof(CanCancel));
         }
 
 

@@ -6,23 +6,6 @@ public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging,
 
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
-    private string _ArtifactKind;
-
-    private string _SemanticUid;
-
-    private DateTime _ValidFromUtc;
-
-    private DateTime? _ValidToUtc;
-
-    private int _VersionNumber;
-
-
-
-
-
-
-
-
     public SpGetChangesInIngestionRunResult()
     {
         OnCreated();
@@ -37,13 +20,13 @@ public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging,
 
     public string ArtifactKind
     {
-        get => _ArtifactKind;
+        get;
         set
         {
-            if (_ArtifactKind != value)
+            if (field != value)
             {
                 SendPropertyChanging("ArtifactKind");
-                _ArtifactKind = value;
+                field = value;
                 SendPropertyChanged("ArtifactKind");
             }
         }
@@ -55,13 +38,13 @@ public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging,
 
     public string SemanticUid
     {
-        get => _SemanticUid;
+        get;
         set
         {
-            if (_SemanticUid != value)
+            if (field != value)
             {
                 SendPropertyChanging("SemanticUid");
-                _SemanticUid = value;
+                field = value;
                 SendPropertyChanged("SemanticUid");
             }
         }
@@ -73,13 +56,13 @@ public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging,
 
     public int VersionNumber
     {
-        get => _VersionNumber;
+        get;
         set
         {
-            if (_VersionNumber != value)
+            if (field != value)
             {
                 SendPropertyChanging("VersionNumber");
-                _VersionNumber = value;
+                field = value;
                 SendPropertyChanged("VersionNumber");
             }
         }
@@ -91,13 +74,13 @@ public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging,
 
     public DateTime ValidFromUtc
     {
-        get => _ValidFromUtc;
+        get;
         set
         {
-            if (_ValidFromUtc != value)
+            if (field != value)
             {
                 SendPropertyChanging("ValidFromUtc");
-                _ValidFromUtc = value;
+                field = value;
                 SendPropertyChanged("ValidFromUtc");
             }
         }
@@ -109,13 +92,13 @@ public partial class SpGetChangesInIngestionRunResult : INotifyPropertyChanging,
 
     public DateTime? ValidToUtc
     {
-        get => _ValidToUtc;
+        get;
         set
         {
-            if (_ValidToUtc != value)
+            if (field != value)
             {
                 SendPropertyChanging("ValidToUtc");
-                _ValidToUtc = value;
+                field = value;
                 SendPropertyChanged("ValidToUtc");
             }
         }

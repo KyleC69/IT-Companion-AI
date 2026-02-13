@@ -1,5 +1,7 @@
 ﻿using System.Security.Cryptography;
 
+using ITCompanionAI.Ingestion.Services;
+
 using Microsoft.Data.SqlTypes;
 
 using Newtonsoft.Json;
@@ -55,7 +57,7 @@ public sealed class ChunkerPipeline
                 .GroupBy(cb => cb.DocSectionId)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-        var chunks = new List<RagChunk>();
+        List<RagChunk> chunks = [];
 
         foreach (DocSection section in sections.OrderBy(s => s.OrderIndex))
         {
@@ -105,7 +107,7 @@ public sealed class ChunkerPipeline
         if (!string.IsNullOrEmpty(section.Heading))
         {
             var level = section.Level ?? 2;
-            sb.Append(new string('#', level))
+            _ = sb.Append(new string('#', level))
                     .Append(' ')
                     .AppendLine(section.Heading)
                     .AppendLine();
@@ -113,14 +115,14 @@ public sealed class ChunkerPipeline
 
         if (!string.IsNullOrEmpty(section.ContentMarkdown))
         {
-            sb.AppendLine(section.ContentMarkdown);
+            _ = sb.AppendLine(section.ContentMarkdown);
         }
 
         if (codeBySection.TryGetValue(section.Id, out var blocks) && blocks.Count > 0)
         {
-            sb.AppendLine();
+            _ = sb.AppendLine();
             foreach (CodeBlock cb in blocks)
-                sb.Append("```")
+                _ = sb.Append("```")
                         .AppendLine(cb.Language ?? string.Empty)
                         .AppendLine(cb.Content ?? string.Empty)
                         .AppendLine("```")
@@ -156,15 +158,15 @@ public sealed class ChunkerPipeline
             if (sb.Length + para.Length + 4 > maxCharsPerChunk && sb.Length > 0)
             {
                 yield return sb.ToString();
-                sb.Clear();
+                _ = sb.Clear();
             }
 
             if (sb.Length > 0)
             {
-                sb.AppendLine().AppendLine();
+                _ = sb.AppendLine().AppendLine();
             }
 
-            sb.Append(para);
+            _ = sb.Append(para);
         }
 
         if (sb.Length > 0)

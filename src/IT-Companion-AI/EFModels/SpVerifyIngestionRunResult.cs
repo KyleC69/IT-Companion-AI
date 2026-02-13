@@ -6,17 +6,6 @@ public partial class SpVerifyIngestionRunResult : INotifyPropertyChanging, INoti
 
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
-    private string _Category;
-
-    private string _Detail;
-
-
-
-
-
-
-
-
     public SpVerifyIngestionRunResult()
     {
         OnCreated();
@@ -31,13 +20,13 @@ public partial class SpVerifyIngestionRunResult : INotifyPropertyChanging, INoti
 
     public string Category
     {
-        get => _Category;
+        get;
         set
         {
-            if (_Category != value)
+            if (field != value)
             {
                 SendPropertyChanging("Category");
-                _Category = value;
+                field = value;
                 SendPropertyChanged("Category");
             }
         }
@@ -49,13 +38,13 @@ public partial class SpVerifyIngestionRunResult : INotifyPropertyChanging, INoti
 
     public string Detail
     {
-        get => _Detail;
+        get;
         set
         {
-            if (_Detail != value)
+            if (field != value)
             {
                 SendPropertyChanging("Detail");
-                _Detail = value;
+                field = value;
                 SendPropertyChanged("Detail");
             }
         }

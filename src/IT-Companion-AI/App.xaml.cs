@@ -1,9 +1,12 @@
+using ITCompanionAI.Ingestion;
+using ITCompanionAI.Ingestion.Docs;
 using ITCompanionAI.Services;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -84,7 +87,7 @@ public partial class App : Application
         AppWindow = _window;
 
         // Root UI composition via DI.
-        MainWindow mainWindow = GetService<MainWindow>();
+        _ = GetService<MainWindow>();
         //  mainWindow.RequestedTheme = ElementTheme.Default;
 
 
@@ -105,16 +108,17 @@ public partial class App : Application
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     // Typical desktop configuration sources
-                    config.AddJsonFile("appsettings.json", true, true);
-                    config.AddEnvironmentVariables();
-                    config.SetBasePath(AppContext.BaseDirectory);
+                    _ = config.AddJsonFile("appsettings.json", true, true);
+                    _ = config.AddUserSecrets<App>(true);
+                    _ = config.AddEnvironmentVariables();
+                    _ = config.SetBasePath(AppContext.BaseDirectory);
                 })
                 .ConfigureLogging((context, logging) =>
                 {
-                    logging.ClearProviders();
-                    logging.AddDebug();
-                    logging.AddConsole();
-                    logging.SetMinimumLevel(LogLevel.Trace);
+                    _ = logging.ClearProviders();
+                    _ = logging.AddDebug();
+                    _ = logging.AddConsole();
+                    _ = logging.SetMinimumLevel(LogLevel.Trace);
                 })
                 .ConfigureServices((context, services) => { ConfigureServices(context.Configuration, services); })
                 .Build();
@@ -130,9 +134,26 @@ public partial class App : Application
     private static void ConfigureServices(IConfiguration configuration, IServiceCollection services)
     {
         // Views / composition root
-        services.AddSingleton<MainWindow>();
-        services.AddSingleton<HttpClientService>();
-        services.AddSingleton(sp => { return new OllamaApiClient(new Uri("http://localhost:11434"), "bge-large:latest"); });
+        _ = services.AddSingleton<MainWindow>();
+        _ = services.AddSingleton<HttpClientService>();
+        _ = services.AddSingleton<BusyState>();
+        _ = services.Configure<IngestionSettings>(configuration.GetSection("Ingestion"));
+        _ = services.AddSingleton(sp =>
+        {
+            IngestionSettings settings = sp.GetRequiredService<IOptions<IngestionSettings>>().Value;
+            return string.IsNullOrWhiteSpace(settings.OllamaBaseUrl) || string.IsNullOrWhiteSpace(settings.OllamaModel)
+                    ? throw new InvalidOperationException("Missing Ingestion:OllamaBaseUrl or Ingestion:OllamaModel configuration.")
+                    : new OllamaApiClient(new Uri(settings.OllamaBaseUrl), settings.OllamaModel);
+        });
+
+        //services.AddDbContext<KBContext>(options => { options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")); });
+        _ = services.AddSingleton<LocalFileParser>();
+        services.AddSingleton<LearnPageParser>();
+
+
+
+
+
 
 
         // Example registrations (remove if unused):

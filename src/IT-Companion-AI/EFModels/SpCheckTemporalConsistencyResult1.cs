@@ -6,19 +6,6 @@ public partial class SpCheckTemporalConsistencyResult1 : INotifyPropertyChanging
 
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
-    private Guid _Id;
-
-    private string _SemanticUid;
-
-    private string _TableName;
-
-
-
-
-
-
-
-
     public SpCheckTemporalConsistencyResult1()
     {
         OnCreated();
@@ -33,13 +20,13 @@ public partial class SpCheckTemporalConsistencyResult1 : INotifyPropertyChanging
 
     public string TableName
     {
-        get => _TableName;
+        get;
         set
         {
-            if (_TableName != value)
+            if (field != value)
             {
                 SendPropertyChanging("TableName");
-                _TableName = value;
+                field = value;
                 SendPropertyChanged("TableName");
             }
         }
@@ -51,13 +38,13 @@ public partial class SpCheckTemporalConsistencyResult1 : INotifyPropertyChanging
 
     public Guid Id
     {
-        get => _Id;
+        get;
         set
         {
-            if (_Id != value)
+            if (field != value)
             {
                 SendPropertyChanging("Id");
-                _Id = value;
+                field = value;
                 SendPropertyChanged("Id");
             }
         }
@@ -69,13 +56,13 @@ public partial class SpCheckTemporalConsistencyResult1 : INotifyPropertyChanging
 
     public string SemanticUid
     {
-        get => _SemanticUid;
+        get;
         set
         {
-            if (_SemanticUid != value)
+            if (field != value)
             {
                 SendPropertyChanging("SemanticUid");
-                _SemanticUid = value;
+                field = value;
                 SendPropertyChanged("SemanticUid");
             }
         }

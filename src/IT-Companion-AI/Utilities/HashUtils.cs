@@ -3,7 +3,7 @@
 
 
 
-namespace ITCompanionAI.Ingestion.Docs;
+namespace ITCompanionAI.Utilities;
 
 
 
@@ -29,10 +29,26 @@ public static class HashUtils
 
 
 
-    public static string ComputeSemanticUidForPage(string url)
+    public static string ComputeHash(string input)
     {
+        using SHA256 sha = SHA256.Create();
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input ?? string.Empty));
+        return Convert.ToHexString(bytes);
+    }
+
+
+
+
+
+
+
+
+    // For semantic UIDs, we want them to be stable across runs for the same content, so we can use a hash of the content or a stable identifier like URL + heading text.
+    public static string ComputeSemanticUidForPage(string path, string language)
+    {
+        // Path--CodeLang--
         // Stable semantic UID for the page (you can change to include language/version)
-        return $"learn:{url.Trim().ToLowerInvariant()}";
+        return $"learn:{path.Trim().ToLowerInvariant()}--{language.Trim().ToLowerInvariant()}";
     }
 
 
@@ -56,14 +72,14 @@ public static class HashUtils
 
 
 
-    public static string ComputeSemanticUidForCodeBlock(string pageSemanticUid, string sectionSemanticUid, string language, string content)
+    public static string ComputeSemanticUidForCodeBlock(string pageSemanticUid, string sectionSemanticUid, string codelanguage, string content)
     {
         if (string.IsNullOrWhiteSpace(content))
         {
             return null;
         }
 
-        var key = $"{pageSemanticUid}::{sectionSemanticUid}::{language ?? "unknown"}::{content}";
+        var key = $"{pageSemanticUid}::{sectionSemanticUid}::{codelanguage ?? "unknown"}::{content}";
         var hash = ComputeSha256(key);
         return "code:" + Convert.ToHexString(hash);
     }

@@ -1,4 +1,4 @@
-﻿namespace ITCompanionAI.Helpers;
+﻿namespace ITCompanionAI.Utilities;
 
 
 

@@ -1,4 +1,4 @@
-﻿namespace ITCompanionAI.Ingestion.Contracts;
+﻿namespace ITCompanionAI.Models;
 
 
 

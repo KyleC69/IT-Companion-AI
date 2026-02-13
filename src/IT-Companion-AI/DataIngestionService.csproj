@@ -66,14 +66,6 @@
 
 	<ItemGroup>
 
-		<Compile Remove="AgentFramework\Agents\ReconciliationAgent.cs" />
-
-		<Compile Remove="AgentFramework\Agents\VerificationAgent.cs" />
-
-		<Compile Remove="AgentFramework\KernelFactory.cs" />
-
-		<Compile Remove="AgentFramework\Llm.cs" />
-
 		<Compile Remove="Ingestion\API\ApiHarvester.cs" />
 
 		<Compile Remove="Ingestion\API\APIIngestion.cs" />
@@ -87,12 +79,10 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-		<PackageReference Include="Json.Net" Version="1.0.33" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis" Version="5.0.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.0.0" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0-preview3.25342.7" />
+		<PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.2.0" />
 		<PackageReference Include="Microsoft.Extensions.DataIngestion" Version="10.2.0-preview.1.26063.2" />
 		<PackageReference Include="Microsoft.Extensions.DataIngestion.Abstractions" Version="10.2.0-preview.1.26063.2" />
 		<PackageReference Include="Microsoft.Extensions.DataIngestion.Markdig" Version="10.2.0-preview.1.26063.2" />
@@ -103,7 +93,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="11.0.0-preview.1.26104.118" />
 		
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		

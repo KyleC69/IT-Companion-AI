@@ -18,6 +18,7 @@ public partial class MainPage : Page
     {
         InitializeComponent();
         DataContext = ViewModel;
+        InputTextBox.Text = "https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/";
     }
 
 

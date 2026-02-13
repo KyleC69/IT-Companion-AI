@@ -10,11 +10,11 @@ internal class FileHarvestPipeline
 
     public async Task RunAsync(string sourcePath)
     {
-        var files = EnumerateFilePaths(sourcePath);
+        IList<string> files = EnumerateFilePaths(sourcePath);
 
-        foreach (var file in files)
+        foreach (string file in files)
         {
-            var content = await File.ReadAllTextAsync(file);
+            string content = await File.ReadAllTextAsync(file);
             _ = new DocPage();
             SaveInSqlDatabase(file, content);
         }
@@ -62,7 +62,7 @@ internal class FileHarvestPipeline
             throw new DirectoryNotFoundException($"The directory '{rootPath}' does not exist.");
         }
 
-        var filePaths = new List<string>();
+        List<string> filePaths = [];
 
         try
         {

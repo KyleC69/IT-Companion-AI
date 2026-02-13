@@ -5,7 +5,7 @@ using Octokit;
 
 
 
-namespace ITCompanionAI.Helpers;
+namespace ITCompanionAI.Services;
 
 
 
@@ -30,13 +30,13 @@ public sealed record GitHubClientOptions(
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var productName = configuration[$"{SectionName}:ProductName"];
+        string productName = configuration[$"{SectionName}:ProductName"];
         if (string.IsNullOrWhiteSpace(productName))
         {
             productName = "ITCompanionAI";
         }
 
-        var apiBase = configuration[$"{SectionName}:ApiBaseAddress"];
+        string apiBase = configuration[$"{SectionName}:ApiBaseAddress"];
         if (string.IsNullOrWhiteSpace(apiBase))
         {
             apiBase = "https://api.github.com/";
@@ -48,7 +48,7 @@ public sealed record GitHubClientOptions(
                     $"Invalid GitHub API base address in configuration key '{SectionName}:ApiBaseAddress'.");
         }
 
-        var token = configuration[TokenConfigKey];
+        string token = configuration[TokenConfigKey];
         return string.IsNullOrWhiteSpace(token)
                 ? throw new InvalidOperationException(
                         $"Missing GitHub token in configuration key '{TokenConfigKey}'. Add it via user-secrets (recommended) or environment variables.")
@@ -99,7 +99,7 @@ public sealed class GitHubClientFactory : IGitHubClientFactory
         ProductHeaderValue productInfo = new(options.ProductName);
         GitHubClient client = new(productInfo, options.ApiBaseAddress)
         {
-                Credentials = new Credentials(options.Token)
+            Credentials = new Credentials(options.Token)
         };
 
         return client;

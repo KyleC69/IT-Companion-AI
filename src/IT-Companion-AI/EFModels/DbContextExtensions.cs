@@ -57,5 +57,7 @@ namespace ITCompanionAI
 
             _value = null == value || Convert.IsDBNull(value) ? default(TValue) : (TValue)value;
         }
+        
+      
     }
 }

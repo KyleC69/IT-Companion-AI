@@ -6,15 +6,6 @@ public partial class SpUpsertApiParameterResult : INotifyPropertyChanging, INoti
 
     private static readonly PropertyChangingEventArgs emptyChangingEventArgs = new(string.Empty);
 
-    private Guid? _Id;
-
-
-
-
-
-
-
-
     public SpUpsertApiParameterResult()
     {
         OnCreated();
@@ -29,13 +20,13 @@ public partial class SpUpsertApiParameterResult : INotifyPropertyChanging, INoti
 
     public Guid? Id
     {
-        get => _Id;
+        get;
         set
         {
-            if (_Id != value)
+            if (field != value)
             {
                 SendPropertyChanging("Id");
-                _Id = value;
+                field = value;
                 SendPropertyChanged("Id");
             }
         }

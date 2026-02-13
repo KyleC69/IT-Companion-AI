@@ -11,15 +11,9 @@ namespace ITCompanionAI.ViewModels;
 
 public class BaseViewModel : ObservableObject
 {
-    private string _title;
-
-
-
-
-
     public string Title
     {
-        get => _title ?? string.Empty;
-        set => this.SetProperty(ref _title, value);
+        get => field ?? string.Empty;
+        set => SetProperty(ref field, value);
     }
 }

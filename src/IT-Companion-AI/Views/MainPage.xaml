@@ -54,6 +54,7 @@
                          Height="80"
                          VerticalAlignment="Center"
                          PlaceholderText="Type a message..."
+                         x:Name="InputTextBox"
                          MinWidth="500" />
 
                 <StackPanel Orientation="Vertical">
@@ -71,7 +72,8 @@
             <local:ButtonOverlay Grid.Row="0" Grid.RowSpan="2"
                                  Background="{ThemeResource SystemControlAcrylicElementBrush}" Height="200"
                                  VerticalAlignment="Top"
-                                 Canvas.ZIndex="1000" />
+                                 Canvas.ZIndex="1000"
+                                 IsBusy="{Binding IsBusy}" />
 
 
         </Grid>

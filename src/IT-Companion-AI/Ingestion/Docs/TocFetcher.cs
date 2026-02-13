@@ -65,14 +65,14 @@ public sealed class TocFetcher
         //TODO: and a gate to ensure we only fetch TOC from Doc Repo on github, and not from any arbitrary URL, to avoid SSRF risks.
         HttpResponseMessage ymlTOC = await _httpClient.GetAsync(baseUrl);
 
-        ymlTOC.EnsureSuccessStatusCode();
-        var tocString = await ymlTOC.Content.ReadAsStringAsync();
+        _ = ymlTOC.EnsureSuccessStatusCode();
+        string tocString = await ymlTOC.Content.ReadAsStringAsync();
 
 
         IDeserializer deserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().Build();
         TocRoot anodes = deserializer.Deserialize<TocRoot>(tocString);
 
-        var mdHrefs = Flatten(anodes?.items ?? [])
+        List<string> mdHrefs = Flatten(anodes?.items ?? [])
                 .Select(n => n.href)
                 .Where(h => !string.IsNullOrWhiteSpace(h) && h.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -129,7 +129,7 @@ public sealed class TocFetcher
 
     public sealed class TocRoot
     {
-        public List<TocNode>? items { get; set; }
+        public List<TocNode> items { get; set; }
     }
 
 
@@ -138,10 +138,10 @@ public sealed class TocFetcher
 
     public sealed class TocNode
     {
-        public string? name { get; set; }
-        public string? href { get; set; }
+        public string name { get; set; }
+        public string href { get; set; }
         public bool? expanded { get; set; }
-        public List<TocNode>? items { get; set; }
+        public List<TocNode> items { get; set; }
     }
 
 
@@ -158,7 +158,7 @@ public sealed class TocFetcher
             // For Learn, toc.json lives at the docset root, so base for hrefs should be:
             //   https://learn.microsoft.com/en-us/agent-framework/
             // even if baseUrl points to a deep page.
-            var segments = baseUri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            string[] segments = baseUri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
             Uri root;
             if (segments.Length >= 2)
             {
